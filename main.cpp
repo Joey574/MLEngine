@@ -1,12 +1,35 @@
-#include <iostream>
-
 #include "NeuralNetwork/NeuralNetwork.hpp"
 #include "DataLoader/DataLoader.hpp"
+#include "utils.cpp"
+
+
+void display_usage() {
+    std::cout << 
+    "MLEngine (0.0)\n"
+    "Usage: MLEngine [Model Args] [Training Args]\n"
+    "\tModel Options:\n\t\t"
+    "-m model\t\tloads model from disk (if model doesn't exist, this is used as the models name)\n\t\t"
+    "-d dataset\t\ttrains on the given dataset\n\t\t"
+    "-di dimensions\t\tsets model dimensions\n\t\t"
+    "-l loss\t\t\ttrains model with given loss algorithm\n\t\t"
+    "-mr metric\t\toutputs evaluation with given metric\n"
+    "\tTraining Options:\n\t\t"
+    "-e epochs\t\tnumber of epochs to train for, default 1\n\t\t"
+    "-tf train for\t\tlength of time to train for, if both -e and -tf are passed -e is used\n\t\t"
+    "-lr learning rate\tlearning rate to use throughout training, default 0.1\n\t\t"
+    "-bs batch size\t\tbatch size to use throughout training, default 500\n\t\t"
+    "-vf validation freq.\thow often to validate the model in epochs, default never\n\t\t"
+    "-vs validation split\tpercentage (0-1) of dataset to use for validation if one isn't provided, default 0\n"
+    "\n"
+    ;
+
+    exit(1);
+}
 
 
 int main(int argc, char* argv[]) {
-    // validate that datasets exist on the computer
-
+    State state;
+    state.Init();
 
     // validate local storage for models exists
 
@@ -60,6 +83,11 @@ int main(int argc, char* argv[]) {
     
     // fun time arg parsing
     for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--help") == 0 ||
+            strcmp(argv[i], "-h") == 0) {
+                display_usage();
+            }
+
         if (strcmp(argv[i], "-m") == 0) {
             if (!(argc > i + 1)) {
                 return 1;
@@ -69,88 +97,90 @@ int main(int argc, char* argv[]) {
             i++;
         } else if (strcmp(argv[i], "-d") == 0) {
             if (!(argc > i + 1)) {
-                return 1;
+                display_usage();
             }
 
             dataset = argv[i+1];
             i++;
         } else if (strcmp(argv[i], "-di") == 0) {
             if (!(argc > i + 1)) {
-                return 1;
+                display_usage();
             }
 
             dims = argv[i+1];
             i++;
         } else if (strcmp(argv[i], "-l") == 0) {
             if (!(argc > i + 1)) {
-                return 1;
+                display_usage();
             }
 
             loss = argv[i+1];
             i++;
         } else if (strcmp(argv[i], "-mr") == 0) {
             if (!(argc > i + 1)) {
-                return 1;
+                display_usage();
             }
 
             metric = argv[i+1];
             i++;            
         } else if (strcmp(argv[i], "-e") == 0) {
             if (!(argc > i + 1)) {
-                return 1;
+                display_usage();
             }
 
             epochs = atoi(argv[i+1]);
             i++;
         } else if (strcmp(argv[i], "-tf") == 0) {
             if (!(argc > i + 1)) {
-                return 1;
+                display_usage();
             }
 
             train_for = argv[i+1];
             i++;
         } else if (strcmp(argv[i],"-lr") == 0) {
             if (!(argc > i + 1)) {
-                return 1;
+                display_usage();
             }
 
             learning_rate = atof(argv[i+1]);
             i++;
         } else if (strcmp(argv[i],"-bs") == 0) {
             if (!(argc > i + 1)) {
-                return 1;
+                display_usage();
             }
 
             batch_size = atoi(argv[i+1]);
             i++;            
         } else if (strcmp(argv[i],"-vf") == 0) {
             if (!(argc > i + 1)) {
-                return 1;
+                display_usage();
             }
 
             validation_freq = atoi(argv[i+1]);
             i++;            
         } else if (strcmp(argv[i],"-vs") == 0) {
             if (!(argc > i + 1)) {
-                return 1;
+                display_usage();
             }
 
             validation_split = atof(argv[i+1]);
             i++;            
         } else {
-            return 1;
+            display_usage();
         }
     }
 
     NeuralNetwork model;
-    if (modelname != "") {
+    if (dir_exists(state.models+modelname) && modelname != "") {
         // attempt to load provided model
+
     } else {
         // build new model based on passed args
-        if (dataset == "" || dims == "" || loss == "" || metric == "") {
-            return 1;
+        if (dataset == "" || dims == "" || loss == "" || metric == "" || modelname == "") {
+            display_usage();
         }
     }
 
     // model built, continue to train
 }
+
