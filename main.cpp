@@ -20,18 +20,27 @@ void display_usage() {
     "-bs batch size\t\tbatch size to use throughout training, default 500\n\t\t"
     "-vf validation freq.\thow often to validate the model in epochs, default never\n\t\t"
     "-vs validation split\tpercentage (0-1) of dataset to use for validation if one isn't provided, default 0\n"
+    "\tUtilities:\n\t\t"
+    "-ld\t\tlists datasets and basic metadata"
     "\n"
     ;
 
     exit(1);
 }
+void list_datasets(const State& state) {
+    for (size_t i = 0; i < state.datasetmeta.size(); i++) {
+        std::cout << state.datasetmeta[i].name << ": " << state.datasetmeta[i].exists << "\n";
+    }
+
+    exit(0);
+}
 
 
 int main(int argc, char* argv[]) {
     State state;
+    NeuralNetwork model;
+    state.model = &model;
     state.Init();
-
-    // validate local storage for models exists
 
     /*
 
@@ -54,6 +63,13 @@ int main(int argc, char* argv[]) {
     -vs validationsplit     - how to split the dataset for valid. data      | Default | 0
 
 
+    ==== utilities, won't train model ====
+    -ld                     - lists datasets and relevent metadata
+
+    
+    Thinking about changing how we do model initialization, maybe worth just setting the values directly?
+    Wouldn't have to store a bunch of local variables and could directly grab from NN and State to check if
+    they were set properlly
 
     Need to start thinking about making this a standalone clt, args should be passed on the terminal
     Workspace and dataset storage should be stored in recon suite local storage? probably
@@ -93,7 +109,7 @@ int main(int argc, char* argv[]) {
                 return 1;
             }
 
-            modelname = argv[i+1];
+            state.modelname = argv[i+1];
             i++;
         } else if (strcmp(argv[i], "-d") == 0) {
             if (!(argc > i + 1)) {
@@ -165,13 +181,17 @@ int main(int argc, char* argv[]) {
 
             validation_split = atof(argv[i+1]);
             i++;            
+        } else if (strcmp(argv[i], "-ld") == 0) {
+            list_datasets(state);
         } else {
             display_usage();
         }
     }
 
+    state.Save();
+
     NeuralNetwork model;
-    if (dir_exists(state.models+modelname) && modelname != "") {
+    if (dir_exists(state.p_models+modelname) && modelname != "") {
         // attempt to load provided model
 
     } else {
