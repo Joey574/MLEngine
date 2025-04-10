@@ -2,6 +2,9 @@
 #include <unistd.h>
 #include <iostream>
 #include <vector>
+#include <atomic>
+#include <thread>
+#include <fcntl.h>
 
 #include "NeuralNetwork/NeuralNetwork.hpp"
 
@@ -19,13 +22,12 @@ struct Dataset {
     size_t cols;
     float* data;
 
-    size_t meta_idx;
+    Datasets meta_idx;
 };
 
 struct DatasetMeta {
     std::string name;
     bool exists;
-
 };
 
 struct State {
@@ -39,10 +41,9 @@ struct State {
 
     std::vector<DatasetMeta> datasetmeta;
 
+    std::atomic<size_t> save_id = 0;
+
     void Init() {
-        modelname = "";
-
-
         p_workspace = expand_path("~/.local/share/ReconSuite/MLEngine");
 
         // create / validate workspace for datasets
@@ -83,12 +84,50 @@ struct State {
         datasetmeta[2].exists = true;
     }
 
+    void SaveInit() {
+        // create state.meta file
+        int fd = open((p_models+"/"+modelname+"/state.meta").c_str(), O_WRONLY | O_APPEND | O_CREAT, 0644);
+
+        /*
+
+            Meta data, at this point all values should be set,
+            we should store data regarding which dataset was used,
+            network parameters that are set, like dimensions, loss, metric, etc.
+            
+            should also store historical data that isn't needed later, like weight init, etc.
+
+            [int32]: Dataset
+            [int32]: loss
+            [int32]: metric
+            [int32]: weight_init
+            [uint64]: dims_size
+            [variable]: dims_string
+                        
+        
+        */
+
+        std::cout << sizeof(Datasets::MNIST) << "\n";
+        std::cout << sizeof(datasetmeta.size()) << "\n";
+
+    }
+
     void Save() {
         if(!dir_exists(p_models+"/"+modelname)) {
-            std::cout << p_models+"/"+modelname << " not found\n";
+            create_dir(p_models+"/"+modelname);
         }
 
-        std::cout << p_models+"/"+modelname << " found\n";
+        std::thread t([&]() {           
+            
+            // open file for save
+            std::string filepath = p_models+"/"+modelname+"/"+std::to_string(save_id.fetch_add(1, std::memory_order_relaxed))+".model";
+            int fd = open(filepath.c_str(), O_WRONLY | O_APPEND | O_CREAT, 0644);
+
+            // write model data to save
+
+            
+        });
+
+        t.detach();
     }
 };
 

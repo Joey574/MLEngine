@@ -82,8 +82,6 @@ int main(int argc, char* argv[]) {
     
     */
 
-    std::string modelname = "";
-
     std::string dataset = "";
     std::string dims = "";
     std::string loss = "";
@@ -188,19 +186,20 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    state.Save();
 
-    NeuralNetwork model;
-    if (dir_exists(state.p_models+modelname) && modelname != "") {
-        // attempt to load provided model
+    // if (dir_exists(state.p_models+state.modelname) && state.modelname != "") {
+    //     // attempt to load provided model
 
-    } else {
-        // build new model based on passed args
-        if (dataset == "" || dims == "" || loss == "" || metric == "" || modelname == "") {
-            display_usage();
-        }
-    }
 
-    // model built, continue to train
+    // } else {
+    //     // build new model based on passed args
+    //     if (dataset == "" || dims == "" || loss == "" || metric == "" || state.modelname == "") {
+    //         display_usage();
+    //     }
+    // }
+
+    state.SaveInit();
+
+    // model built, start training
 }
 
