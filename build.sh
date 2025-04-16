@@ -15,8 +15,9 @@ MCFLAGS="-march=native -fopenmp -mavx2 -mfma -Ofast"
 
 NNDEPENDENCIES="NeuralNetwork/DotProds.cpp NeuralNetwork/Training.cpp NeuralNetwork/Utils.cpp NeuralNetwork/StaticUtils.cpp"
 DLDEPENDENCIES="DataLoader/DataLoader.cpp"
+STDEPENDENCIES="State/State.cpp State/StaticUtils.cpp"
 
-DEPENDENCIES="$NNDEPENDENCIES $DLDEPENDENCIES"
+DEPENDENCIES="$NNDEPENDENCIES $DLDEPENDENCIES $STDEPENDENCIES"
 
 # compile based on args passed
 if [ "$p_flag" = true ]; then
@@ -26,7 +27,7 @@ if [ "$p_flag" = true ]; then
 else
 
     printf "Compiling program\n"
-    g++ --static $BUILDFLAGS $MCFLAGS $DEPENDENCIES -I ./Dependencies/ main.cpp -o MLEngine
+    g++ --static $BUILDFLAGS $MCFLAGS $DEPENDENCIES -include ./Dependencies/pch.h main.cpp -o MLEngine
     strip ./MLEngine
 fi
 

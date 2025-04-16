@@ -7,8 +7,8 @@ void NeuralNetwork::initialize(std::vector<size_t> dimensions, std::vector<Activ
     m_metric.type = metric;
 
     // main initialization of all the internal goodies
-    if (dimensions.size() != activations.size()) {
-        error = "Dimensions and Activations must match in length";
+    if (dimensions.size() != activations.size()+1) {
+        error = "Dimensions and Activations must match in length-ish";
         return;
     }
 

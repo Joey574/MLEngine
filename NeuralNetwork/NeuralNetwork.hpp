@@ -1,5 +1,3 @@
-#include "../Dependencies/pch.h"
-
 #pragma once
 class NeuralNetwork {
 public:
