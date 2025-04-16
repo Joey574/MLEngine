@@ -1,5 +1,6 @@
 #include "../NeuralNetwork/NeuralNetwork.hpp"
 
+#pragma once
 struct State {
 public:
 
