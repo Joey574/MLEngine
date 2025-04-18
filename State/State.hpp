@@ -1,25 +1,27 @@
 #include "../NeuralNetwork/NeuralNetwork.hpp"
+#include "../DataLoader/DataLoader.hpp"
 
 #pragma once
 struct State {
 public:
 
     std::string modelname;
-    std::string error = "";
-    std::vector<DatasetMeta> datasetmeta;
+
+    State() : dataset(Dataset{Datasets::NONE}) {}
     
     void Init();
     void SaveInit();
 
     void Save(size_t id);
-    void Load(Dataset& dataset);
+    void Load();
 
     void Build(
         const std::string& pdims, 
         const std::string& pactvs, 
         const std::string& pmetric, 
         const std::string& ploss, 
-        const std::string& pweight
+        const std::string& pweight,
+        const std::string& data
     );
 
     void Start();
@@ -39,5 +41,5 @@ private:
     std::string p_models;
 
     NeuralNetwork* model;
-    Dataset* dataset;
+    Dataset dataset;
 };

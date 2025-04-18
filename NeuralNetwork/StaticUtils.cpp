@@ -35,13 +35,12 @@ std::vector<NeuralNetwork::ActivationFunctions> NeuralNetwork::parse_actvs(const
     return activations;
 }
 
-
 NeuralNetwork::LossMetric NeuralNetwork::parse_lm(const std::string& lm) {
     if (lm == "mae") {
         return LossMetric::mae;
     } else if (lm == "accuracy") {
         return LossMetric::accuracy;
-    } else if (lm == "one_hot") {
+    } else if (lm == "onehot") {
         return LossMetric::one_hot;
     }
 

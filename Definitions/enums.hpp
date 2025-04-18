@@ -1,5 +1,5 @@
 #pragma once
 
 enum Datasets {
-    MNIST=0, FMNIST=1, MANDLEBROT=3
+    NONE=0, MNIST, FMNIST, MANDLEBROT
 };

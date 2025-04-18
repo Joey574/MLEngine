@@ -23,8 +23,6 @@ public:
 
     NeuralNetwork() {}
 
-    std::string error = "";
-
     void initialize(
         std::vector<size_t> dimensions,
         std::vector<ActivationFunctions> activations,

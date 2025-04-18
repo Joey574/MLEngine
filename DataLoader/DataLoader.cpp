@@ -1,6 +1,5 @@
 #include "DataLoader.hpp"
 
-
 /// @brief 
 ///  Returns the passed dataset as constrained by args
 /// @param dataset 
@@ -16,27 +15,27 @@ Dataset DataLoader::LoadDataset(const std::string& dataset, void* args[]) {
         return LoadMandlebrot(args);
     }
 
-    return Dataset{};
+    return Dataset{Datasets::NONE};
 }
 
 Dataset DataLoader::LoadMNIST() {
-    Dataset mnist;
+    Dataset mnist(Datasets::MNIST);
 
     return mnist;
 }
 
 Dataset DataLoader::LoadFMNIST() {
-    Dataset fmnist;
+    Dataset fmnist(Datasets::FMNIST);
 
     return fmnist;
 }
 
 Dataset DataLoader::LoadMandlebrot(void* args[]) {
     if (args == nullptr) {
-        return Dataset{};
+        return Dataset{Datasets::NONE};
     }
+    Dataset mandlebrot(Datasets::MANDLEBROT);
 
-    Dataset mandlebrot;
     size_t num_elements = *(size_t*)args[0];
     size_t max_depth = *(size_t*)args[1];
 

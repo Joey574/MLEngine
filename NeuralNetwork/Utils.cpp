@@ -81,7 +81,8 @@ nlohmann::json NeuralNetwork::metadata() const {
     metadata["loss"] = m_loss.type;
     metadata["metric"] = m_metric.type;
     metadata["weights"] = m_weight_init;
-    metadata["dimensions"] = compact_dimensions();    
+    metadata["dimensions"] = compact_dimensions();
+    metadata["activations"] = "TODO";
 
     return metadata;
 }

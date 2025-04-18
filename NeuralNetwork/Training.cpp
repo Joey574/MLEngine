@@ -1,29 +1,24 @@
 #include "NeuralNetwork.hpp"
 
 void NeuralNetwork::initialize(std::vector<size_t> dimensions, std::vector<ActivationFunctions> activations, LossMetric loss, LossMetric metric, WeightInitialization weightInit) {
-    error = "";
     m_weight_init = weightInit;
     m_loss.type = loss;
     m_metric.type = metric;
 
     // main initialization of all the internal goodies
     if (dimensions.size() != activations.size()+1) {
-        error = "Dimensions and Activations must match in length-ish";
         return;
     }
 
     m_layers = std::vector<Layer>(dimensions.size());
     for (size_t i = 0; i < m_layers.size(); i++) {
         m_layers[i].nodes = dimensions[i];
-
     }
 
     initialize_network();
 }
 
 NeuralNetwork::History NeuralNetwork::fit(float* x_train, float* y_train, float* x_valid, float* y_valid, size_t training_elements, size_t valid_elements, size_t batch_size, size_t epochs, float learning_rate, int validation_freq, float validation_split, bool shuffle) {
-    error = "";
-    
     History history;
     auto start_time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> time;

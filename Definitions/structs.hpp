@@ -7,6 +7,8 @@ struct Dataset {
     float* data;
 
     Datasets type;
+
+    Dataset(Datasets type) : type(type) {}
 };
 
 struct DatasetMeta {
