@@ -7,7 +7,7 @@ public:
 
     std::string modelname;
 
-    State() : dataset(Dataset{Datasets::NONE}) {}
+    State() {}
     
     void Init();
     void SaveInit();

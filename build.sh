@@ -17,7 +17,7 @@ FLAGS="$flags1 $flags2"
 
 
 # .cpp dependency files
-nndependencies="NeuralNetwork/DotProds.cpp NeuralNetwork/Training.cpp NeuralNetwork/Utils.cpp NeuralNetwork/StaticUtils.cpp"
+nndependencies="NeuralNetwork/DotProds.cpp NeuralNetwork/Training.cpp NeuralNetwork/Utils.cpp NeuralNetwork/StaticUtils.cpp NeuralNetwork/Initialization.cpp"
 dldependencies="DataLoader/DataLoader.cpp"
 stdependencies="State/State.cpp State/StaticUtils.cpp"
 DEPENDENCIES="$nndependencies $dldependencies $stdependencies"

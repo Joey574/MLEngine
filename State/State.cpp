@@ -58,13 +58,13 @@ void State::Load() {
 void State::Build(const std::string& pdims, const std::string& pactvs, const std::string& pmetric, const std::string& ploss, const std::string& pweight, const std::string& data) {
     dataset = DataLoader::LoadDataset(data, nullptr);
     
-    std::vector<NeuralNetwork::ActivationFunctions> activations = NeuralNetwork::parse_actvs(pactvs);
-    std::vector<size_t> dimensions = NeuralNetwork::parse_compact(pdims);
+    std::vector<NeuralNetwork::ActivationFunctions> activations = NeuralNetwork::parseActvs(pactvs);
+    std::vector<size_t> dimensions = NeuralNetwork::parseCompact(pdims);
 
-    NeuralNetwork::LossMetric metric = NeuralNetwork::parse_lm(pmetric);
-    NeuralNetwork::LossMetric loss = NeuralNetwork::parse_lm(ploss);
+    NeuralNetwork::LossMetric metric = NeuralNetwork::parseLossMetric(pmetric);
+    NeuralNetwork::LossMetric loss = NeuralNetwork::parseLossMetric(ploss);
 
-    NeuralNetwork::WeightInitialization weight = NeuralNetwork::parse_weight(pweight);
+    NeuralNetwork::WeightInitialization weight = NeuralNetwork::parseWeight(pweight);
 
     // initialize model with provided options
     model->initialize(dimensions, activations, loss, metric, weight);
@@ -74,7 +74,7 @@ void State::Start() {
 }
 
 bool State::ModelExists() {
-    if (DirExists(p_models+modelname) && modelname != "") {
+    if (DirExists(p_models+"/"+modelname) && modelname != "") {
         return true;
     }
 

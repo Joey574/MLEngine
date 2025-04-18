@@ -7,10 +7,10 @@ public:
         none, he, normalize, xavier
     };
     enum class LossMetric {
-        none, mae, accuracy, one_hot
+        none, mae, accuracy, onehot
     };
     enum class ActivationFunctions {
-        relu, leaky_relu, elu, sigmoid, softmax
+        none, sigmoid, relu, leakyrelu, elu, softmax
     };
 
     // contains basic information about the training proccess
@@ -49,24 +49,30 @@ public:
 
     // user utils
     std::string summary() const;
-    std::string compact_dimensions() const;
-
     nlohmann::json metadata() const;
 
+    std::string compactDimensions() const;
+    std::string compactActvations() const;
+
+
     // static utils
-    static std::vector<size_t> parse_compact(const std::string& dims);
-    static std::vector<ActivationFunctions> parse_actvs(const std::string& actvs);
-    static LossMetric parse_lm(const std::string& lm);
-    static WeightInitialization parse_weight(const std::string& weight);
+    static std::vector<size_t> parseCompact(const std::string& dims);
+    static std::vector<ActivationFunctions> parseActvs(const std::string& actvs);
+    static LossMetric parseLossMetric(const std::string& lm);
+    static WeightInitialization parseWeight(const std::string& weight);
+
+    static std::string activationString(const ActivationFunctions actv);
+    static std::string weightString(const WeightInitialization w);
+    static std::string lossMetricString(const LossMetric lm);
 
 
-    ~NeuralNetwork() {
-    }
+    ~NeuralNetwork() {}
 
 private:
 
     struct Layer {
         size_t nodes;
+        ActivationFunctions actv;
         void (NeuralNetwork::* activation)(float*, float*, size_t);
         void (NeuralNetwork::* derivative)(float*, float*, size_t);
     };
@@ -133,11 +139,12 @@ private:
     void dot_prod_t_a(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
     void dot_prod_t_b(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
 
-    // utils
-    void initialize_network();
+    // initialization utils
+    void initializeNetwork();
+    void initializeWeights();
     void initialize_batch_data(size_t num_elements);
     void initialize_test_data(size_t num_elements);
-    void initialize_weights(WeightInitialization init);
+
 };
 
 /* Memory Layout

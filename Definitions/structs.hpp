@@ -9,6 +9,7 @@ struct Dataset {
     Datasets type;
 
     Dataset(Datasets type) : type(type) {}
+    Dataset() : type(Datasets::NONE) {}
 };
 
 struct DatasetMeta {

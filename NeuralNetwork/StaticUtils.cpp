@@ -1,6 +1,6 @@
 #include "NeuralNetwork.hpp"
 
-std::vector<size_t> NeuralNetwork::parse_compact(const std::string& dims) {
+std::vector<size_t> NeuralNetwork::parseCompact(const std::string& dims) {
     std::vector<size_t> dimensions;
 
     auto split = dims | std::views::split('-');
@@ -11,7 +11,7 @@ std::vector<size_t> NeuralNetwork::parse_compact(const std::string& dims) {
 
     return dimensions;
 }
-std::vector<NeuralNetwork::ActivationFunctions> NeuralNetwork::parse_actvs(const std::string& actvs) {
+std::vector<NeuralNetwork::ActivationFunctions> NeuralNetwork::parseActvs(const std::string& actvs) {
     std::vector<ActivationFunctions> activations;
 
     auto split = actvs | std::views::split('-');
@@ -23,7 +23,7 @@ std::vector<NeuralNetwork::ActivationFunctions> NeuralNetwork::parse_actvs(const
         } else if (token == "relu") {
             activations.push_back(ActivationFunctions::relu);
         } else if (token == "leakyrelu") {
-            activations.push_back(ActivationFunctions::leaky_relu);
+            activations.push_back(ActivationFunctions::leakyrelu);
         } else if (token == "elu") {
             activations.push_back(ActivationFunctions::elu);
         } else if (token == "softmax") {
@@ -31,23 +31,21 @@ std::vector<NeuralNetwork::ActivationFunctions> NeuralNetwork::parse_actvs(const
         }
     }
 
-
     return activations;
 }
 
-NeuralNetwork::LossMetric NeuralNetwork::parse_lm(const std::string& lm) {
+NeuralNetwork::LossMetric NeuralNetwork::parseLossMetric(const std::string& lm) {
     if (lm == "mae") {
         return LossMetric::mae;
     } else if (lm == "accuracy") {
         return LossMetric::accuracy;
     } else if (lm == "onehot") {
-        return LossMetric::one_hot;
+        return LossMetric::onehot;
     }
 
     return LossMetric::none;
 }
-
-NeuralNetwork::WeightInitialization NeuralNetwork::parse_weight(const std::string& weight) {
+NeuralNetwork::WeightInitialization NeuralNetwork::parseWeight(const std::string& weight) {
     if (weight == "he") {
         return WeightInitialization::he;
     } else if (weight == "normalize") {
@@ -57,4 +55,45 @@ NeuralNetwork::WeightInitialization NeuralNetwork::parse_weight(const std::strin
     }
 
     return WeightInitialization::none;
+}
+
+std::string NeuralNetwork::activationString(const ActivationFunctions actv) {
+    switch (actv) {
+        case ActivationFunctions::sigmoid:
+            return "sigmoid";
+        case ActivationFunctions::relu:
+            return "relu";
+        case ActivationFunctions::leakyrelu:
+            return "leakyrelu";
+        case ActivationFunctions::elu:
+            return "elu";
+        case ActivationFunctions::softmax:
+            return "softmax";
+        default:
+            return "none";
+    }
+}
+std::string NeuralNetwork::weightString(const WeightInitialization w) {
+    switch (w) {
+        case WeightInitialization::he:
+            return "he";
+        case WeightInitialization::normalize:
+            return "normalize";
+        case WeightInitialization::xavier:
+            return "xavier";
+        default:
+            return "none";
+    }
+}
+std::string NeuralNetwork::lossMetricString(const LossMetric lm) {
+    switch (lm) {
+        case LossMetric::accuracy:
+            return "accuracy";
+        case LossMetric::mae:
+            return "mae";
+        case LossMetric::onehot:
+            return "onehot";
+        default:
+            return "none";
+    }
 }
