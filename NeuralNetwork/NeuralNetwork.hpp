@@ -13,17 +13,9 @@ public:
         none, sigmoid, relu, leakyrelu, elu, softmax
     };
 
-    // contains basic information about the training proccess
-    struct History {
-        std::chrono::duration<double, std::milli> train_time;
-        std::chrono::duration<double, std::milli> epoch_time;
-        std::vector<double> metric_history;
-    };
-
-
     NeuralNetwork() {}
 
-    void initialize(
+    void Initialize(
         std::vector<size_t> dimensions,
         std::vector<ActivationFunctions> activations,
         LossMetric loss,
@@ -31,13 +23,8 @@ public:
         WeightInitialization weightInit
     );
 
-    History fit(
-        float* x_train,
-        float* y_train,
-        float* x_valid,
-        float* y_valid,
-        size_t training_elements,
-        size_t valid_elements,
+    nlohmann::json Fit(
+        const Dataset& dataset,
         size_t batch_size,
         size_t epochs,
         float learning_rate,
@@ -48,23 +35,25 @@ public:
 
 
     // user utils
-    std::string summary() const;
-    nlohmann::json metadata() const;
+    std::string Summary() const;
+    nlohmann::json Metadata() const;
 
-    std::string compactDimensions() const;
-    std::string compactActvations() const;
+    std::string CompactDimensions() const;
+    std::string CompactActvations() const;
+
+    int Load(int fd);
+    void Save(int fd) const;
 
 
     // static utils
-    static std::vector<size_t> parseCompact(const std::string& dims);
-    static std::vector<ActivationFunctions> parseActvs(const std::string& actvs);
-    static LossMetric parseLossMetric(const std::string& lm);
-    static WeightInitialization parseWeight(const std::string& weight);
+    static std::vector<size_t> ParseCompact(const std::string& dims);
+    static std::vector<ActivationFunctions> ParseActvs(const std::string& actvs);
+    static LossMetric ParseLossMetric(const std::string& lm);
+    static WeightInitialization ParseWeight(const std::string& weight);
 
-    static std::string activationString(const ActivationFunctions actv);
-    static std::string weightString(const WeightInitialization w);
-    static std::string lossMetricString(const LossMetric lm);
-
+    static std::string ActivationString(const ActivationFunctions actv);
+    static std::string WeightString(const WeightInitialization w);
+    static std::string LossMetricString(const LossMetric lm);
 
     ~NeuralNetwork() {}
 
@@ -119,14 +108,14 @@ private:
     Loss m_loss;
     WeightInitialization m_weight_init;
 
-    void forward_prop(
+    void ForwardProp(
         float* x_data,
         float* result_data,
         size_t activation_size,
         size_t num_elements
     );
 
-    void back_prop(
+    void BackProp(
         float* x_data,
         float* y_data,
         float learning_rate,
@@ -140,10 +129,15 @@ private:
     void dot_prod_t_b(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
 
     // initialization utils
-    void initializeNetwork();
-    void initializeWeights();
-    void initialize_batch_data(size_t num_elements);
-    void initialize_test_data(size_t num_elements);
+    void InitializeNetwork();
+    void InitializeWeights();
+    void InitializeBatchData(size_t num_elements);
+    void InitializeTestData(size_t num_elements);
+
+    // static private utils
+    static void StoreStart(nlohmann::json& history);
+    static void StoreEnd(nlohmann::json& history, std::chrono::nanoseconds duration);
+
 
 };
 

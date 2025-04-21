@@ -68,6 +68,7 @@
         "stop_token": "cpp",
         "thread": "cpp",
         "valarray": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "set": "cpp"
     }
 }

@@ -1,6 +1,6 @@
 #include "NeuralNetwork.hpp"
 
-std::vector<size_t> NeuralNetwork::parseCompact(const std::string& dims) {
+std::vector<size_t> NeuralNetwork::ParseCompact(const std::string& dims) {
     std::vector<size_t> dimensions;
 
     auto split = dims | std::views::split('-');
@@ -11,7 +11,7 @@ std::vector<size_t> NeuralNetwork::parseCompact(const std::string& dims) {
 
     return dimensions;
 }
-std::vector<NeuralNetwork::ActivationFunctions> NeuralNetwork::parseActvs(const std::string& actvs) {
+std::vector<NeuralNetwork::ActivationFunctions> NeuralNetwork::ParseActvs(const std::string& actvs) {
     std::vector<ActivationFunctions> activations;
 
     auto split = actvs | std::views::split('-');
@@ -34,7 +34,7 @@ std::vector<NeuralNetwork::ActivationFunctions> NeuralNetwork::parseActvs(const 
     return activations;
 }
 
-NeuralNetwork::LossMetric NeuralNetwork::parseLossMetric(const std::string& lm) {
+NeuralNetwork::LossMetric NeuralNetwork::ParseLossMetric(const std::string& lm) {
     if (lm == "mae") {
         return LossMetric::mae;
     } else if (lm == "accuracy") {
@@ -45,7 +45,7 @@ NeuralNetwork::LossMetric NeuralNetwork::parseLossMetric(const std::string& lm) 
 
     return LossMetric::none;
 }
-NeuralNetwork::WeightInitialization NeuralNetwork::parseWeight(const std::string& weight) {
+NeuralNetwork::WeightInitialization NeuralNetwork::ParseWeight(const std::string& weight) {
     if (weight == "he") {
         return WeightInitialization::he;
     } else if (weight == "normalize") {
@@ -57,7 +57,7 @@ NeuralNetwork::WeightInitialization NeuralNetwork::parseWeight(const std::string
     return WeightInitialization::none;
 }
 
-std::string NeuralNetwork::activationString(const ActivationFunctions actv) {
+std::string NeuralNetwork::ActivationString(const ActivationFunctions actv) {
     switch (actv) {
         case ActivationFunctions::sigmoid:
             return "sigmoid";
@@ -73,7 +73,7 @@ std::string NeuralNetwork::activationString(const ActivationFunctions actv) {
             return "none";
     }
 }
-std::string NeuralNetwork::weightString(const WeightInitialization w) {
+std::string NeuralNetwork::WeightString(const WeightInitialization w) {
     switch (w) {
         case WeightInitialization::he:
             return "he";
@@ -85,7 +85,7 @@ std::string NeuralNetwork::weightString(const WeightInitialization w) {
             return "none";
     }
 }
-std::string NeuralNetwork::lossMetricString(const LossMetric lm) {
+std::string NeuralNetwork::LossMetricString(const LossMetric lm) {
     switch (lm) {
         case LossMetric::accuracy:
             return "accuracy";
@@ -96,4 +96,42 @@ std::string NeuralNetwork::lossMetricString(const LossMetric lm) {
         default:
             return "none";
     }
+}
+
+void NeuralNetwork::StoreStart(nlohmann::json& history) {
+    auto now = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
+    auto local = std::chrono::zoned_time{std::chrono::current_zone(), now};
+    history["Start"] = std::format("{:%F %T}", local);
+}
+
+void NeuralNetwork::StoreEnd(nlohmann::json& history, std::chrono::nanoseconds duration) {
+    // store train time
+    {
+        using namespace std::chrono;
+
+        auto hour = duration_cast<hours>(duration);
+        duration -= hour;
+        auto minute = duration_cast<minutes>(duration);
+        duration -= minute;
+        auto second = duration_cast<seconds>(duration);
+        duration -= second;
+        auto ms = duration_cast<milliseconds>(duration);
+
+        std::string fdur;
+        if (hour.count() > 0) {
+            fdur = std::format("{}h {}m {}s", hour.count(), minute.count(), second.count());
+        } else if (minute.count() > 0) {
+            fdur = std::format("{}m {}s {}ms", minute.count(), second.count(), ms.count());        
+        } else if (second.count() > 0) {
+            fdur = std::format("{}s {}ms", second.count(), ms.count());
+        } else {
+            fdur = std::format("{}ms", ms.count());
+        }
+        history["Train Time"] = fdur;
+    }
+
+    // store time training completed
+    auto now = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
+    auto local = std::chrono::zoned_time{std::chrono::current_zone(), now};
+    history["Finish"] = std::format("{:%F %T}", local);
 }

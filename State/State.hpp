@@ -24,7 +24,13 @@ public:
         const std::string& data
     );
 
-    void Start();
+    void Start(
+        size_t batchsize, 
+        size_t epochs, 
+        float learningrate, 
+        int validfreq, 
+        float validsplit
+    );
 
     // static utils
     static std::string ExpandPath(const std::string& path);

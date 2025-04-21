@@ -1,6 +1,6 @@
 #include "NeuralNetwork.hpp"
 
-void NeuralNetwork::initialize(std::vector<size_t> dimensions, std::vector<ActivationFunctions> activations, LossMetric loss, LossMetric metric, WeightInitialization weightInit) {
+void NeuralNetwork::Initialize(std::vector<size_t> dimensions, std::vector<ActivationFunctions> activations, LossMetric loss, LossMetric metric, WeightInitialization weightInit) {
     m_weight_init = weightInit;
     m_loss.type = loss;
     m_metric.type = metric;
@@ -23,13 +23,13 @@ void NeuralNetwork::initialize(std::vector<size_t> dimensions, std::vector<Activ
     }
 
     // main initialization of all the internal goodies
-    initializeNetwork();
+    InitializeNetwork();
 
     // set the weights
-    initializeWeights();
+    InitializeWeights();
 }
 
-void NeuralNetwork::initializeNetwork() {
+void NeuralNetwork::InitializeNetwork() {
     m_network_size = 0;
     m_weights_size = 0;
     m_biases_size = 0;
@@ -44,7 +44,7 @@ void NeuralNetwork::initializeNetwork() {
     m_network = (float*)aligned_alloc(64, m_network_size*sizeof(float));
     m_biases = m_network + m_weights_size;
 }
-void NeuralNetwork::initialize_batch_data(size_t num_elements) {
+void NeuralNetwork::InitializeBatchData(size_t num_elements) {
     m_batch_activation_size = 0;
 
     for (size_t i = 0; i < m_layers.size(); i++) {
@@ -61,7 +61,7 @@ void NeuralNetwork::initialize_batch_data(size_t num_elements) {
     m_d_weights = &m_d_total[m_batch_activation_size];
 	m_d_biases = &m_d_weights[m_weights_size];
 }
-void NeuralNetwork::initialize_test_data(size_t num_elements) {
+void NeuralNetwork::InitializeTestData(size_t num_elements) {
     m_test_activation_size = 0;
 
     for (size_t i = 0; i < m_layers.size(); i++) {
@@ -74,8 +74,7 @@ void NeuralNetwork::initialize_test_data(size_t num_elements) {
     m_test_activation = &m_test_data[m_test_activation_size];
 }
 
-
-void NeuralNetwork::initializeWeights() {
+void NeuralNetwork::InitializeWeights() {
     float lowerRand;
     float upperRand;
     size_t idx = 0;
@@ -126,6 +125,7 @@ void NeuralNetwork::initializeWeights() {
             break;
 
         default:
-            std::cerr << "no weight initialization set\n";
+            // no weight initialization has been set, zero the network
+            memset(m_network, 0, m_network_size*sizeof(float));
     }
 }

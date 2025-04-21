@@ -17,5 +17,8 @@
 #include <fcntl.h>
 #include <fstream>
 #include <random>
+#include <format>
+#include <dirent.h>
+#include <cctype>
 
 #include "../Definitions/data.hpp"

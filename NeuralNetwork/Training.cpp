@@ -1,13 +1,13 @@
 #include "NeuralNetwork.hpp"
 
-NeuralNetwork::History NeuralNetwork::fit(float* x_train, float* y_train, float* x_valid, float* y_valid, size_t training_elements, size_t valid_elements, size_t batch_size, size_t epochs, float learning_rate, int validation_freq, float validation_split, bool shuffle) {
-    History history;
-    auto start_time = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> time;
+nlohmann::json NeuralNetwork::Fit(const Dataset& dataset, size_t batch_size, size_t epochs, float learning_rate, int validation_freq, float validation_split, bool shuffle) {
+	auto fitstart = std::chrono::high_resolution_clock::now();
+    
+	nlohmann::json history;
+	StoreStart(history);
 
-    // TODO data preprocess
-
-    const size_t iterations = training_elements / batch_size;
+	const size_t iterations = 100;
+    //const size_t iterations = training_elements / batch_size;
     // initialize batch and test pointers to match batch size
 
     for (size_t e = 0; e < epochs; e++) {
@@ -21,19 +21,24 @@ NeuralNetwork::History NeuralNetwork::fit(float* x_train, float* y_train, float*
             // will require different values for constructing indexes
             // pretty sure we just need to flip the matrix but getting data would be more difficult :/
             // might be best to create a block big enough for the batch, copy in, then transpose there
-            // would avoid modifying originally passed data
-            float* x = &x_train[(i * batch_size) * 0];
-            float* y = &y_train[(i * batch_size) * 0];
 
-            forward_prop(x, m_batch_data, m_batch_activation_size, batch_size);
+            // would avoid modifying originally passed data
+            //float* x = &x_train[(i * batch_size) * 0];
+            //float* y = &y_train[(i * batch_size) * 0];
+
+            //forward_prop(x, m_batch_data, m_batch_activation_size, batch_size);
             //back_prop(x, y, learning_rate, batch_size);
         }
     }
 
-    return history;
+	auto traintime = std::chrono::high_resolution_clock::now() - fitstart;
+	history["Train Time"] = std::format("{:%Hh %Mm %Ss}", traintime);
+	StoreEnd(history, traintime);
+
+	return history;
 }
 
-void NeuralNetwork::forward_prop(float* x_data, float* result_data, size_t activation_size, size_t num_elements) {
+void NeuralNetwork::ForwardProp(float* x_data, float* result_data, size_t activation_size, size_t num_elements) {
     size_t weight_idx = 0;
     size_t bias_idx = 0;
 
@@ -69,7 +74,7 @@ void NeuralNetwork::forward_prop(float* x_data, float* result_data, size_t activ
         output_idx += m_layers[i+1].nodes * num_elements;
     }
 }
-void NeuralNetwork::back_prop(float* x_data, float* y_data, float learning_rate, size_t num_elements) {
+void NeuralNetwork::BackProp(float* x_data, float* y_data, float learning_rate, size_t num_elements) {
     // adjust learning rate tp factor in number of elements
     const float factor = learning_rate / (float)num_elements;
     const __m256 _factor = _mm256_set1_ps(factor);

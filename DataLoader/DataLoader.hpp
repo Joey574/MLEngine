@@ -6,5 +6,4 @@ public:
     static Dataset LoadMNIST();
     static Dataset LoadFMNIST();
     static Dataset LoadMandlebrot(void* args[]);
-
 };

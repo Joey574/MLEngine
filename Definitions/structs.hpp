@@ -7,8 +7,9 @@ struct Dataset {
     float* data;
 
     Datasets type;
+    std::string name;
 
-    Dataset(Datasets type) : type(type) {}
+    Dataset(Datasets type, std::string name) : type(type), name(name) {}
     Dataset() : type(Datasets::NONE) {}
 };
 

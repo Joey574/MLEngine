@@ -66,5 +66,5 @@ int main(int argc, char* argv[]) {
     state.SaveInit();
 
     // model built, start training
-    state.Start();
+    state.Start(batch_size, epochs, learning_rate, validation_freq, validation_split);
 }
