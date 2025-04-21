@@ -46,7 +46,6 @@ int main(int argc, char* argv[]) {
 
     CLI11_PARSE(app, argc, argv);
 
-
     if (state.ModelExists()) {
         std::cout << "Loading existing model\n";
         state.Load();
@@ -66,5 +65,7 @@ int main(int argc, char* argv[]) {
     state.SaveInit();
 
     // model built, start training
+    std::cout << "Training model...\n";
     state.Start(batch_size, epochs, learning_rate, validation_freq, validation_split);
+    state.Save();
 }

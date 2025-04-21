@@ -1,8 +1,7 @@
 #include "State.hpp"
 
 void State::Init() {
-    NeuralNetwork t = NeuralNetwork();
-    model = &t;
+    model = new NeuralNetwork();
     
     p_workspace = ExpandPath("~/.local/share/ReconSuite/MLEngine");
 
@@ -37,19 +36,20 @@ void State::SaveInit() {
     file.close();
 }
 
-void State::Save(size_t id) {
-    std::thread t([&id, this]() {
-        
-        // open file for save
-        std::string filepath = p_models+"/"+modelname+"/"+std::to_string(id)+".model";
-        int fd = open(filepath.c_str(), O_WRONLY | O_APPEND | O_CREAT, 0644);
+void State::Save() {
+    int id = MostRecentSave() + 1;
 
-        // write model data to save
-        model->Save(fd);
-        close(fd);        
-    });
+    // open file for save
+    std::string filepath = p_models+"/"+modelname+"/"+std::to_string(id)+".model";
+    int fd = open(filepath.c_str(), O_WRONLY | O_TRUNC | O_CREAT, 0644);
 
-    t.detach();
+    // write model data to save
+    int err = model->Save(fd);
+    close(fd);
+
+    if (err) {
+        std::cerr << "Failed to save model\n";
+    }
 }
 void State::Load() {
     // load state.meta file
@@ -57,29 +57,30 @@ void State::Load() {
     nlohmann::json metadata = nlohmann::json::parse(f);
     std::string weight = metadata["weights"];
 
-    // find the most recent model save
-    DIR* dir;
-    dirent* ent;
-    std::string file;
-    std::string directory = p_models+"/"+modelname;
-    if ((dir = opendir(directory.c_str())) != nullptr) {
-        while ((ent = readdir(dir)) != nullptr) {
-            std::string f(ent->d_name);
+    // get the most recent save and format as a file
+    int mrs = MostRecentSave();
+    std::string file = p_models+"/"+modelname+"/"+std::to_string(mrs)+".model";
 
-            if (!f.ends_with(".model")) {
-                continue;
-            }
-        }
-        closedir(dir);
+    if (mrs != -1) {
+        weight = "none";
     }
 
     Build(metadata["dimensions"], metadata["activations"], metadata["metric"], metadata["loss"], weight, metadata["dataset"]);
 
     if (weight == "none") {
+        std::cout << "Loading parameters from file (" << file.substr(file.find_last_of('/')+1) << ")\n";
         int fd = open(file.c_str(), O_RDONLY, 0644);
-        model->Load(fd);
+        int err = model->Load(fd, NeuralNetwork::ParseWeight(metadata["weights"]));
         close(fd);
-    }  
+
+        if (err) {
+            // build the model again
+            std::cerr << "Failed to load parameters, rebuilding model\n";
+            Build(metadata["dimensions"], metadata["activations"], metadata["metric"], metadata["loss"], metadata["weights"], metadata["dataset"]);
+        }
+    } else {
+        std::cout << "No save found, rebuilding model\n";
+    }
 }
 
 void State::Build(const std::string& pdims, const std::string& pactvs, const std::string& pmetric, const std::string& ploss, const std::string& pweight, const std::string& data) {
@@ -99,12 +100,26 @@ void State::Build(const std::string& pdims, const std::string& pactvs, const std
 void State::Start(size_t batchsize, size_t epochs, float learningrate, int validfreq, float validsplit) {
     nlohmann::json history = model->Fit(dataset, batchsize, epochs, learningrate, validfreq, validsplit, true);
 
-    // model has finished training, parse existing history data if any, and append new training history
-    std::cout << history.dump(4) << "\n";
+    // model has finished training, parse existing history data, if any, and append new training history
+    std::ifstream ifile(p_models+"/"+modelname+"/history.meta");
+    nlohmann::json storedhistory;
 
-    std::fstream file(p_models+"/"+modelname+"/history.meta");
-    
-    file.close();   
+    // try to parse out existing history data
+    try {
+        storedhistory = nlohmann::json::parse(ifile);
+    } catch (nlohmann::json::parse_error& e) {
+        storedhistory = nlohmann::json::array();
+    }
+    ifile.close();
+
+    // append new history and dump to string
+    storedhistory.push_back(history);
+    std::string dump = storedhistory.dump(4) + "\n";
+
+    // store new history data in file
+    std::ofstream ofile(p_models+"/"+modelname+"/history.meta", std::ios::trunc);
+    ofile.write(dump.c_str(), dump.size());
+    ofile.close();
 }
 
 bool State::ModelExists() {
@@ -113,4 +128,35 @@ bool State::ModelExists() {
     }
 
     return false;
+}
+int State::MostRecentSave() {
+    // find the most recent model save
+    DIR* dir;
+    dirent* ent;
+    int highest = -1;
+
+    std::string file;
+    std::string directory = p_models+"/"+modelname+"/";
+
+    if ((dir = opendir(directory.c_str())) != nullptr) {
+        while ((ent = readdir(dir)) != nullptr) {
+            std::string f(ent->d_name);
+ 
+            if (!f.ends_with(".model")) {
+                continue;
+            }
+ 
+            std::string sstr = f.substr(0, f.find_last_of('.'));
+ 
+            if (!sstr.empty() && std::all_of(sstr.begin(), sstr.end(), ::isdigit)) {
+                int t = std::atoi(sstr.c_str());
+                if (t > highest) {
+                    highest = t;
+                }
+            }
+        }
+        closedir(dir);
+    }
+
+    return highest;
 }

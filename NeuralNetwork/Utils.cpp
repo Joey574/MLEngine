@@ -41,11 +41,20 @@ nlohmann::json NeuralNetwork::Metadata() const {
     return metadata;
 }
 
-void NeuralNetwork::Save(int fd) const {
-    write(fd, m_network, m_network_size*sizeof(float));
+int NeuralNetwork::Save(int fd) const {
+    ssize_t n = write(fd, m_network, m_network_size*sizeof(float));
+    if (n != m_network_size*sizeof(float)) {
+        return 1;
+    }
+    return 0;
 }
 
-int NeuralNetwork::Load(int fd) {
-    read(fd, m_network, m_network_size*sizeof(float));
+int NeuralNetwork::Load(int fd, WeightInitialization trueweight) {
+    m_weight_init = trueweight;
+
+    ssize_t n = read(fd, m_network, m_network_size*sizeof(float));
+    if (n != m_network_size*sizeof(float)) {
+        return 1;
+    }
     return 0;
 }

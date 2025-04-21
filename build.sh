@@ -13,7 +13,7 @@ while getopts ":pd" opt; do
 done
 
 # all the flags
-flagsopt="-std=c++20 -O3 -ftree-vectorize -flto=auto -fomit-frame-pointer -funroll-loops -DNDEBUG -fipa-pta -fdevirtualize-speculatively -march=native -fopenmp -mavx2 -mfma -Ofast -frandom-seed=123"
+flagsopt="-std=c++20 -O3 -ftree-vectorize -flto=auto -fomit-frame-pointer -funroll-loops -DNDEBUG -fipa-pta -fdevirtualize-speculatively -march=native -fopenmp -mavx2 -mfma -Ofast -frandom-seed=123 -Wno-unused-result"
 flagsdeb="-std=c++20 -O0 -g -DDEBUG -fno-omit-frame-pointer -fno-lto -mavx2 -mfma -fopenmp"
 
 
@@ -45,9 +45,18 @@ if [ "$p_flag" = true ]; then
 else
 
     printf "Compiling program (%s)\n" $build
-    ccache g++ --static $FLAGS $DEPENDENCIES -include ./Dependencies/pch.h main.cpp -o MLEngine
+    # compiling phase
+    for src in $DEPENDENCIES main.cpp; do
+        ccache g++ -c $FLAGS "$src" -include ./Dependencies/pch.h -o "${src%.cpp}.o"
+    done
+
+    # link phase
+    ccache g++ --static $(find . -name "*.o") -o MLEngine
     strip ./MLEngine
 
+    # cleanup object files
+    find . -name "*.o" -delete
+    
     file_size=$(stat -c %s "MLEngine")
 fi
 

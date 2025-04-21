@@ -41,8 +41,8 @@ public:
     std::string CompactDimensions() const;
     std::string CompactActvations() const;
 
-    int Load(int fd);
-    void Save(int fd) const;
+    int Load(int fd, WeightInitialization trueweight);
+    int Save(int fd) const;
 
 
     // static utils
@@ -55,7 +55,12 @@ public:
     static std::string WeightString(const WeightInitialization w);
     static std::string LossMetricString(const LossMetric lm);
 
-    ~NeuralNetwork() {}
+    ~NeuralNetwork() {
+        std::cout << "Deconstructing\n";
+        if (m_network) { free(m_network); }
+        if (m_batch_data) { free(m_batch_data); }
+        if (m_test_data) { free(m_test_data); }
+    }
 
 private:
 
@@ -135,7 +140,7 @@ private:
     void InitializeTestData(size_t num_elements);
 
     // static private utils
-    static void StoreStart(nlohmann::json& history);
+    static void StoreStart(nlohmann::json& history, size_t e, size_t bs, float lr);
     static void StoreEnd(nlohmann::json& history, std::chrono::nanoseconds duration);
 
 

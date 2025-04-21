@@ -12,7 +12,7 @@ public:
     void Init();
     void SaveInit();
 
-    void Save(size_t id);
+    void Save();
     void Load();
 
     void Build(
@@ -41,6 +41,8 @@ public:
     bool ModelExists();
         
 private:
+
+    int MostRecentSave();
 
     std::string p_workspace;
     std::string p_datasets;

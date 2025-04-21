@@ -98,12 +98,15 @@ std::string NeuralNetwork::LossMetricString(const LossMetric lm) {
     }
 }
 
-void NeuralNetwork::StoreStart(nlohmann::json& history) {
+void NeuralNetwork::StoreStart(nlohmann::json& history, size_t e, size_t bs, float lr) {
     auto now = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
     auto local = std::chrono::zoned_time{std::chrono::current_zone(), now};
     history["Start"] = std::format("{:%F %T}", local);
-}
 
+    history["Epochs"] = e;
+    history["Batch Size"] = bs;
+    history["Learning Rate"] = lr;
+}
 void NeuralNetwork::StoreEnd(nlohmann::json& history, std::chrono::nanoseconds duration) {
     // store train time
     {

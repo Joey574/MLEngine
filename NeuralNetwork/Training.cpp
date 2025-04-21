@@ -4,32 +4,9 @@ nlohmann::json NeuralNetwork::Fit(const Dataset& dataset, size_t batch_size, siz
 	auto fitstart = std::chrono::high_resolution_clock::now();
     
 	nlohmann::json history;
-	StoreStart(history);
+	StoreStart(history, epochs, batch_size, learning_rate);
 
-	const size_t iterations = 100;
-    //const size_t iterations = training_elements / batch_size;
-    // initialize batch and test pointers to match batch size
-
-    for (size_t e = 0; e < epochs; e++) {
-        auto epoch_start = std::chrono::high_resolution_clock::now();
-
-        for (size_t i = 0; i < iterations; i++) {
-            
-            // adjust pointer to relevent data
-            // TODO complex math bs
-            // figure out how to structure matrix to avoid dotprod_t_b
-            // will require different values for constructing indexes
-            // pretty sure we just need to flip the matrix but getting data would be more difficult :/
-            // might be best to create a block big enough for the batch, copy in, then transpose there
-
-            // would avoid modifying originally passed data
-            //float* x = &x_train[(i * batch_size) * 0];
-            //float* y = &y_train[(i * batch_size) * 0];
-
-            //forward_prop(x, m_batch_data, m_batch_activation_size, batch_size);
-            //back_prop(x, y, learning_rate, batch_size);
-        }
-    }
+	// TODO hard training stuff
 
 	auto traintime = std::chrono::high_resolution_clock::now() - fitstart;
 	history["Train Time"] = std::format("{:%Hh %Mm %Ss}", traintime);
