@@ -6,12 +6,16 @@ nlohmann::json NeuralNetwork::Fit(const Dataset& dataset, size_t batch_size, siz
 	nlohmann::json history;
 	StoreStart(history, epochs, batch_size, learning_rate);
 
-	// TODO hard training stuff
+	const size_t iterations = (dataset.trainDataRows + 1) / batch_size;
 
-	auto traintime = std::chrono::high_resolution_clock::now() - fitstart;
-	history["Train Time"] = std::format("{:%Hh %Mm %Ss}", traintime);
-	StoreEnd(history, traintime);
+	for (size_t e = 0; e < epochs; e++) {
 
+		for (size_t i = 0; i < iterations; i++) {
+
+		}
+	}
+	
+	StoreEnd(history, fitstart);
 	return history;
 }
 
@@ -38,7 +42,7 @@ void NeuralNetwork::ForwardProp(float* x_data, float* result_data, size_t activa
             std::fill(&output_start[r * num_elements], &output_start[r*num_elements+num_elements], bias_start[r]);
         }
 
-        dot_prod(weights_start, input_start, output_start, m_layers[i+1].nodes, m_layers[i].nodes, m_layers[i].nodes, num_elements, false);
+        DotProd(weights_start, input_start, output_start, m_layers[i+1].nodes, m_layers[i].nodes, m_layers[i].nodes, num_elements, false);
 
         // apply activation
         (this->*m_layers[i].activation)(output_start, &output_start[activation_size], m_layers[i+1].nodes*num_elements);
@@ -81,7 +85,7 @@ void NeuralNetwork::BackProp(float* x_data, float* y_data, float learning_rate, 
 		float* cur_d_total = &m_d_total[d_total_idx];
 		float* prev_d_total = &m_d_total[d_total_idx - (m_layers[i].nodes * num_elements)];
 
-		dot_prod_t_a(weight, cur_d_total, prev_d_total, m_layers[i + 1].nodes, m_layers[i].nodes, m_layers[i+1].nodes, num_elements, true);
+		DotProdTA(weight, cur_d_total, prev_d_total, m_layers[i + 1].nodes, m_layers[i].nodes, m_layers[i+1].nodes, num_elements, true);
 
 		(this->*m_layers[i - 1].derivative)(prev_total, prev_d_total, m_layers[i].nodes * num_elements);
 
@@ -105,8 +109,8 @@ void NeuralNetwork::BackProp(float* x_data, float* y_data, float learning_rate, 
 		float* d_bias = &m_d_biases[d_bias_idx];
 
 		i == 0 ?
-			dot_prod(d_total, prev_activ, d_weights, m_layers[i+1].nodes, num_elements, num_elements, m_layers[i].nodes, true) :
-			dot_prod_t_b(d_total, prev_activ, d_weights, m_layers[i+1].nodes, num_elements, m_layers[i].nodes, num_elements, true);
+			DotProd(d_total, prev_activ, d_weights, m_layers[i+1].nodes, num_elements, num_elements, m_layers[i].nodes, true) :
+			DotProdTB(d_total, prev_activ, d_weights, m_layers[i+1].nodes, num_elements, m_layers[i].nodes, num_elements, true);
 
 		// compute d_biases
 		#pragma omp parallel for

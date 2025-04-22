@@ -129,9 +129,9 @@ private:
 
 
     // dot prods
-    void dot_prod(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
-    void dot_prod_t_a(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
-    void dot_prod_t_b(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
+    void DotProd(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
+    void DotProdTA(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
+    void DotProdTB(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
 
     // initialization utils
     void InitializeNetwork();
@@ -141,7 +141,7 @@ private:
 
     // static private utils
     static void StoreStart(nlohmann::json& history, size_t e, size_t bs, float lr);
-    static void StoreEnd(nlohmann::json& history, std::chrono::nanoseconds duration);
+    static void StoreEnd(nlohmann::json& history, std::chrono::system_clock::time_point starttime);
 
 
 };

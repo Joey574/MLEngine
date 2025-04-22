@@ -84,7 +84,9 @@ void State::Load() {
 }
 
 void State::Build(const std::string& pdims, const std::string& pactvs, const std::string& pmetric, const std::string& ploss, const std::string& pweight, const std::string& data) {
-    dataset = DataLoader::LoadDataset(data, nullptr);
+    if (dataset.type == Datasets::NONE) {
+        dataset = DataLoader::LoadDataset(data, nullptr);
+    }
     
     std::vector<NeuralNetwork::ActivationFunctions> activations = NeuralNetwork::ParseActvs(pactvs);
     std::vector<size_t> dimensions = NeuralNetwork::ParseCompact(pdims);

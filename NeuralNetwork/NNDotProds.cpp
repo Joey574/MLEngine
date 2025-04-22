@@ -2,7 +2,7 @@
 
 /// @brief Computes the dot prod between a and b and stores in c,
 /// @brief if clear is passed data already in c will be cleared during computation
-void NeuralNetwork::dot_prod(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear) {
+void NeuralNetwork::DotProd(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear) {
     #pragma omp parallel for
     for (size_t i = 0; i < a_r; i++) {
         size_t j = 0;
@@ -46,7 +46,7 @@ void NeuralNetwork::dot_prod(float* a, float* b, float* c, size_t a_r, size_t a_
 /// @brief Computes the dot prod between a transpose and b and stores in c,
 /// @brief a will be transposed during computation and will not be modified,
 /// @brief if clear is passed data already in c will be cleared during computation
-void NeuralNetwork::dot_prod_t_a(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear) {
+void NeuralNetwork::DotProdTA(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear) {
     #pragma omp parallel for
 	for (size_t i = 0; i < a_c; i++) {
         size_t j = 0;
@@ -92,7 +92,7 @@ void NeuralNetwork::dot_prod_t_a(float* a, float* b, float* c, size_t a_r, size_
 /// @brief Computes the dot prod between a and b transpose and stores in c,
 /// @brief b will be transposed during computation and will not be modified,
 /// @brief if clear is passed data already in c will be cleared during computation
-void NeuralNetwork::dot_prod_t_b(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear) {
+void NeuralNetwork::DotProdTB(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear) {
     #pragma omp parallel for
 	for (size_t i = 0; i < a_r; i++) {
 		for (size_t k = 0; k < b_r; k++) {

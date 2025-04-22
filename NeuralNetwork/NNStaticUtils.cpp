@@ -107,18 +107,21 @@ void NeuralNetwork::StoreStart(nlohmann::json& history, size_t e, size_t bs, flo
     history["Batch Size"] = bs;
     history["Learning Rate"] = lr;
 }
-void NeuralNetwork::StoreEnd(nlohmann::json& history, std::chrono::nanoseconds duration) {
+void NeuralNetwork::StoreEnd(nlohmann::json& history, std::chrono::system_clock::time_point starttime) {
+    auto traintime = std::chrono::high_resolution_clock::now() - starttime;
+	history["Train Time"] = std::format("{:%Hh %Mm %Ss}", traintime);
+
     // store train time
     {
         using namespace std::chrono;
 
-        auto hour = duration_cast<hours>(duration);
-        duration -= hour;
-        auto minute = duration_cast<minutes>(duration);
-        duration -= minute;
-        auto second = duration_cast<seconds>(duration);
-        duration -= second;
-        auto ms = duration_cast<milliseconds>(duration);
+        auto hour = duration_cast<hours>(traintime);
+        traintime -= hour;
+        auto minute = duration_cast<minutes>(traintime);
+        traintime -= minute;
+        auto second = duration_cast<seconds>(traintime);
+        traintime -= second;
+        auto ms = duration_cast<milliseconds>(traintime);
 
         std::string fdur;
         if (hour.count() > 0) {

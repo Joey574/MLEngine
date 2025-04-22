@@ -18,7 +18,7 @@ flagsdeb="-std=c++20 -O0 -g -DDEBUG -fno-omit-frame-pointer -fno-lto -mavx2 -mfm
 
 
 # .cpp dependency files
-nndependencies="NeuralNetwork/DotProds.cpp NeuralNetwork/Training.cpp NeuralNetwork/Utils.cpp NeuralNetwork/StaticUtils.cpp NeuralNetwork/Initialization.cpp"
+nndependencies="NeuralNetwork/NNActivations.cpp NeuralNetwork/NNDerivatives.cpp NeuralNetwork/NNDotProds.cpp NeuralNetwork/NNTraining.cpp NeuralNetwork/NNUtils.cpp NeuralNetwork/NNStaticUtils.cpp NeuralNetwork/NNInitializations.cpp"
 dldependencies="DataLoader/DataLoader.cpp"
 stdependencies="State/State.cpp State/StaticUtils.cpp"
 DEPENDENCIES="$nndependencies $dldependencies $stdependencies"
