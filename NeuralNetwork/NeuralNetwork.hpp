@@ -7,7 +7,7 @@ public:
         none, he, normalize, xavier
     };
     enum class LossMetric {
-        none, mae, accuracy, onehot
+        none, mae, mse, accuracy, onehot
     };
     enum class ActivationFunctions {
         none, sigmoid, relu, leakyrelu, elu, softmax
@@ -127,6 +127,29 @@ private:
         size_t num_elements
     );
 
+    // activation functions
+    void Sigmoid(float* x, float* y, size_t n);
+    void ReLU(float* x, float* y, size_t n);
+    void LeakyReLU(float* x, float* y, size_t n);
+    void ELU(float* x, float* y, size_t n);
+    void Softmax(float* x, float* y, size_t n);
+
+    // activation derivatives
+    void SigmoidDerivative(float* x, float* y, size_t n);
+    void ReLUDerivative(float* x, float* y, size_t n);
+    void LeakyReLUDerivative(float* x, float* y, size_t n);
+    void ELUDerivative(float* x, float* y, size_t n);
+
+    // loss functions
+    void MaeLoss(float* x, float* y, float* c, size_t rows, size_t cols);
+    void MseLoss(float* x, float* y, float* c, size_t rows, size_t cols);
+    void OneHotLoss(float* x, float* y, float* c, size_t rows, size_t cols);
+
+    // metric functions
+    float MaeScore(float* x, float* y, size_t rows, size_t cols);
+    float MseScore(float* x, float* y, size_t rows, size_t cols);
+    float AccuracyScore(float* x, float* y, size_t rows, size_t cols);
+
 
     // dot prods
     void DotProd(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
@@ -138,12 +161,12 @@ private:
     void InitializeWeights();
     void InitializeBatchData(size_t num_elements);
     void InitializeTestData(size_t num_elements);
+    void InitializeLoss(LossMetric loss);
+    void InitializeMetric(LossMetric metric);
 
     // static private utils
     static void StoreStart(nlohmann::json& history, size_t e, size_t bs, float lr);
     static void StoreEnd(nlohmann::json& history, std::chrono::system_clock::time_point starttime);
-
-
 };
 
 /* Memory Layout

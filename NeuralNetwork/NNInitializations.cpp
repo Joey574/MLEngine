@@ -44,36 +44,6 @@ void NeuralNetwork::InitializeNetwork() {
     m_network = (float*)aligned_alloc(64, m_network_size*sizeof(float));
     m_biases = m_network + m_weights_size;
 }
-void NeuralNetwork::InitializeBatchData(size_t num_elements) {
-    m_batch_activation_size = 0;
-
-    for (size_t i = 0; i < m_layers.size(); i++) {
-        m_batch_activation_size += m_layers[i].nodes * num_elements;
-    }
-
-    m_batch_data_size = (3 * m_batch_activation_size) + m_network_size;
-
-    m_batch_data = (float*)aligned_alloc(64, m_batch_data_size*sizeof(float));
-    m_activation = &m_batch_data[m_batch_activation_size];
-
-    // set derivative pointers
-    m_d_total = &m_activation[m_batch_activation_size];
-    m_d_weights = &m_d_total[m_batch_activation_size];
-	m_d_biases = &m_d_weights[m_weights_size];
-}
-void NeuralNetwork::InitializeTestData(size_t num_elements) {
-    m_test_activation_size = 0;
-
-    for (size_t i = 0; i < m_layers.size(); i++) {
-        m_test_activation_size += m_layers[i].nodes * num_elements;
-    }
-
-    m_test_data_size = m_test_activation_size * 2;
-
-    m_test_data = (float*)aligned_alloc(64, m_test_data_size*sizeof(float));
-    m_test_activation = &m_test_data[m_test_activation_size];
-}
-
 void NeuralNetwork::InitializeWeights() {
     float lowerRand;
     float upperRand;
@@ -127,5 +97,73 @@ void NeuralNetwork::InitializeWeights() {
         default:
             // no weight initialization has been set, zero the network
             memset(m_network, 0, m_network_size*sizeof(float));
+    }
+}
+void NeuralNetwork::InitializeBatchData(size_t num_elements) {
+    m_batch_activation_size = 0;
+
+    for (size_t i = 0; i < m_layers.size(); i++) {
+        m_batch_activation_size += m_layers[i].nodes * num_elements;
+    }
+
+    m_batch_data_size = (3 * m_batch_activation_size) + m_network_size;
+
+    m_batch_data = (float*)aligned_alloc(64, m_batch_data_size*sizeof(float));
+    m_activation = &m_batch_data[m_batch_activation_size];
+
+    // set derivative pointers
+    m_d_total = &m_activation[m_batch_activation_size];
+    m_d_weights = &m_d_total[m_batch_activation_size];
+	m_d_biases = &m_d_weights[m_weights_size];
+}
+void NeuralNetwork::InitializeTestData(size_t num_elements) {
+    m_test_activation_size = 0;
+
+    for (size_t i = 0; i < m_layers.size(); i++) {
+        m_test_activation_size += m_layers[i].nodes * num_elements;
+    }
+
+    m_test_data_size = m_test_activation_size * 2;
+
+    m_test_data = (float*)aligned_alloc(64, m_test_data_size*sizeof(float));
+    m_test_activation = &m_test_data[m_test_activation_size];
+}
+
+void NeuralNetwork::InitializeLoss(LossMetric loss) {
+    m_loss.type = loss;
+
+    switch(loss) {
+        case LossMetric::mae:
+            m_loss.loss = &NeuralNetwork::MaeLoss;
+            break;
+        case LossMetric::mse:
+            m_loss.loss = &NeuralNetwork::MseLoss;
+            break;
+        case LossMetric::onehot:
+            m_loss.loss = &NeuralNetwork::OneHotLoss;
+            break;
+        default:
+            m_loss.type = LossMetric::none;
+            m_loss.loss = nullptr;
+            break;
+    }
+}
+void NeuralNetwork::InitializeMetric(LossMetric metric) {
+    m_metric.type = metric;
+
+    switch (metric) {
+        case LossMetric::mae:
+            m_metric.metric = &NeuralNetwork::MaeScore;
+            break;
+        case LossMetric::mse:
+            m_metric.metric = &NeuralNetwork::MseScore;
+            break;
+        case LossMetric::accuracy:
+            m_metric.metric = &NeuralNetwork::AccuracyScore;
+            break;
+        default:
+            m_metric.type = LossMetric::none;
+            m_metric.metric = nullptr;
+            break;
     }
 }
