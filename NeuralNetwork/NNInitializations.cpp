@@ -1,6 +1,6 @@
 #include "NeuralNetwork.hpp"
 
-void NeuralNetwork::Initialize(std::vector<size_t> dimensions, std::vector<ActivationFunctions> activations, LossMetric loss, LossMetric metric, WeightInitialization weightInit) {
+void NeuralNetwork::Initialize(const std::vector<size_t>& dimensions, const std::vector<ActivationFunctions>& activations, LossMetric loss, LossMetric metric, WeightInitialization weightInit) {
     m_weight_init = weightInit;
     m_loss.type = loss;
     m_metric.type = metric;
@@ -16,11 +16,7 @@ void NeuralNetwork::Initialize(std::vector<size_t> dimensions, std::vector<Activ
         m_layers[i].nodes = dimensions[i];
     }
 
-    // set activations
-    m_layers[0].actv = ActivationFunctions::none;
-    for (size_t i = 1; i < m_layers.size(); i++) {
-        m_layers[i].actv = activations[i-1];
-    }
+    AssignActvFunctions(activations);
 
     // main initialization of all the internal goodies
     InitializeNetwork();
@@ -134,13 +130,13 @@ void NeuralNetwork::InitializeLoss(LossMetric loss) {
 
     switch(loss) {
         case LossMetric::mae:
-            m_loss.loss = &NeuralNetwork::MaeLoss;
+            m_loss.loss = &MaeLoss;
             break;
         case LossMetric::mse:
-            m_loss.loss = &NeuralNetwork::MseLoss;
+            m_loss.loss = &MseLoss;
             break;
         case LossMetric::onehot:
-            m_loss.loss = &NeuralNetwork::OneHotLoss;
+            m_loss.loss = &OneHotLoss;
             break;
         default:
             m_loss.type = LossMetric::none;

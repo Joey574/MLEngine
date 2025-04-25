@@ -14,10 +14,10 @@ std::string NeuralNetwork::CompactActvations() const {
     std::string compact = "";
 
     for (size_t i = 1; i < m_layers.size() - 1; i++) {
-        compact += ActivationString(m_layers[i].actv).append("-");
+        compact += ActivationString(m_layers[i].actvtype).append("-");
     }
 
-    compact += ActivationString(m_layers.back().actv);
+    compact += ActivationString(m_layers.back().actvtype);
     return compact;
 }
 
@@ -56,4 +56,37 @@ int NeuralNetwork::Load(int fd, WeightInitialization trueweight) {
         return 1;
     }
     return 0;
+}
+
+void NeuralNetwork::AssignActvFunctions(const std::vector<ActivationFunctions>& actvs) {
+    m_layers[0].actvtype = ActivationFunctions::none;
+
+    for (size_t i = 1; i < m_layers.size(); i++) {
+        m_layers[i].actvtype = actvs[i-1];
+
+        switch (actvs[i-1]) {
+            case ActivationFunctions::sigmoid:
+                m_layers[i].activation = &Sigmoid;
+                m_layers[i].derivative = &SigmoidDerivative;
+                break;
+            case ActivationFunctions::relu:
+                m_layers[i].activation = &ReLU;
+                m_layers[i].derivative = &ReLUDerivative;
+                break;
+            case ActivationFunctions::leakyrelu:
+                m_layers[i].activation = &LeakyReLU;
+                m_layers[i].derivative = &LeakyReLUDerivative;
+                break;
+            case ActivationFunctions::elu:
+                m_layers[i].activation = &ELU;
+                m_layers[i].derivative = &ELUDerivative;
+                break;
+            case ActivationFunctions::softmax:
+                m_layers[i].activation = &Softmax;
+                m_layers[i].derivative = nullptr;
+                break;
+            default:
+                break;
+        }
+    }
 }

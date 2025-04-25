@@ -17,7 +17,8 @@ flagsopt="\
     -std=c++20 -march=native -mtune=native \
     -flto=auto -fomit-frame-pointer -funroll-loops -fipa-pta -fdevirtualize-speculatively \
     -O3 -Ofast \
-    -fopenmp -mavx2 -mfma -mprefer-vector-width=256 \
+    -fopenmp \
+    -mavx2 -mfma -mprefer-vector-width=256 \
     -Wno-unused-result \
     -DNDEBUG \
     -falign-functions=32 -falign-loops=32 \
@@ -69,7 +70,7 @@ else
     done
 
     # link phase
-    ccache g++ --static $(find . -name "*.o") -o MLEngine
+    ccache g++ --static -static-libgcc -static-libstdc++ $FLAGS $(find . -name "*.o") -o MLEngine
     strip ./MLEngine
 
     # cleanup object files

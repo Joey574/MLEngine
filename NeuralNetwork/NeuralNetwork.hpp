@@ -16,8 +16,8 @@ public:
     NeuralNetwork() {}
 
     void Initialize(
-        std::vector<size_t> dimensions,
-        std::vector<ActivationFunctions> activations,
+        const std::vector<size_t>& dimensions,
+        const std::vector<ActivationFunctions>& activations,
         LossMetric loss,
         LossMetric metric,
         WeightInitialization weightInit
@@ -66,7 +66,7 @@ private:
 
     struct Layer {
         size_t nodes;
-        ActivationFunctions actv;
+        ActivationFunctions actvtype;
         void (*activation)(float*, float*, size_t);
         void (*derivative)(float*, float*, size_t);
     };
@@ -127,6 +127,8 @@ private:
         size_t num_elements
     );
 
+    void AssignActvFunctions(const std::vector<ActivationFunctions>& actvs);
+
     // activation functions
     static void Sigmoid(float* x, float* y, size_t n);
     static void ReLU(float* x, float* y, size_t n);
@@ -134,7 +136,7 @@ private:
     static void ELU(float* x, float* y, size_t n);
     static void Softmax(float* x, float* y, size_t n);
 
-    // activation derivatives
+    // derivatives functions
     static void SigmoidDerivative(float* x, float* y, size_t n);
     static void ReLUDerivative(float* x, float* y, size_t n);
     static void LeakyReLUDerivative(float* x, float* y, size_t n);
@@ -149,7 +151,6 @@ private:
     static float MaeScore(float* x, float* y, size_t rows, size_t cols);
     static float MseScore(float* x, float* y, size_t rows, size_t cols);
     static float AccuracyScore(float* x, float* y, size_t rows, size_t cols);
-
 
     // dot prods
     static void DotProd(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
@@ -168,7 +169,6 @@ private:
     // static private utils
     static void FitStart(nlohmann::json& history, size_t e, size_t bs, float lr);
     static void FitEnd(nlohmann::json& history, std::chrono::system_clock::time_point starttime);
-
     static void EpochStart(nlohmann::json& history);
     static void EpochEnd(nlohmann::json& history);
 };

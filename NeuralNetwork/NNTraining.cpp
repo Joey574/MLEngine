@@ -11,7 +11,7 @@ nlohmann::json NeuralNetwork::Fit(const Dataset& dataset, size_t batch_size, siz
 	for (size_t e = 0; e < epochs; e++) {
 
 		for (size_t i = 0; i < iterations; i++) {
-
+			
 		}
 	}
 	
