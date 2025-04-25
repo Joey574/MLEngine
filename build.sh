@@ -39,7 +39,7 @@ nndependencies="\
     NeuralNetwork/NNUtils.cpp"
 
 dldependencies="DataLoader/DataLoader.cpp"
-stdependencies="State/State.cpp State/StaticUtils.cpp"
+stdependencies="State/State.cpp State/StaticUtils.cpp State/StateUtils.cpp"
 DEPENDENCIES="$nndependencies $dldependencies $stdependencies"
 
 declare file_size
@@ -70,7 +70,7 @@ else
     done
 
     # link phase
-    ccache g++ --static -static-libgcc -static-libstdc++ $FLAGS $(find . -name "*.o") -o MLEngine
+    ccache g++ -static-libgcc -static-libstdc++ -Wl,-Bdynamic -lgomp -Wl,-Bstatic -lstdc++ -lpthread -lm -ldl $FLAGS $(find . -name "*.o") -o MLEngine
     strip ./MLEngine
 
     # cleanup object files

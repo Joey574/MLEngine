@@ -2,14 +2,18 @@
 #include "State/State.hpp"
 
 void displaymeta(State& state) {
-    std::cout << state.ModelMetadata() << "\n";
+    std::cout << state.ModelMetadata(state.modelname) << "\n";
+    exit(0);
+}
+void displayhistory(State& state) {
+    std::cout << state.ModelHistory(state.modelname) << "\n";
+    exit(0);
+}
+void displaymodels(State& state) {
+    std::cout << state.AvailableModels() << "\n";
     exit(0);
 }
 
-void displayhistory(State& state) {
-    std::cout << state.ModelHistory() << "\n";
-    exit(0);
-}
 
 int main(int argc, char* argv[]) {
     State state;
@@ -35,6 +39,7 @@ int main(int argc, char* argv[]) {
     // flags
     bool listhistory = false;
     bool listmeta = false;
+    bool listmodels = false;
 
     CLI::App app{"MLEngine (0.0)\nTrain and save various neural networks"};
 
@@ -61,25 +66,27 @@ int main(int argc, char* argv[]) {
 
     flags->add_flag("--meta", listmeta, "list model metadata");
     flags->add_flag("--history", listhistory, "list model history");
+    flags->add_flag("--models", listmodels, "lists available models");
 
     CLI11_PARSE(app, argc, argv);
 
-    if (listmeta) {
-        if (state.ModelExists()) {
+    if (listmodels) {
+        displaymodels(state);
+    }
+
+    if (listmeta || listhistory) {
+        if (!state.ModelExists()) {
+            std::cerr << "Model not found: " << state.modelname << "\n";
+            exit(1);
+        }
+
+        if (listmeta) {
             displaymeta(state);
         }
 
-        std::cerr << "Model not found: " << state.modelname << "\n";
-        exit(1);
-    }
-
-    if (listhistory) {
-        if (state.ModelExists()) {
+        if (listhistory) {
             displayhistory(state);
-        }
-
-        std::cerr << "Model not found: " << state.modelname << "\n";
-        exit(1);
+        }        
     }
 
     if (state.ModelExists()) {

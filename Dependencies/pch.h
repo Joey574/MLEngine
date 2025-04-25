@@ -19,5 +19,6 @@
 #include <format>
 #include <dirent.h>
 #include <cctype>
+#include <math.h>
 
 #include "../Definitions/data.hpp"

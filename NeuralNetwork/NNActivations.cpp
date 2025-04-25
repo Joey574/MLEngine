@@ -1,11 +1,17 @@
 #include "NeuralNetwork.hpp"
 
 void NeuralNetwork::Sigmoid(float* x, float* y, size_t n) {
+    #pragma omp parallel for
+    for (size_t i = 0; i <= n-8; i += 8) {
+        const __m256 _one = _mm256_set1_ps(1.0f);
+        const __m256 _none = _mm256_set1_ps(-1.0f);
 
+        const __m256 _x = _mm256_load_ps(&x[i]);
+        const __m256 _a = _mm256_mul_ps(_x, _none);
+    }
 }
 
 void NeuralNetwork::ReLU(float* x, float* y, size_t n) {
-
     #pragma omp parallel for
     for (size_t i = 0; i <= n - 8; i += 8) {
         const __m256 _x = _mm256_load_ps(&x[i]);
@@ -18,7 +24,6 @@ void NeuralNetwork::ReLU(float* x, float* y, size_t n) {
 }
 
 void NeuralNetwork::LeakyReLU(float* x, float* y, size_t n) {
-
     #pragma omp parallel for
     for (size_t i = 0; i <= n - 8; i += 8) {
         const __m256 _x = _mm256_load_ps(&x[i]);

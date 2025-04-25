@@ -156,7 +156,7 @@ private:
     static void DotProd(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
     static void DotProdTA(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
     static void DotProdTB(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
-    static float Sum256(__m256 x);
+    static float Sum256(const __m256& x);
 
     // initialization utils
     void InitializeNetwork();
