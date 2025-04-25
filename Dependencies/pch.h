@@ -1,4 +1,3 @@
-#pragma once
 #include "json.hpp"
 #include "CLI11.hpp"
 

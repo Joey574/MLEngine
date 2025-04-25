@@ -67,18 +67,18 @@ private:
     struct Layer {
         size_t nodes;
         ActivationFunctions actv;
-        void (NeuralNetwork::* activation)(float*, float*, size_t);
-        void (NeuralNetwork::* derivative)(float*, float*, size_t);
+        void (*activation)(float*, float*, size_t);
+        void (*derivative)(float*, float*, size_t);
     };
 
     struct Metric {
         LossMetric type;
-        float (NeuralNetwork::* metric)(float*, float*, size_t, size_t);
+        float (*metric)(float*, float*, size_t, size_t);
     };
 
     struct Loss {
         LossMetric type;
-        void (NeuralNetwork::* loss)(float*, float*, float*, size_t, size_t);
+        void (*loss)(float*, float*, float*, size_t, size_t);
     };
 
     // pointers to various memory blocks that contain all the data
@@ -128,33 +128,34 @@ private:
     );
 
     // activation functions
-    void Sigmoid(float* x, float* y, size_t n);
-    void ReLU(float* x, float* y, size_t n);
-    void LeakyReLU(float* x, float* y, size_t n);
-    void ELU(float* x, float* y, size_t n);
-    void Softmax(float* x, float* y, size_t n);
+    static void Sigmoid(float* x, float* y, size_t n);
+    static void ReLU(float* x, float* y, size_t n);
+    static void LeakyReLU(float* x, float* y, size_t n);
+    static void ELU(float* x, float* y, size_t n);
+    static void Softmax(float* x, float* y, size_t n);
 
     // activation derivatives
-    void SigmoidDerivative(float* x, float* y, size_t n);
-    void ReLUDerivative(float* x, float* y, size_t n);
-    void LeakyReLUDerivative(float* x, float* y, size_t n);
-    void ELUDerivative(float* x, float* y, size_t n);
+    static void SigmoidDerivative(float* x, float* y, size_t n);
+    static void ReLUDerivative(float* x, float* y, size_t n);
+    static void LeakyReLUDerivative(float* x, float* y, size_t n);
+    static void ELUDerivative(float* x, float* y, size_t n);
 
     // loss functions
-    void MaeLoss(float* x, float* y, float* c, size_t rows, size_t cols);
-    void MseLoss(float* x, float* y, float* c, size_t rows, size_t cols);
-    void OneHotLoss(float* x, float* y, float* c, size_t rows, size_t cols);
+    static void MaeLoss(float* x, float* y, float* c, size_t rows, size_t cols);
+    static void MseLoss(float* x, float* y, float* c, size_t rows, size_t cols);
+    static void OneHotLoss(float* x, float* y, float* c, size_t rows, size_t cols);
 
     // metric functions
-    float MaeScore(float* x, float* y, size_t rows, size_t cols);
-    float MseScore(float* x, float* y, size_t rows, size_t cols);
-    float AccuracyScore(float* x, float* y, size_t rows, size_t cols);
+    static float MaeScore(float* x, float* y, size_t rows, size_t cols);
+    static float MseScore(float* x, float* y, size_t rows, size_t cols);
+    static float AccuracyScore(float* x, float* y, size_t rows, size_t cols);
 
 
     // dot prods
-    void DotProd(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
-    void DotProdTA(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
-    void DotProdTB(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
+    static void DotProd(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
+    static void DotProdTA(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
+    static void DotProdTB(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
+    static float Sum256(__m256 x);
 
     // initialization utils
     void InitializeNetwork();
@@ -165,8 +166,11 @@ private:
     void InitializeMetric(LossMetric metric);
 
     // static private utils
-    static void StoreStart(nlohmann::json& history, size_t e, size_t bs, float lr);
-    static void StoreEnd(nlohmann::json& history, std::chrono::system_clock::time_point starttime);
+    static void FitStart(nlohmann::json& history, size_t e, size_t bs, float lr);
+    static void FitEnd(nlohmann::json& history, std::chrono::system_clock::time_point starttime);
+
+    static void EpochStart(nlohmann::json& history);
+    static void EpochEnd(nlohmann::json& history);
 };
 
 /* Memory Layout

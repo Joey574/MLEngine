@@ -32,6 +32,9 @@ public:
         float validsplit
     );
 
+    std::string ModelMetadata() const;
+    std::string ModelHistory() const;
+
     // static utils
     static std::string ExpandPath(const std::string& path);
     static bool CreateDir(const std::string& path);

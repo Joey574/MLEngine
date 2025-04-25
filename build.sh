@@ -13,12 +13,30 @@ while getopts ":pd" opt; do
 done
 
 # all the flags
-flagsopt="-std=c++20 -O3 -ftree-vectorize -flto=auto -fomit-frame-pointer -funroll-loops -DNDEBUG -fipa-pta -fdevirtualize-speculatively -march=native -fopenmp -mavx2 -mfma -Ofast -frandom-seed=123 -Wno-unused-result"
+flagsopt="\
+    -std=c++20 -march=native -mtune=native \
+    -flto=auto -fomit-frame-pointer -funroll-loops -fipa-pta -fdevirtualize-speculatively \
+    -O3 -Ofast \
+    -fopenmp -mavx2 -mfma -mprefer-vector-width=256 \
+    -Wno-unused-result \
+    -DNDEBUG \
+    -falign-functions=32 -falign-loops=32 \
+    -fno-math-errno -fassociative-math -freciprocal-math -fno-signed-zeros -fno-trapping-math \
+    -fmodulo-sched -fmodulo-sched-allow-regmoves \
+    -fpredictive-commoning -fhoist-adjacent-loads \
+    -ftree-loop-distribution -ftree-loop-vectorize -ftree-slp-vectorize -ftree-vectorize \
+    -frandom-seed=123 \
+"
 flagsdeb="-std=c++20 -O0 -g -DDEBUG -fno-omit-frame-pointer -fno-lto -mavx2 -mfma -fopenmp"
 
-
 # .cpp dependency files
-nndependencies="NeuralNetwork/NNActivations.cpp NeuralNetwork/NNDerivatives.cpp NeuralNetwork/NNDotProds.cpp NeuralNetwork/NNTraining.cpp NeuralNetwork/NNUtils.cpp NeuralNetwork/NNStaticUtils.cpp NeuralNetwork/NNInitializations.cpp"
+nndependencies="\
+    NeuralNetwork/NNActivations.cpp NeuralNetwork/NNDerivatives.cpp \
+    NeuralNetwork/NNDotProds.cpp NeuralNetwork/NNInitializations.cpp \
+    NeuralNetwork/NNLogging.cpp NeuralNetwork/NNMetrics.cpp \
+    NeuralNetwork/NNStaticUtils.cpp NeuralNetwork/NNTraining.cpp \
+    NeuralNetwork/NNUtils.cpp"
+
 dldependencies="DataLoader/DataLoader.cpp"
 stdependencies="State/State.cpp State/StaticUtils.cpp"
 DEPENDENCIES="$nndependencies $dldependencies $stdependencies"
@@ -39,7 +57,7 @@ fi
 if [ "$p_flag" = true ]; then
 
     printf "Compiling pch (%s)\n" $build
-    ccache g++ -x c++-header $FLAGS -Wno-pragma-once-outside-header ./Dependencies/pch.h -o ./Dependencies/pch.h.gch
+    ccache g++ -x c++-header $FLAGS -Wno-pragmas ./Dependencies/pch.h -o ./Dependencies/pch.h.gch
 
     file_size=$(stat -c %s "./Dependencies/pch.h.gch")
 else

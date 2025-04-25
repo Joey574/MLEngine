@@ -48,7 +48,6 @@ int NeuralNetwork::Save(int fd) const {
     }
     return 0;
 }
-
 int NeuralNetwork::Load(int fd, WeightInitialization trueweight) {
     m_weight_init = trueweight;
 

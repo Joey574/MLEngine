@@ -4,7 +4,7 @@ nlohmann::json NeuralNetwork::Fit(const Dataset& dataset, size_t batch_size, siz
 	auto fitstart = std::chrono::high_resolution_clock::now();
     
 	nlohmann::json history;
-	StoreStart(history, epochs, batch_size, learning_rate);
+	FitStart(history, epochs, batch_size, learning_rate);
 
 	const size_t iterations = (dataset.trainDataRows + 1) / batch_size;
 
@@ -15,7 +15,7 @@ nlohmann::json NeuralNetwork::Fit(const Dataset& dataset, size_t batch_size, siz
 		}
 	}
 	
-	StoreEnd(history, fitstart);
+	FitEnd(history, fitstart);
 	return history;
 }
 
@@ -45,7 +45,7 @@ void NeuralNetwork::ForwardProp(float* x_data, float* result_data, size_t activa
         DotProd(weights_start, input_start, output_start, m_layers[i+1].nodes, m_layers[i].nodes, m_layers[i].nodes, num_elements, false);
 
         // apply activation
-        (this->*m_layers[i].activation)(output_start, &output_start[activation_size], m_layers[i+1].nodes*num_elements);
+        (*m_layers[i].activation)(output_start, &output_start[activation_size], m_layers[i+1].nodes*num_elements);
 
         // update pointers
         weight_idx += m_layers[i].nodes * m_layers[i+1].nodes;
@@ -71,7 +71,7 @@ void NeuralNetwork::BackProp(float* x_data, float* y_data, float learning_rate, 
 	float* last_d_total = &m_d_total[m_batch_activation_size - (m_layers.back().nodes * num_elements)];
 
 	// compute loss
-	(this->*m_loss.loss)(last_activation, y_data, last_d_total, m_layers.back().nodes, num_elements);
+	(*m_loss.loss)(last_activation, y_data, last_d_total, m_layers.back().nodes, num_elements);
 
 	int weight_idx = m_weights_size - (m_layers.back().nodes * m_layers[m_layers.size() - 2].nodes);
 	int d_total_idx = m_batch_activation_size - (m_layers.back().nodes * num_elements);
@@ -87,7 +87,7 @@ void NeuralNetwork::BackProp(float* x_data, float* y_data, float learning_rate, 
 
 		DotProdTA(weight, cur_d_total, prev_d_total, m_layers[i + 1].nodes, m_layers[i].nodes, m_layers[i+1].nodes, num_elements, true);
 
-		(this->*m_layers[i - 1].derivative)(prev_total, prev_d_total, m_layers[i].nodes * num_elements);
+		(*m_layers[i - 1].derivative)(prev_total, prev_d_total, m_layers[i].nodes * num_elements);
 
 		d_total_idx -= m_layers[i].nodes * num_elements;
 		weight_idx -= m_layers[i].nodes * m_layers[i-1].nodes;

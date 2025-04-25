@@ -124,6 +124,27 @@ void State::Start(size_t batchsize, size_t epochs, float learningrate, int valid
     ofile.close();
 }
 
+std::string State::ModelMetadata() const {
+    if (!FileExists(p_models+"/"+modelname+"/state.meta")) {
+        return "{}";
+    }
+
+    std::ifstream f(p_models+"/"+modelname+"/state.meta");
+
+    nlohmann::json meta = nlohmann::json::parse(f);
+    return meta.dump(4);
+}
+std::string State::ModelHistory() const {
+    if (!FileExists(p_models+"/"+modelname+"/history.meta")) {
+        return "[]";
+    }
+
+    std::ifstream f(p_models+"/"+modelname+"/history.meta");
+
+    nlohmann::json history = nlohmann::json::parse(f);
+    return history.dump(4);
+}
+
 bool State::ModelExists() {
     if (DirExists(p_models+"/"+modelname) && modelname != "") {
         return true;

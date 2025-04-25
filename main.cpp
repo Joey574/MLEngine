@@ -1,6 +1,16 @@
 #include "NeuralNetwork/NeuralNetwork.hpp"
 #include "State/State.hpp"
 
+void displaymeta(State& state) {
+    std::cout << state.ModelMetadata() << "\n";
+    exit(0);
+}
+
+void displayhistory(State& state) {
+    std::cout << state.ModelHistory() << "\n";
+    exit(0);
+}
+
 int main(int argc, char* argv[]) {
     State state;
     state.Init();
@@ -22,11 +32,16 @@ int main(int argc, char* argv[]) {
     int validation_freq = -1;
     float validation_split = 0.0f;
 
+    // flags
+    bool listhistory = false;
+    bool listmeta = false;
+
     CLI::App app{"MLEngine (0.0)\nTrain and save various neural networks"};
 
     app.get_formatter()->right_column_width(200);
     auto model_options = app.add_option_group("Model Options", "How the model is built");
     auto training_options = app.add_option_group("Training Options", "How the model will be trained");
+    auto flags = app.add_option_group("Flags", "displays information, does not train model");
 
     model_options->add_option("-m,--model", state.modelname, "loads model from disk (if model doesn't exist new model will be made)");
     model_options->add_option("-d,--dataset", dataset, "trains on the given dataset");
@@ -44,7 +59,28 @@ int main(int argc, char* argv[]) {
     training_options->add_option("-f,--vfreq", validation_freq, "how often to validate the model in epochs")->default_val(-1);
     training_options->add_option("-s,--vsplit", validation_split, "percentage (0-1) of dataset to use as validation set if one isn't provided")->default_val(0.0);
 
+    flags->add_flag("--meta", listmeta, "list model metadata");
+    flags->add_flag("--history", listhistory, "list model history");
+
     CLI11_PARSE(app, argc, argv);
+
+    if (listmeta) {
+        if (state.ModelExists()) {
+            displaymeta(state);
+        }
+
+        std::cerr << "Model not found: " << state.modelname << "\n";
+        exit(1);
+    }
+
+    if (listhistory) {
+        if (state.ModelExists()) {
+            displayhistory(state);
+        }
+
+        std::cerr << "Model not found: " << state.modelname << "\n";
+        exit(1);
+    }
 
     if (state.ModelExists()) {
         std::cout << "Loading existing model\n";
