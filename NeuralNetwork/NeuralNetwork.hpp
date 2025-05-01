@@ -1,6 +1,11 @@
 #pragma once
+class TestNetwork;
+
 class NeuralNetwork {
+    friend class TestNetwork;
+
 public:
+
 
     // basic types for different user options
     enum class WeightInitialization {
@@ -114,15 +119,15 @@ private:
     WeightInitialization m_weight_init;
 
     void ForwardProp(
-        float* x_data,
-        float* result_data,
+        float* __restrict x_data,
+        float* __restrict result_data,
         size_t activation_size,
         size_t num_elements
     );
 
     void BackProp(
-        float* x_data,
-        float* y_data,
+        float* __restrict x_data,
+        float* __restrict y_data,
         float learning_rate,
         size_t num_elements
     );
@@ -130,33 +135,36 @@ private:
     void AssignActvFunctions(const std::vector<ActivationFunctions>& actvs);
 
     // activation functions
-    static void Sigmoid(float* x, float* y, size_t n);
-    static void ReLU(float* x, float* y, size_t n);
-    static void LeakyReLU(float* x, float* y, size_t n);
-    static void ELU(float* x, float* y, size_t n);
-    static void Softmax(float* x, float* y, size_t n);
+    static void Sigmoid(float* __restrict x, float* __restrict y, size_t n);
+    static void ReLU(float* __restrict x, float* __restrict y, size_t n);
+    static void LeakyReLU(float* __restrict x, float* __restrict y, size_t n);
+    static void ELU(float* __restrict x, float* __restrict y, size_t n);
+    static void Softmax(float* __restrict x, float* __restrict y, size_t n);
 
     // derivatives functions
-    static void SigmoidDerivative(float* x, float* y, size_t n);
-    static void ReLUDerivative(float* x, float* y, size_t n);
-    static void LeakyReLUDerivative(float* x, float* y, size_t n);
-    static void ELUDerivative(float* x, float* y, size_t n);
+    static void SigmoidDerivative(float* __restrict x, float* __restrict y, size_t n);
+    static void ReLUDerivative(float* __restrict x, float* __restrict y, size_t n);
+    static void LeakyReLUDerivative(float* __restrict x, float* __restrict y, size_t n);
+    static void ELUDerivative(float* __restrict x, float* __restrict y, size_t n);
 
     // loss functions
-    static void MaeLoss(float* x, float* y, float* c, size_t rows, size_t cols);
-    static void MseLoss(float* x, float* y, float* c, size_t rows, size_t cols);
-    static void OneHotLoss(float* x, float* y, float* c, size_t rows, size_t cols);
+    static void MaeLoss(float* __restrict x, float* __restrict y, float* __restrict c, size_t rows, size_t cols);
+    static void MseLoss(float* __restrict x, float* __restrict y, float* __restrict c, size_t rows, size_t cols);
+    static void OneHotLoss(float* __restrict x, float* __restrict y, float* __restrict c, size_t rows, size_t cols);
 
     // metric functions
-    static float MaeScore(float* x, float* y, size_t rows, size_t cols);
-    static float MseScore(float* x, float* y, size_t rows, size_t cols);
-    static float AccuracyScore(float* x, float* y, size_t rows, size_t cols);
+    static float MaeScore(float* __restrict x, float* __restrict y, size_t rows, size_t cols);
+    static float MseScore(float* __restrict x, float* __restrict y, size_t rows, size_t cols);
+    static float AccuracyScore(float* __restrict x, float* __restrict y, size_t rows, size_t cols);
 
     // dot prods
-    static void DotProd(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
-    static void DotProdTA(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
-    static void DotProdTB(float* a, float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
-    static float Sum256(const __m256& x);
+    static void DotProd(float* __restrict a, float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
+    static void DotProdTA(float* __restrict a, float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
+    static void DotProdTB(float* __restrict a, float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
+
+    // simd utils
+    static float Sum256(__m256 x);
+    static __m256 Exp256(__m256 x);
 
     // initialization utils
     void InitializeNetwork();
@@ -191,7 +199,7 @@ private:
 
 	 ____|m_batch_data|____
 	|					   |
-	|		  total		   |  <- m_batch_activation_size
+	|		 total		   |  <- m_batch_activation_size
 	|					   |
 	|----|m_activation|----|
 	|					   |

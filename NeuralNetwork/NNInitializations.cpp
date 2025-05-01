@@ -37,7 +37,7 @@ void NeuralNetwork::InitializeNetwork() {
     }
     m_network_size = m_weights_size + m_biases_size;
 
-    m_network = (float*)aligned_alloc(64, m_network_size*sizeof(float));
+    m_network = (float*)aligned_alloc(32, m_network_size*sizeof(float));
     m_biases = m_network + m_weights_size;
 }
 void NeuralNetwork::InitializeWeights() {
@@ -104,7 +104,7 @@ void NeuralNetwork::InitializeBatchData(size_t num_elements) {
 
     m_batch_data_size = (3 * m_batch_activation_size) + m_network_size;
 
-    m_batch_data = (float*)aligned_alloc(64, m_batch_data_size*sizeof(float));
+    m_batch_data = (float*)aligned_alloc(32, m_batch_data_size*sizeof(float));
     m_activation = &m_batch_data[m_batch_activation_size];
 
     // set derivative pointers
@@ -121,7 +121,7 @@ void NeuralNetwork::InitializeTestData(size_t num_elements) {
 
     m_test_data_size = m_test_activation_size * 2;
 
-    m_test_data = (float*)aligned_alloc(64, m_test_data_size*sizeof(float));
+    m_test_data = (float*)aligned_alloc(32, m_test_data_size*sizeof(float));
     m_test_activation = &m_test_data[m_test_activation_size];
 }
 

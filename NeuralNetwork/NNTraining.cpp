@@ -19,7 +19,7 @@ nlohmann::json NeuralNetwork::Fit(const Dataset& dataset, size_t batch_size, siz
 	return history;
 }
 
-void NeuralNetwork::ForwardProp(float* x_data, float* result_data, size_t activation_size, size_t num_elements) {
+void NeuralNetwork::ForwardProp(float* __restrict x_data, float* __restrict result_data, size_t activation_size, size_t num_elements) {
     size_t weight_idx = 0;
     size_t bias_idx = 0;
 
@@ -55,7 +55,7 @@ void NeuralNetwork::ForwardProp(float* x_data, float* result_data, size_t activa
         output_idx += m_layers[i+1].nodes * num_elements;
     }
 }
-void NeuralNetwork::BackProp(float* x_data, float* y_data, float learning_rate, size_t num_elements) {
+void NeuralNetwork::BackProp(float* __restrict x_data, float* __restrict y_data, float learning_rate, size_t num_elements) {
     // adjust learning rate tp factor in number of elements
     const float factor = learning_rate / (float)num_elements;
     const __m256 _factor = _mm256_set1_ps(factor);

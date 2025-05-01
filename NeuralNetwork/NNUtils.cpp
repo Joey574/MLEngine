@@ -91,7 +91,7 @@ void NeuralNetwork::AssignActvFunctions(const std::vector<ActivationFunctions>& 
     }
 }
 
-float NeuralNetwork::Sum256(const __m256& x) {
+float NeuralNetwork::Sum256(__m256 x) {
 	__m256 sum1 = _mm256_hadd_ps(x, x);
     __m256 sum2 = _mm256_hadd_ps(sum1, sum1);
 
@@ -100,4 +100,15 @@ float NeuralNetwork::Sum256(const __m256& x) {
     __m128 res  = _mm_add_ps(low, high);
 
     return _mm_cvtss_f32(res);
+}
+
+__attribute__((optimize("no-fast-math")))
+__m256 NeuralNetwork::Exp256(__m256 x) {
+    __m256 a = _mm256_set1_ps(12102203.0f); 
+    __m256 b = _mm256_set1_ps(127.0f * (1 << 23));
+    __m256 c = _mm256_fmadd_ps(x, a, b);
+
+    __m256i ti = _mm256_cvtps_epi32(c);
+
+    return _mm256_castsi256_ps(ti);
 }

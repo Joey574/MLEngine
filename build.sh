@@ -2,12 +2,14 @@ start_time=$(date +%s.%N)
 
 p_flag=false
 d_flag=false
+t_flag=false
 
 # search for relevent flags
-while getopts ":pd" opt; do
+while getopts ":pdt" opt; do
     case $opt in
         p) p_flag=true ;;
         d) d_flag=true ;;
+        t) t_flag=true ;;
         \?) echo "Invalid option: -$OPTARG" >&2 ;;
     esac
 done
@@ -40,6 +42,7 @@ nndependencies="\
 
 dldependencies="DataLoader/DataLoader.cpp"
 stdependencies="State/State.cpp State/StaticUtils.cpp State/StateUtils.cpp"
+TESTFILES="TestNetwork/ActivationTests.cpp TestNetwork/DerivativeTests.cpp TestNetwork/TNUtils.cpp"
 DEPENDENCIES="$nndependencies $dldependencies $stdependencies"
 
 declare file_size
@@ -63,20 +66,40 @@ if [ "$p_flag" = true ]; then
     file_size=$(stat -c %s "./Dependencies/pch.h.gch")
 else
 
-    printf "Compiling program (%s)\n" $build
-    # compiling phase
-    for src in $DEPENDENCIES main.cpp; do
-        ccache g++ -c $FLAGS "$src" -include ./Dependencies/pch.h -o "${src%.cpp}.o"
-    done
+    if [ "$t_flag" = true ]; then
+        printf "Compiling test suite (%s)\n" $build
 
-    # link phase
-    ccache g++ -static-libgcc -static-libstdc++ -Wl,-Bdynamic -lgomp -Wl,-Bstatic -lstdc++ -lpthread -lm -ldl $FLAGS $(find . -name "*.o") -o MLEngine
-    strip ./MLEngine
+        # compiling phase
+        for src in $DEPENDENCIES $TESTFILES "test.cpp"; do
+            ccache g++ -c $FLAGS "$src" -include ./Dependencies/pch.h -o "${src%.cpp}.o"
+        done
 
-    # cleanup object files
-    find . -name "*.o" -delete
+        # link phase
+        ccache g++ -static-libgcc -static-libstdc++ -Wl,-Bdynamic -lgomp -Wl,-Bstatic -lstdc++ -lpthread -lm -ldl $FLAGS $(find . -name "*.o") -o MLTestEngine
+        strip ./MLTestEngine
+
+        # cleanup object files
+        find . -name "*.o" -delete
+
+        file_size=$(stat -c %s "MLTestEngine")
+    else
+        printf "Compiling program (%s)\n" $build
+
+        # compiling phase
+        for src in $DEPENDENCIES main.cpp; do
+            ccache g++ -c $FLAGS "$src" -include ./Dependencies/pch.h -o "${src%.cpp}.o"
+        done
+
+        # link phase
+        ccache g++ -static-libgcc -static-libstdc++ -Wl,-Bdynamic -lgomp -Wl,-Bstatic -lstdc++ -lpthread -lm -ldl $FLAGS $(find . -name "*.o") -o MLEngine
+        strip ./MLEngine
+
+        # cleanup object files
+        find . -name "*.o" -delete
     
-    file_size=$(stat -c %s "MLEngine")
+        file_size=$(stat -c %s "MLEngine")
+    fi
+
 fi
 
 # output information about build process
