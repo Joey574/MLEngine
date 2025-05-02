@@ -1,7 +1,7 @@
 #include "TestNetwork.hpp"
 
 void TestNetwork::TestActivations() {
-    const size_t ssize = 1000;
+    const size_t ssize = 10000;
     const size_t esize = 1000000;
 
     for (size_t i = ssize; i <= esize; i *= 10) {
@@ -51,7 +51,7 @@ void TestNetwork::TestReLU(size_t n) {
     double* expected = (double*)malloc(size * sizeof(double));
     
     for (size_t i = 0; i < n; i++) {
-        expected[i] = (double)t[i] > 0.0 ? (double)t[i] : 0.0;
+        expected[i] = t[i] > 0.0 ? t[i] : 0.0;
     }
 
     // warmup runs
@@ -80,7 +80,7 @@ void TestNetwork::TestLeakyReLU(size_t n) {
     double* expected = (double*)malloc(size * sizeof(double));
     
     for (size_t i = 0; i < n; i++) {
-        expected[i] = (double)t[i] > 0.0 ? (double)t[i] : (double)t[i] * 0.1;
+        expected[i] = t[i] > 0.0 ? t[i] : (double)t[i] * 0.1;
     }
 
     // warmup runs
@@ -109,7 +109,7 @@ void TestNetwork::TestELU(size_t n) {
     double* expected = (double*)malloc(size * sizeof(double));
     
     for (size_t i = 0; i < n; i++) {
-        expected[i] = (double)t[i] > 0.0 ? (double)t[i] : (std::exp((double)t[i]) - 1.0);
+        expected[i] = t[i] > 0.0 ? t[i] : (std::exp((double)t[i]) - 1.0);
     }
 
     // warmup runs

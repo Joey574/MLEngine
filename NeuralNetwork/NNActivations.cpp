@@ -1,6 +1,6 @@
 #include "NeuralNetwork.hpp"
 
-void NeuralNetwork::Sigmoid(float* __restrict x, float* __restrict y, size_t n) {
+void NeuralNetwork::Sigmoid(const float* __restrict x, float* __restrict y, size_t n) {
     const __m256 _one = _mm256_set1_ps(1.0f);
     const __m256 _zero = _mm256_setzero_ps();
 
@@ -21,7 +21,7 @@ void NeuralNetwork::Sigmoid(float* __restrict x, float* __restrict y, size_t n) 
         y[i] = 1.0f / (1.0f + std::exp(-x[i]));
     }
 }
-void NeuralNetwork::ReLU(float* __restrict x, float* __restrict y, size_t n) {
+void NeuralNetwork::ReLU(const float* __restrict x, float* __restrict y, size_t n) {
     const __m256 _zero = _mm256_setzero_ps();
 
     #pragma omp parallel for
@@ -36,7 +36,7 @@ void NeuralNetwork::ReLU(float* __restrict x, float* __restrict y, size_t n) {
         y[i] = x[i] > 0.0f ? x[i] : 0.0f;
     }
 }
-void NeuralNetwork::LeakyReLU(float* __restrict x, float* __restrict y, size_t n) {
+void NeuralNetwork::LeakyReLU(const float* __restrict x, float* __restrict y, size_t n) {
     const __m256 _cof = _mm256_set1_ps(0.1f);
     const __m256 _zero = _mm256_setzero_ps();
 
@@ -54,7 +54,7 @@ void NeuralNetwork::LeakyReLU(float* __restrict x, float* __restrict y, size_t n
         y[i] = x[i] > 0.0f ? x[i] : (x[i] * 0.1f);
     }
 }
-void NeuralNetwork::ELU(float* __restrict x, float* __restrict y, size_t n) {
+void NeuralNetwork::ELU(const float* __restrict x, float* __restrict y, size_t n) {
     const __m256 _one = _mm256_set1_ps(1.0f);
     const __m256 _zero = _mm256_setzero_ps();
 
@@ -75,6 +75,6 @@ void NeuralNetwork::ELU(float* __restrict x, float* __restrict y, size_t n) {
     }
 }
 
-void NeuralNetwork::Softmax(float* __restrict x, float* __restrict y, size_t n) {
+void NeuralNetwork::Softmax(const float* __restrict x, float* __restrict y, size_t n) {
     
 }

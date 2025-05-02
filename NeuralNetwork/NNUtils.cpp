@@ -90,6 +90,43 @@ void NeuralNetwork::AssignActvFunctions(const std::vector<ActivationFunctions>& 
         }
     }
 }
+void NeuralNetwork::AssignLossFunctions(LossMetric loss, LossMetric metric) {
+    switch (loss) {
+        case LossMetric::mae:
+            m_loss.type = LossMetric::mae;
+            m_loss.loss = &MaeLoss;
+            break;
+        case LossMetric::mse:
+            m_loss.type = LossMetric::mse;
+            m_loss.loss = &MseLoss;
+            break;
+        case LossMetric::onehot:
+            m_loss.type = LossMetric::onehot;
+            m_loss.loss = &OneHotLoss;
+            break;
+        default:
+            m_loss.type = LossMetric::none;
+            m_loss.loss = nullptr;
+    }
+
+    switch (metric) {
+        case LossMetric::mae:
+            m_metric.type = LossMetric::mae;
+            m_metric.metric = &MaeScore;
+            break;
+        case LossMetric::mse:
+            m_metric.type = LossMetric::mse;
+            m_metric.metric = &MseScore;
+            break;
+        case LossMetric::accuracy:
+            m_metric.type = LossMetric::accuracy;
+            m_metric.metric = &AccuracyScore;
+            break;
+        default:
+            m_metric.type = LossMetric::none;
+            m_metric.metric = nullptr;
+    }
+}
 
 float NeuralNetwork::Sum256(__m256 x) {
 	__m256 sum1 = _mm256_hadd_ps(x, x);

@@ -2,8 +2,6 @@
 
 void NeuralNetwork::Initialize(const std::vector<size_t>& dimensions, const std::vector<ActivationFunctions>& activations, LossMetric loss, LossMetric metric, WeightInitialization weightInit) {
     m_weight_init = weightInit;
-    m_loss.type = loss;
-    m_metric.type = metric;
 
     if (dimensions.size() != activations.size()+1) {
         std::cerr << "activations must be one less in size than dimensions\n";
@@ -17,6 +15,7 @@ void NeuralNetwork::Initialize(const std::vector<size_t>& dimensions, const std:
     }
 
     AssignActvFunctions(activations);
+    AssignLossFunctions(loss, metric);
 
     // main initialization of all the internal goodies
     InitializeNetwork();
@@ -98,7 +97,7 @@ void NeuralNetwork::InitializeWeights() {
 void NeuralNetwork::InitializeBatchData(size_t num_elements) {
     m_batch_activation_size = 0;
 
-    for (size_t i = 0; i < m_layers.size(); i++) {
+    for (size_t i = 1; i < m_layers.size(); i++) {
         m_batch_activation_size += m_layers[i].nodes * num_elements;
     }
 
@@ -115,7 +114,7 @@ void NeuralNetwork::InitializeBatchData(size_t num_elements) {
 void NeuralNetwork::InitializeTestData(size_t num_elements) {
     m_test_activation_size = 0;
 
-    for (size_t i = 0; i < m_layers.size(); i++) {
+    for (size_t i = 1; i < m_layers.size(); i++) {
         m_test_activation_size += m_layers[i].nodes * num_elements;
     }
 

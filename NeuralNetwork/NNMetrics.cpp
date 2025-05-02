@@ -1,16 +1,15 @@
 #include "NeuralNetwork.hpp"
 
-void NeuralNetwork::MaeLoss(float* x, float* y, float* c, size_t rows, size_t cols) {
+void NeuralNetwork::MaeLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols) {
 
 }
-void NeuralNetwork::MseLoss(float* x, float* y, float* c, size_t rows, size_t cols) {
+void NeuralNetwork::MseLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols) {
 
 }
-void NeuralNetwork::OneHotLoss(float* x, float* y, float* c, size_t rows, size_t cols) {
-
+void NeuralNetwork::OneHotLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols) {
 }
 
-float NeuralNetwork::MaeScore(float* x, float* y, size_t rows, size_t cols) {
+float NeuralNetwork::MaeScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
     const __m256 _mask = _mm256_castsi256_ps(_mm256_set1_epi32(0x7FFFFFFF));
     __m256 _sum = _mm256_setzero_ps();
 
@@ -30,7 +29,7 @@ float NeuralNetwork::MaeScore(float* x, float* y, size_t rows, size_t cols) {
 
     return error;
 }
-float NeuralNetwork::MseScore(float* x, float* y, size_t rows, size_t cols) {
+float NeuralNetwork::MseScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
     float error = 0.0f;
 
     for (size_t i = 0; i < rows*cols; i++) {
@@ -39,6 +38,6 @@ float NeuralNetwork::MseScore(float* x, float* y, size_t rows, size_t cols) {
 
     return error;
 }
-float NeuralNetwork::AccuracyScore(float* x, float* y, size_t rows, size_t cols) {
+float NeuralNetwork::AccuracyScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
     return 0.0f;
 }

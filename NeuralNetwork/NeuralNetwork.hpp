@@ -6,7 +6,6 @@ class NeuralNetwork {
 
 public:
 
-
     // basic types for different user options
     enum class WeightInitialization {
         none, he, normalize, xavier
@@ -72,18 +71,18 @@ private:
     struct Layer {
         size_t nodes;
         ActivationFunctions actvtype;
-        void (*activation)(float*, float*, size_t);
-        void (*derivative)(float*, float*, size_t);
+        void (*activation)(const float*, float*, size_t);
+        void (*derivative)(const float*, float*, size_t);
     };
 
     struct Metric {
         LossMetric type;
-        float (*metric)(float*, float*, size_t, size_t);
+        float (*metric)(const float*, const float*, size_t, size_t);
     };
 
     struct Loss {
         LossMetric type;
-        void (*loss)(float*, float*, float*, size_t, size_t);
+        void (*loss)(const float*, const float*, float*, size_t, size_t);
     };
 
     // pointers to various memory blocks that contain all the data
@@ -119,48 +118,54 @@ private:
     WeightInitialization m_weight_init;
 
     void ForwardProp(
-        float* __restrict x_data,
+        const float* __restrict x_data,
         float* __restrict result_data,
         size_t activation_size,
         size_t num_elements
     );
 
     void BackProp(
-        float* __restrict x_data,
-        float* __restrict y_data,
+        const float* __restrict x_data,
+        const float* __restrict y_data,
         float learning_rate,
         size_t num_elements
     );
 
+    void TestNetwork(
+        const Dataset& dataset,
+        nlohmann::json& history
+    );
+
     void AssignActvFunctions(const std::vector<ActivationFunctions>& actvs);
+    void AssignLossFunctions(LossMetric loss, LossMetric metric);
 
     // activation functions
-    static void Sigmoid(float* __restrict x, float* __restrict y, size_t n);
-    static void ReLU(float* __restrict x, float* __restrict y, size_t n);
-    static void LeakyReLU(float* __restrict x, float* __restrict y, size_t n);
-    static void ELU(float* __restrict x, float* __restrict y, size_t n);
-    static void Softmax(float* __restrict x, float* __restrict y, size_t n);
+    static void Sigmoid(const float* __restrict x, float* __restrict y, size_t n);
+    static void ReLU(const float* __restrict x, float* __restrict y, size_t n);
+    static void LeakyReLU(const float* __restrict x, float* __restrict y, size_t n);
+    static void ELU(const float* __restrict x, float* __restrict y, size_t n);
+    static void Softmax(const float* __restrict x, float* __restrict y, size_t n);
 
     // derivatives functions
-    static void SigmoidDerivative(float* __restrict x, float* __restrict y, size_t n);
-    static void ReLUDerivative(float* __restrict x, float* __restrict y, size_t n);
-    static void LeakyReLUDerivative(float* __restrict x, float* __restrict y, size_t n);
-    static void ELUDerivative(float* __restrict x, float* __restrict y, size_t n);
+    static void SigmoidDerivative(const float* __restrict x, float* __restrict y, size_t n);
+    static void ReLUDerivative(const float* __restrict x, float* __restrict y, size_t n);
+    static void LeakyReLUDerivative(const float* __restrict x, float* __restrict y, size_t n);
+    static void ELUDerivative(const float* __restrict x, float* __restrict y, size_t n);
 
     // loss functions
-    static void MaeLoss(float* __restrict x, float* __restrict y, float* __restrict c, size_t rows, size_t cols);
-    static void MseLoss(float* __restrict x, float* __restrict y, float* __restrict c, size_t rows, size_t cols);
-    static void OneHotLoss(float* __restrict x, float* __restrict y, float* __restrict c, size_t rows, size_t cols);
+    static void MaeLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols);
+    static void MseLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols);
+    static void OneHotLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols);
 
     // metric functions
-    static float MaeScore(float* __restrict x, float* __restrict y, size_t rows, size_t cols);
-    static float MseScore(float* __restrict x, float* __restrict y, size_t rows, size_t cols);
-    static float AccuracyScore(float* __restrict x, float* __restrict y, size_t rows, size_t cols);
+    static float MaeScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols);
+    static float MseScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols);
+    static float AccuracyScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols);
 
     // dot prods
-    static void DotProd(float* __restrict a, float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
-    static void DotProdTA(float* __restrict a, float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
-    static void DotProdTB(float* __restrict a, float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
+    static void DotProd(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
+    static void DotProdTA(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
+    static void DotProdTB(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
 
     // simd utils
     static float Sum256(__m256 x);

@@ -1,6 +1,6 @@
 #include "NeuralNetwork.hpp"
 
-void NeuralNetwork::SigmoidDerivative(float* __restrict x, float* __restrict y, size_t n) {
+void NeuralNetwork::SigmoidDerivative(const float* __restrict x, float* __restrict y, size_t n) {
     const __m256 _one = _mm256_set1_ps(1.0f);
     const __m256 _zero = _mm256_setzero_ps();
 
@@ -26,20 +26,20 @@ void NeuralNetwork::SigmoidDerivative(float* __restrict x, float* __restrict y, 
     }
 }
 
-void NeuralNetwork::ReLUDerivative(float* __restrict x, float* __restrict y, size_t n) {
+void NeuralNetwork::ReLUDerivative(const float* __restrict x, float* __restrict y, size_t n) {
     #pragma omp parallel for
     for (size_t i = 0; i < n; i++) {
         y[i] = x[i] > 0.0f ? y[i] : 0.0f;
     }
 }
 
-void NeuralNetwork::LeakyReLUDerivative(float* __restrict x, float* __restrict y, size_t n) {
+void NeuralNetwork::LeakyReLUDerivative(const float* __restrict x, float* __restrict y, size_t n) {
     #pragma omp parallel for
     for (size_t i = 0; i < n; i++) {
         y[i] = x[i] > 0.0f ? y[i] : (y[i] * 0.1f);
     }
 }
 
-void NeuralNetwork::ELUDerivative(float* __restrict x, float* __restrict y, size_t n) {
+void NeuralNetwork::ELUDerivative(const float* __restrict x, float* __restrict y, size_t n) {
     
 }

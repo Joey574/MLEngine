@@ -6,12 +6,24 @@ nlohmann::json NeuralNetwork::Fit(const Dataset& dataset, size_t batch_size, siz
 	nlohmann::json history;
 	FitStart(history, epochs, batch_size, learning_rate);
 
+	InitializeBatchData(batch_size);
+	InitializeTestData(dataset.testDataRows);
+
 	const size_t iterations = (dataset.trainDataRows + 1) / batch_size;
 
 	for (size_t e = 0; e < epochs; e++) {
 
 		for (size_t i = 0; i < iterations; i++) {
-			
+			std::cout << i << "/" << iterations << "\n";
+			const float* x = &dataset.trainData[(i * batch_size) * dataset.trainDataCols];
+			const float* y = &dataset.trainLabels[(i * batch_size) * dataset.trainLabelCols];
+
+			ForwardProp(x, m_batch_data, m_batch_activation_size, batch_size);
+			BackProp(x, y, learning_rate, batch_size);
+		}
+
+		if (e % validation_freq == 0) {
+			TestNetwork(dataset, history);
 		}
 	}
 	
@@ -19,7 +31,11 @@ nlohmann::json NeuralNetwork::Fit(const Dataset& dataset, size_t batch_size, siz
 	return history;
 }
 
-void NeuralNetwork::ForwardProp(float* __restrict x_data, float* __restrict result_data, size_t activation_size, size_t num_elements) {
+void NeuralNetwork::TestNetwork(const Dataset& dataset, nlohmann::json& history) {
+
+}
+
+void NeuralNetwork::ForwardProp(const float* __restrict x_data, float* __restrict result_data, size_t activation_size, size_t num_elements) {
     size_t weight_idx = 0;
     size_t bias_idx = 0;
 
@@ -33,19 +49,19 @@ void NeuralNetwork::ForwardProp(float* __restrict x_data, float* __restrict resu
         float* bias_start = &m_biases[bias_idx];
 
         // set data pointers
-        float* input_start = i == 0 ? &x_data[0] : &result_data[input_idx+activation_size];
+        const float* input_start = i == 0 ? &x_data[0] : &result_data[input_idx+activation_size];
         float* output_start = &result_data[output_idx];
 
         // initialize memory to bias values to avoid computation and clear existing values
         #pragma omp parallel for
-        for (size_t r = 0; r < m_layers[i+1].nodes; r++) {
-            std::fill(&output_start[r * num_elements], &output_start[r*num_elements+num_elements], bias_start[r]);
+        for (size_t r = 0; r < num_elements; r++) {
+			std::memcpy(&output_start[r*m_layers[i+1].nodes], bias_start, m_layers[i+1].nodes);
         }
 
-        DotProd(weights_start, input_start, output_start, m_layers[i+1].nodes, m_layers[i].nodes, m_layers[i].nodes, num_elements, false);
+		DotProd(input_start, weights_start, output_start, num_elements, m_layers[i].nodes, m_layers[i].nodes, m_layers[i+1].nodes, false);
 
-        // apply activation
-        (*m_layers[i].activation)(output_start, &output_start[activation_size], m_layers[i+1].nodes*num_elements);
+        // apply activation, apply next one since input layer doesn't technically have an activation
+        (*m_layers[i+1].activation)(output_start, &output_start[activation_size], m_layers[i+1].nodes*num_elements);
 
         // update pointers
         weight_idx += m_layers[i].nodes * m_layers[i+1].nodes;
@@ -55,8 +71,9 @@ void NeuralNetwork::ForwardProp(float* __restrict x_data, float* __restrict resu
         output_idx += m_layers[i+1].nodes * num_elements;
     }
 }
-void NeuralNetwork::BackProp(float* __restrict x_data, float* __restrict y_data, float learning_rate, size_t num_elements) {
-    // adjust learning rate tp factor in number of elements
+void NeuralNetwork::BackProp(const float* __restrict x_data, const float* __restrict y_data, float learning_rate, size_t num_elements) {
+
+	// adjust learning rate to factor in number of elements
     const float factor = learning_rate / (float)num_elements;
     const __m256 _factor = _mm256_set1_ps(factor);
 
@@ -85,13 +102,15 @@ void NeuralNetwork::BackProp(float* __restrict x_data, float* __restrict y_data,
 		float* cur_d_total = &m_d_total[d_total_idx];
 		float* prev_d_total = &m_d_total[d_total_idx - (m_layers[i].nodes * num_elements)];
 
-		DotProdTA(weight, cur_d_total, prev_d_total, m_layers[i + 1].nodes, m_layers[i].nodes, m_layers[i+1].nodes, num_elements, true);
+		DotProd(cur_d_total, weight, prev_d_total, num_elements, m_layers[i+1].nodes, m_layers[i].nodes, m_layers[i+1].nodes, true);
 
-		(*m_layers[i - 1].derivative)(prev_total, prev_d_total, m_layers[i].nodes * num_elements);
+		// multiply by derivative of activation function
+		(*m_layers[i].derivative)(prev_total, prev_d_total, m_layers[i].nodes * num_elements);
 
 		d_total_idx -= m_layers[i].nodes * num_elements;
 		weight_idx -= m_layers[i].nodes * m_layers[i-1].nodes;
 	}
+
 
 	int activation_idx = 0;
 	int d_weight_idx = 0;
@@ -102,29 +121,25 @@ void NeuralNetwork::BackProp(float* __restrict x_data, float* __restrict y_data,
 	// compute d_weights
 	for (size_t i = 0; i < m_layers.size() - 1; i++) {
 
-		float* prev_activ = i == 0 ? &x_data[0] : &m_activation[activation_idx];
+		const float* prev_activ = i == 0 ? &x_data[0] : &m_activation[activation_idx];
 
 		float* d_total = &m_d_total[d_total_idx];
 		float* d_weights = &m_d_weights[d_weight_idx];
 		float* d_bias = &m_d_biases[d_bias_idx];
-
-		i == 0 ?
-			DotProd(d_total, prev_activ, d_weights, m_layers[i+1].nodes, num_elements, num_elements, m_layers[i].nodes, true) :
-			DotProdTB(d_total, prev_activ, d_weights, m_layers[i+1].nodes, num_elements, m_layers[i].nodes, num_elements, true);
+	
+		DotProdTA(prev_activ, d_total, d_weights, num_elements,  m_layers[i].nodes, num_elements, m_layers[i+1].nodes, true);
 
 		// compute d_biases
 		#pragma omp parallel for
 		for (size_t j = 0; j < m_layers[i+1].nodes; j++) {
-			__m256 sum = _mm256_setzero_ps();
+			__m256 _sum = _mm256_setzero_ps();
 
 			size_t k = 0;
 			for (; k <= num_elements - 8; k += 8) {
-				sum = _mm256_add_ps(sum, _mm256_load_ps(&d_total[j * num_elements + k]));
+				_sum = _mm256_add_ps(_sum, _mm256_load_ps(&d_total[j * num_elements + k]));
 			}
 
-			float t[8];
-			_mm256_store_ps(t, sum);
-			d_bias[j] = t[0] + t[1] + t[2] + t[3] + t[4] + t[5] + t[6] + t[7];
+			d_bias[j] = Sum256(_sum);
 
 			for (; k < num_elements; k++) {
 				d_bias[j] += d_total[j * num_elements + k];
@@ -141,14 +156,14 @@ void NeuralNetwork::BackProp(float* __restrict x_data, float* __restrict y_data,
 	// update weights
 	#pragma omp parallel for
 	for (size_t i = 0; i <= m_weights_size - 8; i += 8) {
-        const __m256 _a = _mm256_load_ps(&m_d_weights[i]);
-        const __m256 _c = _mm256_load_ps(&m_network[i]);
+        const __m256 _a = _mm256_loadu_ps(&m_d_weights[i]);
+        const __m256 _c = _mm256_loadu_ps(&m_network[i]);
         const __m256 _res = _mm256_fnmadd_ps(_a, _factor, _c);
 
-        _mm256_store_ps(&m_network[i], _res);
+        _mm256_storeu_ps(&m_network[i], _res);
 	}
 
-	for (size_t i = m_weights_size - (m_weights_size % 8); i < m_weights_size; i++) {
+	for (size_t i = m_weights_size - (m_weights_size%8); i < m_weights_size; i++) {
 		m_network[i] -= m_d_weights[i] * factor;
 	}
 
@@ -156,14 +171,14 @@ void NeuralNetwork::BackProp(float* __restrict x_data, float* __restrict y_data,
 	// update biases
 	#pragma omp parallel for
 	for (size_t i = 0; i <= m_biases_size - 8; i += 8) {
-        const __m256 _a = _mm256_load_ps(&m_d_biases[i]);
-        const __m256 _c = _mm256_load_ps(&m_biases[i]);
+        const __m256 _a = _mm256_loadu_ps(&m_d_biases[i]);
+        const __m256 _c = _mm256_loadu_ps(&m_biases[i]);
         const __m256 _res = _mm256_fnmadd_ps(_a, _factor, _c);
 
-        _mm256_store_ps(&m_biases[i], _res);
+        _mm256_storeu_ps(&m_biases[i], _res);
 	}
 
-	for (size_t i = m_biases_size - (m_biases_size % 8); i < m_biases_size; i++) {
+	for (size_t i = m_biases_size - (m_biases_size%8); i < m_biases_size; i++) {
 		m_biases[i] -= m_d_biases[i] * factor;
 	}
 }
