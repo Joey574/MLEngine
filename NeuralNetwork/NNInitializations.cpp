@@ -47,6 +47,8 @@ void NeuralNetwork::InitializeWeights() {
     std::random_device rd;
     std::default_random_engine gen(rd());
 
+    // zero out biases
+    memset(m_biases, 0, m_biases_size*sizeof(float));
 
     switch (m_weight_init) {
         case WeightInitialization::he:

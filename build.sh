@@ -21,14 +21,15 @@ flagsopt="\
     -O3 -Ofast \
     -fopenmp \
     -mavx2 -mfma -mprefer-vector-width=256 \
-    -Wno-unused-result \
     -DNDEBUG \
     -falign-functions=32 -falign-loops=32 \
-    -fno-math-errno -fassociative-math -freciprocal-math -fno-signed-zeros -fno-trapping-math \
+    -ffast-math -fno-math-errno -fassociative-math -freciprocal-math -fno-signed-zeros -fno-trapping-math \
     -fmodulo-sched -fmodulo-sched-allow-regmoves \
     -fpredictive-commoning -fhoist-adjacent-loads \
     -ftree-loop-distribution -ftree-loop-vectorize -ftree-slp-vectorize -ftree-vectorize \
-    -frandom-seed=123 \
+    -Wno-unused-result \
+    -frename-registers -fschedule-insns -fschedule-insns2 -fweb -fno-semantic-interposition \
+    -frandom-seed=123 -s\
 "
 flagsdeb="-std=c++20 -O0 -g -DDEBUG -fno-omit-frame-pointer -fno-lto -mavx2 -mfma -fopenmp"
 
@@ -42,7 +43,7 @@ nndependencies="\
 
 dldependencies="DataLoader/DataLoader.cpp"
 stdependencies="State/State.cpp State/StaticUtils.cpp State/StateUtils.cpp"
-TESTFILES="TestNetwork/ActivationTests.cpp TestNetwork/DerivativeTests.cpp TestNetwork/TNUtils.cpp"
+TESTFILES="TestNetwork/ActivationTests.cpp TestNetwork/DerivativeTests.cpp TestNetwork/Initializations.cpp TestNetwork/MathUtilTests.cpp TestNetwork/TNUtils.cpp"
 DEPENDENCIES="$nndependencies $dldependencies $stdependencies"
 
 declare file_size

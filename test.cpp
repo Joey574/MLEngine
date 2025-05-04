@@ -1,5 +1,6 @@
 #include "TestNetwork/TestNetwork.hpp"
 
 int main() {
-    TestNetwork::TestActivations();    
+    TestNetwork::TestActivations();
+    TestNetwork::TestMathUtils();
 }

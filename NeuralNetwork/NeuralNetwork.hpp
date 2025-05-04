@@ -1,6 +1,10 @@
 #pragma once
 class TestNetwork;
 
+#define LOGLM 1
+#define LOGDP 1
+
+
 class NeuralNetwork {
     friend class TestNetwork;
 
