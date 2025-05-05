@@ -35,9 +35,10 @@ Dataset DataLoader::LoadMNIST() {
     std::ifstream traind(trainingImages, std::ios::binary);
     std::ifstream trainl(trainingLabels, std::ios::binary);
 
-    // discard irrelevant data
-    ReadBigInt(&traind);
+    ReadBigInt(&trainl);
+    ReadBigInt(&trainl);
 
+    ReadBigInt(&traind);
     int imagenum = ReadBigInt(&traind);
     int width = ReadBigInt(&traind);
     int height = ReadBigInt(&traind);
@@ -45,6 +46,7 @@ Dataset DataLoader::LoadMNIST() {
     // set up vector sizes
     mnist.trainData = std::vector<float>();
     mnist.trainLabels= std::vector<float>(imagenum);
+    mnist.trainData.reserve(imagenum*width*height);
 
     mnist.trainDataRows = imagenum;
     mnist.trainDataCols = width*height;
@@ -80,9 +82,10 @@ Dataset DataLoader::LoadMNIST() {
     std::ifstream testd(testingImages, std::ios::binary);
     std::ifstream testl(testingLabels, std::ios::binary);
 
-    // discard irrelevant data
+    ReadBigInt(&testl);
+    ReadBigInt(&testl);
+
     ReadBigInt(&testd);
- 
     imagenum = ReadBigInt(&testd);
     width = ReadBigInt(&testd);
     height = ReadBigInt(&testd);
@@ -90,6 +93,8 @@ Dataset DataLoader::LoadMNIST() {
     // set up vector sizes
     mnist.testData = std::vector<float>();
     mnist.testLabels= std::vector<float>(imagenum);
+    mnist.testData.reserve(imagenum*width*height);
+
     mnist.testDataRows = imagenum;
     mnist.testDataCols = width*height;
   

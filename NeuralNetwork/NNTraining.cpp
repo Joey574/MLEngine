@@ -39,13 +39,10 @@ nlohmann::json NeuralNetwork::Fit(const Dataset& dataset, size_t batch_size, siz
 }
 
 void NeuralNetwork::TestNetwork(const Dataset& dataset, nlohmann::json& history) {
-	const float* x = &dataset.testData[0];
-	const float* y = &dataset.testLabels[0];
-
-	ForwardProp(x, m_test_data, m_test_activation_size, dataset.testDataRows);
+	ForwardProp(&dataset.testData[0], m_test_data, m_test_activation_size, dataset.testDataRows);
 	const float* predications = &m_test_activation[m_test_activation_size - (m_layers.back().nodes*dataset.testDataRows)];
 
-	float score = (*m_metric.metric)(predications, y, m_layers.back().nodes, dataset.testLabelRows);
+	float score = (*m_metric.metric)(predications, &dataset.testLabels[0], m_layers.back().nodes, dataset.testDataRows);
 	std::cout << "Accuracy: " << score << " | ";
 }
 
@@ -170,34 +167,17 @@ void NeuralNetwork::BackProp(const float* __restrict x_data, const float* __rest
 		activation_idx += i == 0 ? 0 : (m_layers[i].nodes * num_elements);
 	}
 
-
-	// update weights
+	// update network (methods for update are the same so we just do weights and biases here)
 	#pragma omp parallel for
-	for (size_t i = 0; i <= m_weights_size-8; i += 8) {
-        const __m256 _a = _mm256_loadu_ps(&m_d_weights[i]);
-        const __m256 _c = _mm256_loadu_ps(&m_network[i]);
-        const __m256 _res = _mm256_fnmadd_ps(_a, _factor, _c);
+	for (size_t i = 0; i <= m_network_size-8; i += 8) {
+		const __m256 _a = _mm256_loadu_ps(&m_d_weights[i]);
+		const __m256 _b = _mm256_loadu_ps(&m_network[i]);
+		const __m256 _res = _mm256_fnmadd_ps(_a, _factor, _b);
 
-        _mm256_storeu_ps(&m_network[i], _res);
+		_mm256_storeu_ps(&m_network[i], _res);
 	}
 
-	for (size_t i = m_weights_size - (m_weights_size%8); i < m_weights_size; i++) {
+	for (size_t i = m_network_size-(m_network_size%8); i < m_network_size; i++) {
 		m_network[i] -= m_d_weights[i] * factor;
 	}
-
-
-	// update biases
-	#pragma omp parallel for
-	for (size_t i = 0; i <= m_biases_size-8; i += 8) {
-        const __m256 _a = _mm256_loadu_ps(&m_d_biases[i]);
-        const __m256 _c = _mm256_loadu_ps(&m_biases[i]);
-        const __m256 _res = _mm256_fnmadd_ps(_a, _factor, _c);
-
-        _mm256_storeu_ps(&m_biases[i], _res);
-	}
-
-	for (size_t i = m_biases_size - (m_biases_size%8); i < m_biases_size; i++) {
-		m_biases[i] -= m_d_biases[i] * factor;
-	}
-
 }

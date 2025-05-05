@@ -93,7 +93,7 @@ void NeuralNetwork::InitializeWeights() {
 
         default:
             // no weight initialization has been set, zero the network
-            memset(m_network, 0, m_network_size*sizeof(float));
+            memset(m_network, 0, m_weights_size*sizeof(float));
     }
 }
 void NeuralNetwork::InitializeBatchData(size_t num_elements) {

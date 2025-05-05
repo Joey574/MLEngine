@@ -7,7 +7,7 @@ void NeuralNetwork::MseLoss(const float* __restrict x, const float* __restrict y
 
 }
 void NeuralNetwork::OneHotLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols) {
-    #if LOGLM
+    #if LOGLOSS
         printf("Loss applied [%zu x %zu]\n", rows, cols);
     #endif
 
@@ -80,7 +80,7 @@ float NeuralNetwork::AccuracyScore(const float* __restrict x, const float* __res
         }
     }
 
-    #if LOGLM
+    #if LOGSCORE
         printf("Model scored [%zu x %zu] (%zu/%zu)\n", rows, cols, correct, cols);
     #endif
 

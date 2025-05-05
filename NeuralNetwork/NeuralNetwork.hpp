@@ -1,8 +1,9 @@
 #pragma once
 class TestNetwork;
 
-#define LOGLM 1
-#define LOGDP 1
+#define LOGLOSS 0
+#define LOGSCORE 0
+#define LOGDP 0
 
 
 class NeuralNetwork {
