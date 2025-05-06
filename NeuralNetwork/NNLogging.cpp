@@ -46,8 +46,36 @@ void NeuralNetwork::FitEnd(nlohmann::json& history, std::chrono::system_clock::t
 }
 
 void NeuralNetwork::EpochStart(nlohmann::json& history) {
-
-}
-void NeuralNetwork::EpochEnd(nlohmann::json& history) {
     
+}
+void NeuralNetwork::EpochEnd(nlohmann::json& history, const std::string& res, double ns, size_t e) {
+
+    // store train time
+
+    std::string fdur;
+    {
+        using namespace std::chrono;
+        auto duration = nanoseconds(static_cast<long long>(ns));
+
+        auto hour = duration_cast<hours>(duration);
+        duration -= hour;
+        auto minute = duration_cast<minutes>(duration);
+        duration -= minute;
+        auto second = duration_cast<seconds>(duration);
+        duration -= second;
+        auto ms = duration_cast<milliseconds>(duration);
+
+        if (hour.count() > 0) {
+            fdur = std::format("{}h {}m {}s", hour.count(), minute.count(), second.count());
+        } else if (minute.count() > 0) {
+            fdur = std::format("{}m {}s {}ms", minute.count(), second.count(), ms.count());        
+        } else if (second.count() > 0) {
+            fdur = std::format("{}s {}ms", second.count(), ms.count());
+        } else {
+            fdur = std::format("{}ms", ms.count());
+        }
+    }
+    
+    std::string em = "Epoch "+std::to_string(e)+": "+fdur;
+    printf("%-30s %-20s\n", em.c_str(), res.c_str());
 }

@@ -22,64 +22,44 @@ void State::SaveInit() {
         CreateDir(p_models+"/"+modelname);
     }
 
-    // create state.meta file
-    std::ofstream file(p_models+"/"+modelname+"/state.meta", std::ios::trunc);
-    if (!file.is_open()) {
-        return;
-    }
+    // create state.meta file if one doesn't exist
+    if (!FileExists(p_models+"/"+modelname+"/state.meta")) {
+        std::ofstream file(p_models+"/"+modelname+"/state.meta", std::ios::trunc);
 
-    nlohmann::json metadata = model->Metadata();
-    metadata["dataset"] = dataset.name;
-
-    std::string dump = metadata.dump(4).append("\n");
-    file.write(dump.c_str(), dump.size());
-    file.close();
-}
-
-void State::Save() {
-    int id = MostRecentSave() + 1;
-
-    // open file for save
-    std::string filepath = p_models+"/"+modelname+"/"+std::to_string(id)+".model";
-    int fd = open(filepath.c_str(), O_WRONLY | O_TRUNC | O_CREAT, 0644);
-
-    // write model data to save
-    int err = model->Save(fd);
-    close(fd);
-
-    if (err) {
-        std::cerr << "Failed to save model\n";
+        nlohmann::json metadata = model->Metadata();
+        metadata["Dataset"] = dataset.name;
+    
+        std::string dump = metadata.dump(4).append("\n");
+        file.write(dump.c_str(), dump.size());
+        file.close();
     }
 }
+
 void State::Load() {
     // load state.meta file
     std::ifstream f(p_models+"/"+modelname+"/state.meta");
     nlohmann::json metadata = nlohmann::json::parse(f);
-    std::string weight = metadata["weights"];
 
-    // get the most recent save and format as a file
-    int mrs = MostRecentSave();
-    std::string file = p_models+"/"+modelname+"/"+std::to_string(mrs)+".model";
+    // build with no weights, just setting dimensions, activations etc
+    Build(metadata["Dimensions"], metadata["Activations"], metadata["Metric"], metadata["Loss"], "none", metadata["Dataset"]);
 
-    if (mrs != -1) {
-        weight = "none";
-    }
-
-    Build(metadata["dimensions"], metadata["activations"], metadata["metric"], metadata["loss"], weight, metadata["dataset"]);
-
-    if (weight == "none") {
+    // attempt to load save from file
+    std::string file = p_models+"/"+modelname+"/"+modelname+".model";
+    std::cout << file << "\n";
+    if (FileExists(file)) {
         std::cout << "Loading parameters from file (" << file.substr(file.find_last_of('/')+1) << ")\n";
         int fd = open(file.c_str(), O_RDONLY, 0644);
-        int err = model->Load(fd, NeuralNetwork::ParseWeight(metadata["weights"]));
+        int err = model->Load(fd, NeuralNetwork::ParseWeight(metadata["Weights"]));
         close(fd);
 
         if (err) {
-            // build the model again
+            // failed to laod, build model again
             std::cerr << "Failed to load parameters, rebuilding model\n";
-            Build(metadata["dimensions"], metadata["activations"], metadata["metric"], metadata["loss"], metadata["weights"], metadata["dataset"]);
-        }
+            Build(metadata["Dimensions"], metadata["Activations"], metadata["Metric"], metadata["Loss"], metadata["Weights"], metadata["Dataset"]);
+        }        
     } else {
         std::cout << "No save found, rebuilding model\n";
+        Build(metadata["Dimensions"], metadata["Activations"], metadata["Metric"], metadata["Loss"], metadata["Weights"], metadata["Dataset"]);
     }
 }
 
@@ -97,7 +77,7 @@ void State::Build(const std::string& pdims, const std::string& pactvs, const std
     NeuralNetwork::WeightInitialization weight = NeuralNetwork::ParseWeight(pweight);
 
     // initialize model with provided options
-    model->Initialize(dimensions, activations, loss, metric, weight);
+    model->Initialize(p_models+"/"+modelname+"/", modelname, dimensions, activations, loss, metric, weight);
 }
 void State::Start(size_t batchsize, size_t epochs, float learningrate, int validfreq, float validsplit) {
     nlohmann::json history = model->Fit(dataset, batchsize, epochs, learningrate, validfreq, validsplit, true);

@@ -38,14 +38,32 @@ std::string State::AvailableModels() const {
 
             // collect basic metadata of the model
             nlohmann::json metadata = nlohmann::json::parse(ModelMetadata(f));
-            models = models.append("\tDataset: ").append(metadata["dataset"]).append("\n");
-            models = models.append("\tParameters: ").append(std::to_string((int)metadata["parameters"])).append("\n");
+            models = models.append("\tDataset: ").append(metadata["Dataset"]).append("\n");
+            models = models.append("\tParameters: ").append(std::to_string((int)metadata["Parameters"])).append("\n");
         }
     }
 
     return models;
 }
+std::string State::DeleteModel(const std::string& m) const {
+    const std::filesystem::path dir = p_models+"/"+m;
 
+    std::filesystem::remove_all(dir);
+    return "Model: \"" + m + "\" has been deleted";
+}
+std::string State::ResetModel(const std::string& m) const {
+    std::filesystem::remove(p_models+m+"/history.meta");
+    std::filesystem::remove(p_models+m+"/"+m+".model");
+
+    std::fstream f(p_models+"/state.meta");
+    nlohmann::json meta = nlohmann::json::parse(f);
+
+    meta.erase("Best Score Ever");
+
+    f.close();
+
+    return "Model: \"" + m + "\" has been reset";
+}
 
 bool State::ModelExists() {
     if (DirExists(p_models+"/"+modelname) && modelname != "") {
@@ -53,35 +71,4 @@ bool State::ModelExists() {
     }
 
     return false;
-}
-int State::MostRecentSave() {
-    // find the most recent model save
-    DIR* dir;
-    dirent* ent;
-    int highest = -1;
-
-    std::string file;
-    std::string directory = p_models+"/"+modelname+"/";
-
-    if ((dir = opendir(directory.c_str())) != nullptr) {
-        while ((ent = readdir(dir)) != nullptr) {
-            std::string f(ent->d_name);
- 
-            if (!f.ends_with(".model")) {
-                continue;
-            }
- 
-            std::string sstr = f.substr(0, f.find_last_of('.'));
- 
-            if (!sstr.empty() && std::all_of(sstr.begin(), sstr.end(), ::isdigit)) {
-                int t = std::atoi(sstr.c_str());
-                if (t > highest) {
-                    highest = t;
-                }
-            }
-        }
-        closedir(dir);
-    }
-
-    return highest;
 }

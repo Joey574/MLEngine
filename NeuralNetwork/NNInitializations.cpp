@@ -1,7 +1,11 @@
 #include "NeuralNetwork.hpp"
 
-void NeuralNetwork::Initialize(const std::vector<size_t>& dimensions, const std::vector<ActivationFunctions>& activations, LossMetric loss, LossMetric metric, WeightInitialization weightInit) {
+void NeuralNetwork::Initialize(const std::string& path, const std::string& name, const std::vector<size_t>& dimensions, const std::vector<ActivationFunctions>& activations, LossMetric loss, LossMetric metric, WeightInitialization weightInit) {
+    std::random_device rd;
     m_weight_init = weightInit;
+    m_path = path;
+    m_name = name;
+    m_seed = rd();
 
     if (dimensions.size() != activations.size()+1) {
         std::cerr << "activations must be one less in size than dimensions\n";
@@ -43,9 +47,8 @@ void NeuralNetwork::InitializeWeights() {
     float lowerRand;
     float upperRand;
     size_t idx = 0;
-
-    std::random_device rd;
-    std::default_random_engine gen(rd());
+    
+    std::default_random_engine gen(m_seed);
 
     // zero out biases
     memset(m_biases, 0, m_biases_size*sizeof(float));
@@ -90,7 +93,6 @@ void NeuralNetwork::InitializeWeights() {
             }
 
             break;
-
         default:
             // no weight initialization has been set, zero the network
             memset(m_network, 0, m_weights_size*sizeof(float));

@@ -13,6 +13,14 @@ void displaymodels(State& state) {
     std::cout << state.AvailableModels() << "\n";
     exit(0);
 }
+void deletemodel(State& state) {
+    std::cout << state.DeleteModel(state.modelname) << "\n";
+    exit(0);
+}
+void resetmodel(State& state) {
+    std::cout << state.ResetModel(state.modelname) << "\n";
+    exit(0);
+}
 
 
 int main(int argc, char* argv[]) {
@@ -40,6 +48,8 @@ int main(int argc, char* argv[]) {
     bool listhistory = false;
     bool listmeta = false;
     bool listmodels = false;
+    bool deletemodel = false;
+    bool resetmodel = false;
 
     CLI::App app{"MLEngine (0.0)\nTrain and save various neural networks"};
 
@@ -74,19 +84,17 @@ int main(int argc, char* argv[]) {
         displaymodels(state);
     }
 
-    if (listmeta || listhistory) {
+
+    if (listmeta || listhistory || deletemodel || resetmodel) {
         if (!state.ModelExists()) {
             std::cerr << "Model not found: " << state.modelname << "\n";
             exit(1);
         }
 
-        if (listmeta) {
-            displaymeta(state);
-        }
-
-        if (listhistory) {
-            displayhistory(state);
-        }        
+        if (listmeta) { displaymeta(state); }
+        if (listhistory) { displayhistory(state); }      
+        if (deletemodel) {}
+        if (resetmodel) {}  
     }
 
     if (state.ModelExists()) {
@@ -110,5 +118,4 @@ int main(int argc, char* argv[]) {
     // model built, start training
     std::cout << "Training model...\n";
     state.Start(batch_size, epochs, learning_rate, validation_freq, validation_split);
-    state.Save();
 }

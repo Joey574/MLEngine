@@ -26,24 +26,27 @@ nlohmann::json NeuralNetwork::Fit(const Dataset& dataset, size_t batch_size, siz
 			BackProp(x, y, learning_rate, batch_size);
 		}
 
+		std::string res = "";
 		if ((e+1) % validation_freq == 0) {
-			TestNetwork(dataset, history);
+			TestNetwork(dataset, history, e);
+			res = "Best Score: " + std::to_string(float(history["Best Score"]));
 		}
 
 		double epochns = (std::chrono::high_resolution_clock::now() - epochstart).count();
-		std::cout << "Epoch " << e << ": " << (epochns / 1000000.00) << "ms\n";
+		EpochEnd(history, res, epochns, e);
 	}
 	
 	FitEnd(history, fitstart);
 	return history;
 }
 
-void NeuralNetwork::TestNetwork(const Dataset& dataset, nlohmann::json& history) {
+void NeuralNetwork::TestNetwork(const Dataset& dataset, nlohmann::json& history, size_t e) {
 	ForwardProp(&dataset.testData[0], m_test_data, m_test_activation_size, dataset.testDataRows);
 	const float* predications = &m_test_activation[m_test_activation_size - (m_layers.back().nodes*dataset.testDataRows)];
 
 	float score = (*m_metric.metric)(predications, &dataset.testLabels[0], m_layers.back().nodes, dataset.testDataRows);
-	std::cout << "Accuracy: " << score << " | ";
+
+	SaveBest(history, score, e);
 }
 
 void NeuralNetwork::ForwardProp(const float* __restrict x_data, float* __restrict result_data, size_t activation_size, size_t num_elements) {

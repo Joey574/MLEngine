@@ -25,6 +25,8 @@ public:
     NeuralNetwork() {}
 
     void Initialize(
+        const std::string& path,
+        const std::string& name,
         const std::vector<size_t>& dimensions,
         const std::vector<ActivationFunctions>& activations,
         LossMetric loss,
@@ -82,6 +84,7 @@ private:
 
     struct Metric {
         LossMetric type;
+        bool highestIsBest;
         float (*metric)(const float*, const float*, size_t, size_t);
     };
 
@@ -122,6 +125,10 @@ private:
     Loss m_loss;
     WeightInitialization m_weight_init;
 
+    unsigned int m_seed;
+    std::string m_path;
+    std::string m_name;
+
     void ForwardProp(
         const float* __restrict x_data,
         float* __restrict result_data,
@@ -138,8 +145,11 @@ private:
 
     void TestNetwork(
         const Dataset& dataset,
-        nlohmann::json& history
+        nlohmann::json& history,
+        size_t e
     );
+
+    void SaveBest(nlohmann::json& history, float score, size_t e) const;
 
     void AssignActvFunctions(const std::vector<ActivationFunctions>& actvs);
     void AssignLossFunctions(LossMetric loss, LossMetric metric);
@@ -188,7 +198,7 @@ private:
     static void FitStart(nlohmann::json& history, size_t e, size_t bs, float lr);
     static void FitEnd(nlohmann::json& history, std::chrono::system_clock::time_point starttime);
     static void EpochStart(nlohmann::json& history);
-    static void EpochEnd(nlohmann::json& history);
+    static void EpochEnd(nlohmann::json& history, const std::string& res, double ns, size_t e);
 };
 
 /* Memory Layout

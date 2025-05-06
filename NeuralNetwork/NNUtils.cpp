@@ -22,21 +22,14 @@ std::string NeuralNetwork::CompactActvations() const {
 }
 
 nlohmann::json NeuralNetwork::Metadata() const {
-    /*
-        loss
-        metric
-        weight_init
-        dimensions
-        activations
-    */
-
     nlohmann::json metadata;
-    metadata["loss"] = LossMetricString(m_loss.type);
-    metadata["metric"] = LossMetricString(m_metric.type);
-    metadata["weights"] = WeightString(m_weight_init);
-    metadata["dimensions"] = CompactDimensions();
-    metadata["activations"] = CompactActvations();
-    metadata["parameters"] = m_network_size;
+    metadata["Loss"] = LossMetricString(m_loss.type);
+    metadata["Metric"] = LossMetricString(m_metric.type);
+    metadata["Weights"] = WeightString(m_weight_init);
+    metadata["Dimensions"] = CompactDimensions();
+    metadata["Activations"] = CompactActvations();
+    metadata["Parameters"] = m_network_size;
+    metadata["Seed"] = m_seed;
 
     return metadata;
 }
@@ -56,6 +49,47 @@ int NeuralNetwork::Load(int fd, WeightInitialization trueweight) {
         return 1;
     }
     return 0;
+}
+
+void NeuralNetwork::SaveBest(nlohmann::json& history, float score, size_t e) const {
+    // save best score this training run
+    if (!history.contains("Best Score")) {
+        history["Best Score"] = score;
+        history["Best Epoch"] = e;
+    } else {
+        float best = history["Best Score"];
+
+        if ((m_metric.highestIsBest && score > best) || (!m_metric.highestIsBest && score < best)) {
+			history["Best Score"] = score;
+			history["Best Epoch"] = e;
+		}
+    }
+
+    // get best of all time score
+    std::ifstream f(m_path+"state.meta");
+    if (!f.is_open()) {
+        std::cerr << m_path+"state.meta not found\n";
+        return;
+    }
+
+    nlohmann::json meta = nlohmann::json::parse(f);
+    f.close();
+
+    if ((!meta.contains("Best Ever Score")) || (m_metric.highestIsBest && score > meta["Best Ever Score"]) || (!m_metric.highestIsBest && score < meta["Best Ever Score"])) {
+        meta["Best Ever Score"] = score;
+    } else {
+        return;
+    }
+
+    // score has been updated, save model and metadata
+    int fd = open((m_path+m_name+".model").c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    Save(fd);
+    close(fd);
+
+    fd = open((m_path+"state.meta").c_str(), O_WRONLY | O_TRUNC, 0644);
+    std::string dump = meta.dump(4) + "\n";
+    write(fd, dump.c_str(), dump.length());
+    close(fd);
 }
 
 void NeuralNetwork::AssignActvFunctions(const std::vector<ActivationFunctions>& actvs) {
@@ -112,14 +146,17 @@ void NeuralNetwork::AssignLossFunctions(LossMetric loss, LossMetric metric) {
     switch (metric) {
         case LossMetric::mae:
             m_metric.type = LossMetric::mae;
+            m_metric.highestIsBest = false;
             m_metric.metric = &MaeScore;
             break;
         case LossMetric::mse:
             m_metric.type = LossMetric::mse;
+            m_metric.highestIsBest = false;
             m_metric.metric = &MseScore;
             break;
         case LossMetric::accuracy:
             m_metric.type = LossMetric::accuracy;
+            m_metric.highestIsBest = true;
             m_metric.metric = &AccuracyScore;
             break;
         default:

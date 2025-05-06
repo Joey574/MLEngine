@@ -12,7 +12,6 @@ public:
     void Init();
     void SaveInit();
 
-    void Save();
     void Load();
 
     void Build(
@@ -34,7 +33,9 @@ public:
 
     std::string ModelMetadata(const std::string& m) const;
     std::string ModelHistory(const std::string& m) const;
-
+    std::string DeleteModel(const std::string& m) const;
+    std::string ResetModel(const std::string& m) const;
+    
     std::string AvailableModels() const;
 
     // static utils
@@ -46,8 +47,6 @@ public:
     bool ModelExists();
         
 private:
-
-    int MostRecentSave();
 
     std::string p_workspace;
     std::string p_datasets;
