@@ -1,0 +1,21 @@
+#pragma once
+
+#define ACTIVATIONS "Activations"
+#define DATASET "Dataset"
+#define DSARGS "Dataset Args"
+#define DIMENSIONS "Dimensions"
+#define LOSS "Loss"
+#define METRIC "Metric"
+#define PARAMETERS "Parameters"
+#define SEED "Seed"
+#define WEIGHTS "Weights"
+#define BESTEVSCORE "Best Ever Score"
+
+#define START "Start"
+#define EPOCHS "Epochs"
+#define BATCHSIZE "Batch Size"
+#define LEARNRATE "Learning Rate"
+#define TRAINTIME "Train Time"
+#define FINISH "Finish"
+#define BESTSCORE "Best Score"
+#define BESTEPOCH "Best Epoch"

@@ -4,15 +4,15 @@
 void NeuralNetwork::FitStart(nlohmann::json& history, size_t e, size_t bs, float lr) {
     auto now = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
     auto local = std::chrono::zoned_time{std::chrono::current_zone(), now};
-    history["Start"] = std::format("{:%F %T}", local);
+    history[START] = std::format("{:%F %T}", local);
 
-    history["Epochs"] = e;
-    history["Batch Size"] = bs;
-    history["Learning Rate"] = lr;
+    // since program can be interupted, epochs is a running total of epochs completed
+    history[EPOCHS] = 0;
+    history[BATCHSIZE] = bs;
+    history[LEARNRATE] = lr;
 }
 void NeuralNetwork::FitEnd(nlohmann::json& history, std::chrono::system_clock::time_point starttime) {
     auto traintime = std::chrono::high_resolution_clock::now() - starttime;
-	history["Train Time"] = std::format("{:%Hh %Mm %Ss}", traintime);
 
     // store train time
     {
@@ -36,22 +36,22 @@ void NeuralNetwork::FitEnd(nlohmann::json& history, std::chrono::system_clock::t
         } else {
             fdur = std::format("{}ms", ms.count());
         }
-        history["Train Time"] = fdur;
+        history[TRAINTIME] = fdur;
     }
 
     // store time training completed
     auto now = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
     auto local = std::chrono::zoned_time{std::chrono::current_zone(), now};
-    history["Finish"] = std::format("{:%F %T}", local);
+    history[FINISH] = std::format("{:%F %T}", local);
 }
 
 void NeuralNetwork::EpochStart(nlohmann::json& history) {
     
 }
 void NeuralNetwork::EpochEnd(nlohmann::json& history, const std::string& res, double ns, size_t e) {
+    history[EPOCHS] = (int)history[EPOCHS] + 1;
 
-    // store train time
-
+    // format epoch time
     std::string fdur;
     {
         using namespace std::chrono;
@@ -77,5 +77,5 @@ void NeuralNetwork::EpochEnd(nlohmann::json& history, const std::string& res, do
     }
     
     std::string em = "Epoch "+std::to_string(e)+": "+fdur;
-    printf("%-30s %-20s\n", em.c_str(), res.c_str());
+    printf("%-25s %s\n", em.data(), res.data());
 }

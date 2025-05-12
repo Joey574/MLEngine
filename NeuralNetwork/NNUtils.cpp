@@ -21,19 +21,21 @@ std::string NeuralNetwork::CompactActvations() const {
     return compact;
 }
 
-nlohmann::json NeuralNetwork::Metadata() const {
-    nlohmann::json metadata;
-    metadata["Loss"] = LossMetricString(m_loss.type);
-    metadata["Metric"] = LossMetricString(m_metric.type);
-    metadata["Weights"] = WeightString(m_weight_init);
-    metadata["Dimensions"] = CompactDimensions();
-    metadata["Activations"] = CompactActvations();
-    metadata["Parameters"] = m_network_size;
-    metadata["Seed"] = m_seed;
+nlohmann::json NeuralNetwork::Metadata() {
+    if (!m_meta.contains(LOSS)) { m_meta[LOSS] = LossMetricString(m_loss.type); }
+    if (!m_meta.contains(METRIC)) { m_meta[METRIC] = LossMetricString(m_metric.type); }
+    if (!m_meta.contains(WEIGHTS)) { m_meta[WEIGHTS] = WeightString(m_weight_init); }
+    if (!m_meta.contains(DIMENSIONS)) { m_meta[DIMENSIONS] = CompactDimensions(); }
+    if (!m_meta.contains(ACTIVATIONS)) { m_meta[ACTIVATIONS] = CompactActvations(); }
+    if (!m_meta.contains(PARAMETERS)) { m_meta[PARAMETERS] = m_network_size; }
+    if (!m_meta.contains(SEED)) { m_meta[SEED] = m_seed; }
 
-    return metadata;
+    return m_meta;
 }
+std::string NeuralNetwork::Summary() const {
 
+}
+ 
 int NeuralNetwork::Save(int fd) const {
     ssize_t n = write(fd, m_network, m_network_size*sizeof(float));
     if (n != m_network_size*sizeof(float)) {
@@ -51,44 +53,30 @@ int NeuralNetwork::Load(int fd, WeightInitialization trueweight) {
     return 0;
 }
 
-void NeuralNetwork::SaveBest(nlohmann::json& history, float score, size_t e) const {
+void NeuralNetwork::SaveBest(nlohmann::json& history, float score, size_t e) {
     // save best score this training run
-    if (!history.contains("Best Score")) {
-        history["Best Score"] = score;
-        history["Best Epoch"] = e;
+    if (!history.contains(BESTSCORE)) {
+        history[BESTSCORE] = score;
+        history[BESTEPOCH] = e;
     } else {
-        float best = history["Best Score"];
+        float best = history[BESTSCORE];
 
         if ((m_metric.highestIsBest && score > best) || (!m_metric.highestIsBest && score < best)) {
-			history["Best Score"] = score;
-			history["Best Epoch"] = e;
+			history[BESTSCORE] = score;
+			history[BESTEPOCH] = e;
 		}
     }
 
-    // get best of all time score
-    std::ifstream f(m_path+"state.meta");
-    if (!f.is_open()) {
-        std::cerr << m_path+"state.meta not found\n";
-        return;
-    }
-
-    nlohmann::json meta = nlohmann::json::parse(f);
-    f.close();
-
-    if ((!meta.contains("Best Ever Score")) || (m_metric.highestIsBest && score > meta["Best Ever Score"]) || (!m_metric.highestIsBest && score < meta["Best Ever Score"])) {
-        meta["Best Ever Score"] = score;
+    // update best of all time score
+    if ((!m_meta.contains(BESTEVSCORE)) || (m_metric.highestIsBest && score > m_meta[BESTEVSCORE]) || (!m_metric.highestIsBest && score < m_meta[BESTEVSCORE])) {
+        m_meta[BESTEVSCORE] = score;
     } else {
         return;
     }
 
-    // score has been updated, save model and metadata
+    // score has been updated, save model immediately
     int fd = open((m_path+m_name+".model").c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
     Save(fd);
-    close(fd);
-
-    fd = open((m_path+"state.meta").c_str(), O_WRONLY | O_TRUNC, 0644);
-    std::string dump = meta.dump(4) + "\n";
-    write(fd, dump.c_str(), dump.length());
     close(fd);
 }
 
@@ -175,7 +163,6 @@ float NeuralNetwork::Sum256(__m256 _x) {
 
     return _mm_cvtss_f32(_res);
 }
-
 __m256 NeuralNetwork::Exp256(__m256 _x) {
     __m256 _a = _mm256_set1_ps(12102203.0f); 
     __m256 _b = _mm256_set1_ps(127.0f * (1 << 23));

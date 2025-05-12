@@ -35,7 +35,7 @@ public:
     );
 
     nlohmann::json Fit(
-        const Dataset& dataset,
+        Dataset& dataset,
         size_t batch_size,
         size_t epochs,
         float learning_rate,
@@ -47,7 +47,7 @@ public:
 
     // user utils
     std::string Summary() const;
-    nlohmann::json Metadata() const;
+    nlohmann::json Metadata();
 
     std::string CompactDimensions() const;
     std::string CompactActvations() const;
@@ -129,6 +129,8 @@ private:
     std::string m_path;
     std::string m_name;
 
+    nlohmann::json m_meta;
+
     void ForwardProp(
         const float* __restrict x_data,
         float* __restrict result_data,
@@ -143,13 +145,16 @@ private:
         size_t num_elements
     );
 
-    void TestNetwork(
+    std::string TestNetwork(
         const Dataset& dataset,
         nlohmann::json& history,
         size_t e
     );
 
-    void SaveBest(nlohmann::json& history, float score, size_t e) const;
+    void DropoutFP(float* __restrict x, size_t n, float dropout) const;
+    void DropoutBP(float* __restrict x, size_t n) const;
+
+    void SaveBest(nlohmann::json& history, float score, size_t e);
 
     void AssignActvFunctions(const std::vector<ActivationFunctions>& actvs);
     void AssignLossFunctions(LossMetric loss, LossMetric metric);

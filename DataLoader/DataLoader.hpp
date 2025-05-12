@@ -3,12 +3,14 @@
 class DataLoader {
 public:
 
-    static Dataset LoadDataset(const std::string& dataset, void* args[]);
+    static Dataset LoadDataset(const std::string& dataset, const std::vector<std::string>& dsargs);
     static Dataset LoadMNIST();
     static Dataset LoadFMNIST();
-    static Dataset LoadMandlebrot(void* args[]);
+    static Dataset LoadMandlebrot(size_t n, size_t depth, size_t fourier);
 
 private:
     static int ReadBigInt(std::ifstream* f);
+    static float InMandlebrot(double x, double y, size_t it);
+    static void ComputeFourier(float* x, size_t series);
     static std::string ExpandPath(const std::string& path);
 };

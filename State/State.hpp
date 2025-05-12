@@ -20,7 +20,8 @@ public:
         const std::string& pmetric, 
         const std::string& ploss, 
         const std::string& pweight,
-        const std::string& data
+        const std::string& data,
+        const std::vector<std::string>& dsargs
     );
 
     void Start(

@@ -7,6 +7,14 @@ void NeuralNetwork::Initialize(const std::string& path, const std::string& name,
     m_name = name;
     m_seed = rd();
 
+    // grab initial metadata, just need stored best ever score
+    std::ifstream f(path+"state.meta");
+    try {
+        nlohmann::json tm = nlohmann::json::parse(f);
+        if (tm.contains(BESTEVSCORE)) { m_meta[BESTEVSCORE] = tm[BESTEVSCORE]; }
+    } catch (nlohmann::json::parse_error& e) {}
+    f.close();
+
     if (dimensions.size() != activations.size()+1) {
         std::cerr << "activations must be one less in size than dimensions\n";
         return;

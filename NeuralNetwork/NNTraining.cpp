@@ -1,6 +1,6 @@
 #include "NeuralNetwork.hpp"
 
-nlohmann::json NeuralNetwork::Fit(const Dataset& dataset, size_t batch_size, size_t epochs, float learning_rate, int validation_freq, float validation_split, bool shuffle) {
+nlohmann::json NeuralNetwork::Fit(Dataset& dataset, size_t batch_size, size_t epochs, float learning_rate, int validation_freq, float validation_split, bool shuffle) {
 	auto fitstart = std::chrono::high_resolution_clock::now();
     
 	nlohmann::json history;
@@ -11,8 +11,11 @@ nlohmann::json NeuralNetwork::Fit(const Dataset& dataset, size_t batch_size, siz
 
 	const size_t iterations = (dataset.trainDataRows + (batch_size-1)) / batch_size;
 
-	for (size_t e = 0; e < epochs; e++) {
+	for (size_t e = 0; e < epochs && KEEPRUNNING; e++) {
 		auto epochstart = std::chrono::high_resolution_clock::now();
+
+		// shuffle dataset for better training
+		dataset.Shuffle();
 
 		for (size_t i = 0; i < iterations; i++) {
 			const float* x = &dataset.trainData[(i * batch_size) * dataset.trainDataCols];
@@ -23,30 +26,41 @@ nlohmann::json NeuralNetwork::Fit(const Dataset& dataset, size_t batch_size, siz
 			size_t effective_size = batch_size > remaining_elements ? remaining_elements : batch_size;
 
 			ForwardProp(x, m_batch_data, m_batch_activation_size, effective_size);
-			BackProp(x, y, learning_rate, batch_size);
+			BackProp(x, y, learning_rate, effective_size);
 		}
 
 		std::string res = "";
 		if ((e+1) % validation_freq == 0) {
-			TestNetwork(dataset, history, e);
-			res = "Best Score: " + std::to_string(float(history["Best Score"]));
+			res = TestNetwork(dataset, history, e);
 		}
 
 		double epochns = (std::chrono::high_resolution_clock::now() - epochstart).count();
 		EpochEnd(history, res, epochns, e);
 	}
+
+	// forced network test to make sure we get at least one save if model wasn't validated during training
+	TestNetwork(dataset, history, epochs);
 	
 	FitEnd(history, fitstart);
 	return history;
 }
 
-void NeuralNetwork::TestNetwork(const Dataset& dataset, nlohmann::json& history, size_t e) {
+std::string NeuralNetwork::TestNetwork(const Dataset& dataset, nlohmann::json& history, size_t e) {
 	ForwardProp(&dataset.testData[0], m_test_data, m_test_activation_size, dataset.testDataRows);
 	const float* predications = &m_test_activation[m_test_activation_size - (m_layers.back().nodes*dataset.testDataRows)];
 
 	float score = (*m_metric.metric)(predications, &dataset.testLabels[0], m_layers.back().nodes, dataset.testDataRows);
 
 	SaveBest(history, score, e);
+	std::string curs = "Score: " + std::to_string(score);
+	std::string sesb = "Session Best: " + std::to_string((float)history["Best Score"]);
+	std::string eveb = "Best Ever: " + std::to_string((float)m_meta["Best Ever Score"]);
+
+	int size = snprintf(nullptr, 0, "%-25s %-30s %-30s", curs.data(), sesb.data(), eveb.data());
+
+	std::string fmt(size+1, ' ');
+	sprintf(fmt.data(), "%-25s %-30s %-30s", curs.data(), sesb.data(), eveb.data());	
+	return fmt;
 }
 
 void NeuralNetwork::ForwardProp(const float* __restrict x_data, float* __restrict result_data, size_t activation_size, size_t num_elements) {
@@ -183,4 +197,23 @@ void NeuralNetwork::BackProp(const float* __restrict x_data, const float* __rest
 	for (size_t i = m_network_size-(m_network_size%8); i < m_network_size; i++) {
 		m_network[i] -= m_d_weights[i] * factor;
 	}
+}
+
+void NeuralNetwork::DropoutFP(float* __restrict x, size_t n, float dropout) const {
+	if (dropout > 0.0f) {
+
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		std::bernoulli_distribution dist(1.0f - dropout);
+
+		#pragma omp parallel for simd
+		for (size_t i = 0; i < n; i++) {
+			float k = dist(gen) ? 1.0f : 0.0f;
+			// store which value we zerod in bit pack mask
+			x[i] *= k;
+		}
+	}
+}
+void NeuralNetwork::DropoutBP(float* __restrict x, size_t n) const {
+
 }

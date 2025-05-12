@@ -1,29 +1,37 @@
 #include "NeuralNetwork/NeuralNetwork.hpp"
 #include "State/State.hpp"
 
-void displaymeta(State& state) {
+void displayMeta(State& state) {
     std::cout << state.ModelMetadata(state.modelname) << "\n";
     exit(0);
 }
-void displayhistory(State& state) {
+void displayHistory(State& state) {
     std::cout << state.ModelHistory(state.modelname) << "\n";
     exit(0);
 }
-void displaymodels(State& state) {
+void displayModels(State& state) {
     std::cout << state.AvailableModels() << "\n";
     exit(0);
 }
-void deletemodel(State& state) {
+void deleteModel(State& state) {
     std::cout << state.DeleteModel(state.modelname) << "\n";
     exit(0);
 }
-void resetmodel(State& state) {
+void resetModel(State& state) {
     std::cout << state.ResetModel(state.modelname) << "\n";
     exit(0);
 }
 
 
+void handleInterupt(int signum) {
+    std::cout << "\nProgram will exit after next epoch\n";
+    KEEPRUNNING = false;
+}
+
 int main(int argc, char* argv[]) {
+    KEEPRUNNING = true;
+    signal(SIGINT, handleInterupt);
+
     State state;
     state.Init();
 
@@ -77,11 +85,13 @@ int main(int argc, char* argv[]) {
     flags->add_flag("--meta", listmeta, "list model metadata");
     flags->add_flag("--history", listhistory, "list model history");
     flags->add_flag("--models", listmodels, "lists available models");
+    flags->add_flag("--delete", deletemodel, "deletes a given model");
+    flags->add_flag("--reset", resetmodel, "deletes model history and resets model weights");
 
     CLI11_PARSE(app, argc, argv);
 
     if (listmodels) {
-        displaymodels(state);
+        displayModels(state);
     }
 
 
@@ -91,25 +101,25 @@ int main(int argc, char* argv[]) {
             exit(1);
         }
 
-        if (listmeta) { displaymeta(state); }
-        if (listhistory) { displayhistory(state); }      
-        if (deletemodel) {}
-        if (resetmodel) {}  
+        if (listmeta) { displayMeta(state); }
+        if (listhistory) { displayHistory(state); }      
+        if (deletemodel) { deleteModel(state); }
+        if (resetmodel) { resetModel(state); }  
     }
 
     if (state.ModelExists()) {
         std::cout << "Loading existing model\n";
         state.Load();
     } else {
-        std::cout << "Creating new model\n";
 
         // build new model based on passed args
-        if (dataset == "" || dims == "" || actvs == "" || loss == "" || metric == "" || state.modelname == "") {
+        if (dataset == "" || weight == "" || dims == "" || actvs == "" || loss == "" || metric == "" || state.modelname == "") {
             std::cout << app.help();
             exit(1);
         }
-
-        state.Build(dims, actvs, metric, loss, weight, dataset);
+        
+        std::cout << "Creating new model\n";
+        state.Build(dims, actvs, metric, loss, weight, dataset, datasetargs);
     }
 
     // initialize save location and prep meta data

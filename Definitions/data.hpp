@@ -1,3 +1,4 @@
 #pragma once
-#include "enums.hpp"
 #include "structs.hpp"
+#include "jsondefs.hpp"
+#include "globals.hpp"

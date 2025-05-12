@@ -69,6 +69,7 @@
         "thread": "cpp",
         "valarray": "cpp",
         "filesystem": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "csignal": "cpp"
     }
 }

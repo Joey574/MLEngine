@@ -38,8 +38,8 @@ std::string State::AvailableModels() const {
 
             // collect basic metadata of the model
             nlohmann::json metadata = nlohmann::json::parse(ModelMetadata(f));
-            models = models.append("\tDataset: ").append(metadata["Dataset"]).append("\n");
-            models = models.append("\tParameters: ").append(std::to_string((int)metadata["Parameters"])).append("\n");
+            models = models.append("\tDataset: ").append(metadata[DATASET]).append("\n");
+            models = models.append("\tParameters: ").append(std::to_string((int)metadata[PARAMETERS])).append("\n");
         }
     }
 
@@ -49,20 +49,24 @@ std::string State::DeleteModel(const std::string& m) const {
     const std::filesystem::path dir = p_models+"/"+m;
 
     std::filesystem::remove_all(dir);
-    return "Model: \"" + m + "\" has been deleted";
+    return "\"" + m + "\" has been deleted";
 }
 std::string State::ResetModel(const std::string& m) const {
-    std::filesystem::remove(p_models+m+"/history.meta");
-    std::filesystem::remove(p_models+m+"/"+m+".model");
+    std::filesystem::remove((p_models+"/"+m+"/history.meta"));
+    std::filesystem::remove((p_models+"/"+m+"/"+m+".model"));
 
-    std::fstream f(p_models+"/state.meta");
-    nlohmann::json meta = nlohmann::json::parse(f);
+    std::ifstream fi(p_models+"/"+m+"/state.meta");
+    nlohmann::json meta = nlohmann::json::parse(fi);
+    fi.close();
 
-    meta.erase("Best Score Ever");
+    meta.erase(BESTEVSCORE);
 
-    f.close();
+    std::ofstream fo(p_models+"/"+m+"/state.meta", std::ios::trunc);
+    std::string dump = meta.dump(4)+"\n";
+    fo.write(dump.c_str(), dump.length());
+    fo.close();
 
-    return "Model: \"" + m + "\" has been reset";
+    return "\"" + m + "\" has been reset";
 }
 
 bool State::ModelExists() {
