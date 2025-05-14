@@ -33,7 +33,11 @@ nlohmann::json NeuralNetwork::Metadata() {
     return m_meta;
 }
 std::string NeuralNetwork::Summary() const {
-
+    std::string res = "";
+    for (size_t i = 0; i < m_layers.size(); i++) {
+        res += std::to_string(m_layers[i].nodes) + ",";
+    }
+    return res;
 }
  
 int NeuralNetwork::Save(int fd) const {

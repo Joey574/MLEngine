@@ -12,7 +12,7 @@ Dataset DataLoader::LoadDataset(const std::string& dataset, const std::vector<st
     } else if (dataset == "fmnist") {
         return LoadFMNIST();
     } else if (dataset == "mandlebrot") {
-        return LoadMandlebrot(atoi(dsargs[0].c_str()), atoi(dsargs[1].c_str()), atoi(dsargs[2].c_str()));
+        return LoadMandlebrot(dsargs);
     }
 
     std::cerr << "Failed to load dataset\n";
@@ -133,8 +133,14 @@ Dataset DataLoader::LoadFMNIST() {
     return fmnist;
 }
 
-Dataset DataLoader::LoadMandlebrot(size_t n, size_t depth, size_t fourier) {
+Dataset DataLoader::LoadMandlebrot(const std::vector<std::string>& args) {
     Dataset mandlebrot(Datasets::MANDLEBROT, "mandlebrot");
+    mandlebrot.hasTestData = true;
+    mandlebrot.args = args;
+
+    size_t n = atoi(args[0].c_str());
+    size_t depth = atoi(args[1].c_str());
+    size_t fourier = atoi(args[2].c_str());
 
     const size_t test_elements = 10000;
 
@@ -165,6 +171,7 @@ Dataset DataLoader::LoadMandlebrot(size_t n, size_t depth, size_t fourier) {
     mandlebrot.trainLabels = std::vector<float>(n);
     mandlebrot.testLabels = std::vector<float>(test_elements);
 
+    // build training dataset
     for (size_t i = 0; i < n; i++) {
         double x = xrand(gen);
         double y = yrand(gen);
@@ -178,6 +185,7 @@ Dataset DataLoader::LoadMandlebrot(size_t n, size_t depth, size_t fourier) {
         ComputeFourier(&mandlebrot.trainData[i*mandlebrot.trainDataCols], fourier);
     }
 
+    // build testing dataset
     for (size_t i = 0; i < test_elements; i++) {
         double x = xrand(gen);
         double y = yrand(gen);
@@ -191,6 +199,35 @@ Dataset DataLoader::LoadMandlebrot(size_t n, size_t depth, size_t fourier) {
         ComputeFourier(&mandlebrot.testData[i*mandlebrot.testDataCols], fourier);
     }
 
+    #pragma omp parallel for
+    for (size_t c = 0; c < mandlebrot.trainDataCols; c++) {
+        // find col min/max
+        float min = mandlebrot.trainData[c];
+        float max = mandlebrot.trainData[c];
+        for (size_t i = 1; i < mandlebrot.trainDataRows; i++) {
+            if (mandlebrot.trainData[i*mandlebrot.trainDataCols+c] > max) { max = mandlebrot.trainData[i*mandlebrot.trainDataCols+c]; }
+            if (mandlebrot.trainData[i*mandlebrot.trainDataCols+c] < min) { min = mandlebrot.trainData[i*mandlebrot.trainDataCols+c]; }
+        }
+
+        if (max <= min) {
+            max = min + 1.0f;
+        }
+
+        const float range = max-min;
+
+        // normalize training col
+        for (size_t i = 0; i < mandlebrot.trainDataRows; i++) {
+            const size_t idx = i*mandlebrot.trainDataCols+c;
+            mandlebrot.trainData[idx] = (mandlebrot.trainData[idx] - min) / range;
+        }
+
+        // normalize testing col
+        for (size_t i = 0; i < mandlebrot.testDataRows; i++) {
+            const size_t idx = i*mandlebrot.testDataCols+c;
+            mandlebrot.testData[idx] = (mandlebrot.testData[idx] - min) / range;
+        }
+    }
+    
     return mandlebrot;
 }
 

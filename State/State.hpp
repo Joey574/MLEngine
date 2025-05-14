@@ -23,6 +23,7 @@ public:
         const std::string& data,
         const std::vector<std::string>& dsargs
     );
+    void Build(const nlohmann::json& meta);
 
     void Start(
         size_t batchsize, 

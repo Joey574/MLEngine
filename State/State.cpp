@@ -35,7 +35,7 @@ void State::Load() {
     nlohmann::json metadata = nlohmann::json::parse(f);
 
     // build with no weights, just setting dimensions, activations etc
-    Build(metadata[DIMENSIONS], metadata[ACTIVATIONS], metadata[METRIC], metadata[LOSS], "none", metadata[DATASET], metadata[DSARGS]);
+    Build(metadata);
 
     // attempt to load save from file
     std::string file = p_models+"/"+modelname+"/"+modelname+".model";
@@ -48,11 +48,11 @@ void State::Load() {
         if (err) {
             // failed to laod, build model again
             std::cerr << "Failed to load parameters, rebuilding model\n";
-            Build(metadata[DIMENSIONS], metadata[ACTIVATIONS], metadata[METRIC], metadata[LOSS], metadata[WEIGHTS], metadata[DATASET], metadata[DSARGS]);
+            Build(metadata);
         }        
     } else {
         std::cout << "No save found, rebuilding model\n";
-        Build(metadata[DIMENSIONS], metadata[ACTIVATIONS], metadata[METRIC], metadata[LOSS], metadata[WEIGHTS], metadata[DATASET], metadata[DSARGS]);
+        Build(metadata);
     }
 }
 
@@ -64,12 +64,27 @@ void State::Build(const std::string& pdims, const std::string& pactvs, const std
     std::vector<NeuralNetwork::ActivationFunctions> activations = NeuralNetwork::ParseActvs(pactvs);
     std::vector<size_t> dimensions = NeuralNetwork::ParseCompact(pdims);
     dimensions.insert(dimensions.begin(), dataset.trainDataCols);
-    dimensions.push_back(dataset.trainLabelCols);
 
     NeuralNetwork::LossMetric metric = NeuralNetwork::ParseLossMetric(pmetric);
     NeuralNetwork::LossMetric loss = NeuralNetwork::ParseLossMetric(ploss);
 
     NeuralNetwork::WeightInitialization weight = NeuralNetwork::ParseWeight(pweight);
+
+    // initialize model with provided options
+    model->Initialize(p_models+"/"+modelname+"/", modelname, dimensions, activations, loss, metric, weight);
+}
+void State::Build(const nlohmann::json& meta) {
+    if (dataset.type == Datasets::NONE) {
+        dataset = DataLoader::LoadDataset(meta[DATASET], meta[DSARGS]);
+    }
+
+    std::vector<NeuralNetwork::ActivationFunctions> activations = NeuralNetwork::ParseActvs(meta[ACTIVATIONS]);
+    std::vector<size_t> dimensions = NeuralNetwork::ParseCompact(meta[DIMENSIONS]);
+
+    NeuralNetwork::LossMetric metric = NeuralNetwork::ParseLossMetric(meta[METRIC]);
+    NeuralNetwork::LossMetric loss = NeuralNetwork::ParseLossMetric(meta[LOSS]);
+
+    NeuralNetwork::WeightInitialization weight = NeuralNetwork::ParseWeight(meta[WEIGHTS]);
 
     // initialize model with provided options
     model->Initialize(p_models+"/"+modelname+"/", modelname, dimensions, activations, loss, metric, weight);

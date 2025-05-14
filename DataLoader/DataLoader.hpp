@@ -6,7 +6,7 @@ public:
     static Dataset LoadDataset(const std::string& dataset, const std::vector<std::string>& dsargs);
     static Dataset LoadMNIST();
     static Dataset LoadFMNIST();
-    static Dataset LoadMandlebrot(size_t n, size_t depth, size_t fourier);
+    static Dataset LoadMandlebrot(const std::vector<std::string>& args);
 
 private:
     static int ReadBigInt(std::ifstream* f);

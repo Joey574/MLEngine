@@ -1,7 +1,22 @@
 #include "NeuralNetwork.hpp"
 
 void NeuralNetwork::MaeLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols) {
+    #if LOGLOSS
+        printf("Loss applied [%zu x %zu]\n", rows, cols);
+    #endif
 
+    #pragma omp parallel for
+    for (size_t i = 0; i <= rows*cols-8; i += 8) {
+        const __m256 _x = _mm256_loadu_ps(&x[i]);
+        const __m256 _y = _mm256_loadu_ps(&y[i]);
+
+        const __m256 _res = _mm256_sub_ps(_x, _y);
+        _mm256_storeu_ps(&c[i], _res);
+    }
+
+    for (size_t i = (rows*cols)-((rows*cols)%8); i < rows*cols; i++) {
+        c[i] = x[i] - y[i];
+    }
 }
 void NeuralNetwork::MseLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols) {
 
@@ -23,22 +38,22 @@ float NeuralNetwork::MaeScore(const float* __restrict x, const float* __restrict
     __m256 _sum = _mm256_setzero_ps();
 
     size_t i = 0;
-    for (; i + 8 <= rows*cols; i += 8) {
+    for (; i <= rows*cols-8; i += 8) {
         const __m256 _x = _mm256_load_ps(&x[i]);
         const __m256 _y = _mm256_load_ps(&y[i]);
 
         const __m256 _e = _mm256_sub_ps(_x, _y);
-        const __m256 _res = _mm256_andnot_ps(_e, _absmask);
+        const __m256 _res = _mm256_and_ps(_e, _absmask);
 
         _sum = _mm256_add_ps(_sum, _res);
     }
 
     float error = Sum256(_sum);
     for (; i < rows*cols; i++) {
-        error += std::abs(x - y);
+        error += std::abs(x[i] - y[i]);
     }
 
-    return error / ((float)rows*(float)cols);
+    return error / (float)(rows*cols);
 }
 float NeuralNetwork::MseScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
     __m256 _sum = _mm256_setzero_ps();
@@ -56,10 +71,10 @@ float NeuralNetwork::MseScore(const float* __restrict x, const float* __restrict
 
     float error = Sum256(_sum);
     for (; i < rows*cols; i++) {
-        error += std::pow(x - y, 2);
+        error += std::pow(x[i] - y[i], 2);
     }
 
-    return error / ((float)rows*(float)cols);
+    return error / (float)(rows*cols);
 }
 float NeuralNetwork::AccuracyScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
     size_t correct = 0;
