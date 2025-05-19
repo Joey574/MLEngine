@@ -123,6 +123,9 @@ void NeuralNetwork::InitializeBatchData(size_t num_elements) {
     m_d_weights = &m_d_total[m_batch_activation_size];
 	m_d_biases = &m_d_weights[m_weights_size];
 }
+void NeuralNetwork::InitializeUtilData(size_t num_elements) {
+    m_dropout_mask = (uint8_t*)aligned_alloc(32, (num_elements+7)/8);
+}
 void NeuralNetwork::InitializeTestData(size_t num_elements) {
     m_test_activation_size = 0;
 

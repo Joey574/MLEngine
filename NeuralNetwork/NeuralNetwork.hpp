@@ -95,18 +95,18 @@ private:
 
     // pointers to various memory blocks that contain all the data
     float* m_network;
-    float* m_batch_data;
-    float* m_test_data;
-
     float* m_biases;
 
+    float* m_batch_data;
     float* m_activation;
-
     float* m_d_total;
     float* m_d_weights;
     float* m_d_biases;
 
+    float* m_test_data;
     float* m_test_activation;
+
+    uint8_t* m_dropout_mask;
 
     // size of various memory blocks
     size_t m_network_size;
@@ -118,6 +118,8 @@ private:
 
     size_t m_test_data_size;
     size_t m_test_activation_size;
+
+    size_t m_dropout_mask_size;
 
     // internal network config
     std::vector<Layer> m_layers;
@@ -151,8 +153,8 @@ private:
         size_t e
     );
 
-    void DropoutFP(float* __restrict x, size_t n, float dropout) const;
-    void DropoutBP(float* __restrict x, size_t n) const;
+    static void DropoutFP(uint8_t* __restrict mask, float* __restrict x, size_t n, float dropout);
+    static void DropoutBP(uint8_t* __restrict mask, float* __restrict x, size_t n, float dropout);
 
     void SaveBest(nlohmann::json& history, float score, size_t e);
 
@@ -196,6 +198,7 @@ private:
     void InitializeNetwork();
     void InitializeWeights();
     void InitializeBatchData(size_t num_elements);
+    void InitializeUtilData(size_t num_elements);
     void InitializeTestData(size_t num_elements);
     void InitializeLoss(LossMetric loss);
     void InitializeMetric(LossMetric metric);

@@ -14,7 +14,7 @@ nlohmann::json NeuralNetwork::Fit(Dataset& dataset, size_t batch_size, size_t ep
 	for (size_t e = 0; e < epochs && KEEPRUNNING; e++) {
 		auto epochstart = std::chrono::high_resolution_clock::now();
 
-		// shuffle dataset for better training
+		// shuffle dataset each epoch
 		dataset.Shuffle();
 
 		for (size_t i = 0; i < iterations; i++) {
@@ -199,8 +199,9 @@ void NeuralNetwork::BackProp(const float* __restrict x_data, const float* __rest
 	}
 }
 
-void NeuralNetwork::DropoutFP(float* __restrict x, size_t n, float dropout) const {
-	if (dropout > 0.0f) {
+void NeuralNetwork::DropoutFP(uint8_t* __restrict mask, float* __restrict x, size_t n, float dropout) {
+		if (dropout <= 0.0f) { return; }
+		const float scale = 1.0f / (1.0f - dropout);
 
 		std::random_device rd;
 		std::mt19937 gen(rd());
@@ -208,12 +209,33 @@ void NeuralNetwork::DropoutFP(float* __restrict x, size_t n, float dropout) cons
 
 		#pragma omp parallel for simd
 		for (size_t i = 0; i < n; i++) {
-			float k = dist(gen) ? 1.0f : 0.0f;
-			// store which value we zerod in bit pack mask
-			x[i] *= k;
+			bool k = dist(gen);
+
+			if (k) {
+				x[i] *= scale;
+				size_t byteidx = i/8;
+				size_t bitidx = i%8;
+
+				// store bit mask of dropout results
+				#pragma omp atomic update
+				mask[byteidx] |= (1 << bitidx);
+			} else {
+				x[i] = 0.0f;
+			}
+		}
+}
+void NeuralNetwork::DropoutBP(uint8_t* __restrict mask, float* __restrict x, size_t n, float dropout) {
+	if (dropout <= 0.0f) { return; }
+	
+	#pragma omp parallel for simd
+	for (size_t i = 0; i < n; i++) {
+		size_t byteidx = i/8;
+		size_t bitidx = i%8;
+
+		// grab bit of data from mask
+		bool k = (mask[byteidx] >> bitidx) & 1;
+		if (!k) {
+			x[i] = 0.0f;
 		}
 	}
-}
-void NeuralNetwork::DropoutBP(float* __restrict x, size_t n) const {
-
 }
