@@ -176,3 +176,11 @@ __m256 NeuralNetwork::Exp256(__m256 _x) {
 
     return _mm256_castsi256_ps(_res);
 }
+void NeuralNetwork::FastCopy(const float* __restrict src, float* __restrict dst, size_t n) {
+    for (size_t i = 0; i <= n-8; i += 8) {
+        const __m256 _src = _mm256_loadu_ps(&src[i]);
+        _mm256_storeu_ps(&dst[i], _src);
+    }
+    const size_t r = n-(n%8);
+    std::memcpy(&dst[r], &src[r], (n-r)*sizeof(float));
+}

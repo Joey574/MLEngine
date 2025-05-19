@@ -190,6 +190,7 @@ private:
     // simd utils
     static float Sum256(__m256 x);
     static __m256 Exp256(__m256 x);
+    static void FastCopy(const float* __restrict src, float* __restrict dst, size_t n);
 
     // initialization utils
     void InitializeNetwork();

@@ -142,7 +142,7 @@ Dataset DataLoader::LoadMandlebrot(const std::vector<std::string>& args) {
     size_t depth = atoi(args[1].c_str());
     size_t fourier = atoi(args[2].c_str());
 
-    const size_t test_elements = 10000;
+    const size_t test_elements = 10000 > (n*0.1) ? 10000 : n*0.1;
 
     const double xMin = -2.5;
     const double xMax = 1.0;

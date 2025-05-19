@@ -82,11 +82,11 @@ void NeuralNetwork::ForwardProp(const float* __restrict x_data, float* __restric
         float* output_start = &result_data[output_idx];
 
         // initialize memory to bias values to avoid computation and clear existing values
-        #pragma omp parallel for
-        for (size_t r = 0; r < num_elements; r++) {
-			std::memcpy(&output_start[r*m_layers[i+1].nodes], bias_start, m_layers[i+1].nodes*sizeof(float));
-        }
-
+		for (size_t r = 0; r < num_elements; r++) {
+			FastCopy(bias_start, &output_start[r*m_layers[i+1].nodes], m_layers[i+1].nodes);
+		}	
+		
+		
 		i == 0 ?
 			DotProdTB(weights_start, input_start, output_start, m_layers[i+1].nodes, m_layers[i].nodes, num_elements, m_layers[i].nodes, false) :
 			DotProd(weights_start, input_start, output_start, m_layers[i+1].nodes, m_layers[i].nodes, m_layers[i].nodes, num_elements, false);

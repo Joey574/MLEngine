@@ -20,7 +20,7 @@ flagsopt="\
     -flto=auto -fomit-frame-pointer -funroll-loops -fipa-pta -fdevirtualize-speculatively \
     -O3 -Ofast \
     -fopenmp \
-    -mavx2 -mfma -mprefer-vector-width=256 \
+    -mavx2 -mfma -mprefer-vector-width=256 -fvect-cost-model=unlimited\
     -DNDEBUG \
     -falign-functions=32 -falign-loops=32 \
     -ffast-math -fno-math-errno -fassociative-math -freciprocal-math -fno-signed-zeros -fno-trapping-math \

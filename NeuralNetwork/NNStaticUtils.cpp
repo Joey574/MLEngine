@@ -41,6 +41,8 @@ NeuralNetwork::LossMetric NeuralNetwork::ParseLossMetric(const std::string& lm) 
         return LossMetric::accuracy;
     } else if (lm == "onehot") {
         return LossMetric::onehot;
+    } else if (lm == "mse") {
+        return LossMetric::mse;
     }
 
     return LossMetric::none;
@@ -93,6 +95,8 @@ std::string NeuralNetwork::LossMetricString(const LossMetric lm) {
             return "mae";
         case LossMetric::onehot:
             return "onehot";
+        case LossMetric::mse:
+            return "mse";
         default:
             return "none";
     }
