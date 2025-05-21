@@ -21,7 +21,7 @@ void State::SaveInit() {
         std::ofstream file(p_models+"/"+modelname+"/state.meta", std::ios::trunc);
 
         nlohmann::json metadata = model->Metadata();
-        metadata["Dataset"] = dataset.name;
+        metadata[DATASET] = dataset.name;
     
         std::string dump = metadata.dump(4).append("\n");
         file.write(dump.c_str(), dump.size());
@@ -56,7 +56,7 @@ void State::Load() {
     }
 }
 
-void State::Build(const std::string& pdims, const std::string& pactvs, const std::string& pmetric, const std::string& ploss, const std::string& pweight, const std::string& data, const std::vector<std::string>& dsargs) {
+void State::Build(const std::vector<std::string>& pdims, const std::vector<std::string>& pactvs, const std::string& pmetric, const std::string& ploss, const std::string& pweight, const std::string& data, const std::vector<std::string>& dsargs) {
     if (dataset.type == Datasets::NONE) {
         dataset = DataLoader::LoadDataset(data, dsargs);
     }

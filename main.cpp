@@ -38,8 +38,8 @@ int main(int argc, char* argv[]) {
     // dataset args
     std::string dataset = "";
     std::vector<std::string> datasetargs;
-    std::string dims = "";
-    std::string actvs = "";
+    std::vector<std::string> dims;
+    std::vector<std::string> actvs;
     std::string loss = "";
     std::string metric = "";
     std::string weight = "";
@@ -69,8 +69,8 @@ int main(int argc, char* argv[]) {
     model_options->add_option("-m,--model", state.modelname, "loads model from disk (if model doesn't exist new model will be made)");
     model_options->add_option("-d,--dataset", dataset, "trains on the given dataset");
     model_options->add_option("-g,--dsargs", datasetargs, "args for generating the dataset if applicable")->delimiter(',');
-    model_options->add_option("-i,--dimensions", dims, "sets model dimensions");
-    model_options->add_option("-v,--activations", actvs, "activation functions to use");
+    model_options->add_option("-i,--dimensions", dims, "sets model dimensions")->delimiter(',');
+    model_options->add_option("-v,--activations", actvs, "activation functions to use")->delimiter(',');
     model_options->add_option("-l,--loss", loss, "trains model with given loss algorithm");
     model_options->add_option("-r,--metric", metric, "evaluates model with given metric");
     model_options->add_option("-w,--weight", weight, "what weight initialization tech to use");
@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
     } else {
 
         // build new model based on passed args
-        if (dataset == "" || weight == "" || dims == "" || actvs == "" || loss == "" || metric == "" || state.modelname == "") {
+        if (dataset == "" || weight == "" || dims.empty() || actvs.empty() || loss == "" || metric == "" || state.modelname == "") {
             std::cout << app.help();
             exit(1);
         }

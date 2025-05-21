@@ -55,9 +55,8 @@ void NeuralNetwork::OneHotLoss(const float* __restrict x, const float* __restric
     FastCopy(x, c, rows*cols);
 
     #pragma omp parallel for simd
-    for (size_t i = 0; i < cols; i++) {
-        #pragma omp atomic update
-        c[(int)y[i]*cols+i]--;
+    for (size_t i = 0; i < rows; i++) {
+        c[i*cols+(int)y[i]]--;
     }
 }
 
@@ -108,18 +107,18 @@ float NeuralNetwork::AccuracyScore(const float* __restrict x, const float* __res
     size_t correct = 0;
 
     #pragma omp parallel for simd
-    for (size_t c = 0; c < cols; c++) {
+    for(size_t r = 0; r < rows; r++) {
         size_t midx = 0;
-        float max = x[0*cols+c];
+        float max = x[r*cols+0];
 
-        for (size_t r = 1; r < rows; r++) {
+        for (size_t c = 1; c < cols; c++) {
             if (x[r*cols+c] > max) {
                 max = x[r*cols+c];
-                midx = r;
+                midx = c;
             }
         }
 
-        if (midx == y[c]) {
+        if (midx == y[r]) {
             #pragma omp atomic update
             correct++;
         }
@@ -129,5 +128,5 @@ float NeuralNetwork::AccuracyScore(const float* __restrict x, const float* __res
         printf("Model scored [%zu x %zu] (%zu/%zu)\n", rows, cols, correct, cols);
     #endif
 
-    return ((float)correct / (float)cols) * 100.0f;
+    return ((float)correct / (float)rows) * 100.0f;
 }

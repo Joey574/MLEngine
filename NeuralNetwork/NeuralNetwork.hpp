@@ -5,7 +5,6 @@ class TestNetwork;
 #define LOGSCORE 0
 #define LOGDP 0
 
-
 class NeuralNetwork {
     friend class TestNetwork;
 
@@ -57,8 +56,8 @@ public:
 
 
     // static utils
-    static std::vector<size_t> ParseCompact(const std::string& dims);
-    static std::vector<ActivationFunctions> ParseActvs(const std::string& actvs);
+    static std::vector<size_t> ParseCompact(const std::vector<std::string>& dims);
+    static std::vector<ActivationFunctions> ParseActvs(const std::vector<std::string>& actvs);
     static LossMetric ParseLossMetric(const std::string& lm);
     static WeightInitialization ParseWeight(const std::string& weight);
 
@@ -134,17 +133,18 @@ private:
     nlohmann::json m_meta;
 
     void ForwardProp(
-        const float* __restrict x_data,
-        float* __restrict result_data,
-        size_t activation_size,
-        size_t num_elements
+        bool training,
+        const float* __restrict x,
+        float* __restrict results,
+        size_t actvsize,
+        size_t n
     );
 
     void BackProp(
-        const float* __restrict x_data,
-        const float* __restrict y_data,
-        float learning_rate,
-        size_t num_elements
+        const float* __restrict x,
+        const float* __restrict y,
+        float lr,
+        size_t n
     );
 
     std::string TestNetwork(

@@ -15,10 +15,10 @@ public:
     void Load();
 
     void Build(
-        const std::string& pdims, 
-        const std::string& pactvs, 
-        const std::string& pmetric, 
-        const std::string& ploss, 
+        const std::vector<std::string>& pdims,
+        const std::vector<std::string>& pactvs,
+        const std::string& pmetric,
+        const std::string& ploss,
         const std::string& pweight,
         const std::string& data,
         const std::vector<std::string>& dsargs

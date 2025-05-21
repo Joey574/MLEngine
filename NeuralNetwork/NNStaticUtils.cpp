@@ -1,33 +1,61 @@
 #include "NeuralNetwork.hpp"
 
-std::vector<size_t> NeuralNetwork::ParseCompact(const std::string& dims) {
+std::vector<size_t> NeuralNetwork::ParseCompact(const std::vector<std::string>& dims) {
     std::vector<size_t> dimensions;
 
-    auto split = dims | std::views::split('-');
-    for (const auto& range : split) {
-        std::string token(range.begin(), range.end());
-        dimensions.push_back(std::stoi(token));
+    for (size_t i = 0; i < dims.size(); i++) {
+        // get number of layers
+        size_t n = 1;
+        std::string token = dims[i];
+        if (dims[i].find('X') != std::string::npos) {
+            n = std::stoi(dims[i].substr(dims[i].find('X')+1));
+            token = dims[i].substr(0, dims[i].find('X'));
+
+        }
+
+        // append n layers of t
+        size_t t = std::stoi(token);
+        for (size_t i = 0; i < n; i++) {
+            dimensions.push_back(t);
+        }
     }
 
     return dimensions;
 }
-std::vector<NeuralNetwork::ActivationFunctions> NeuralNetwork::ParseActvs(const std::string& actvs) {
+std::vector<NeuralNetwork::ActivationFunctions> NeuralNetwork::ParseActvs(const std::vector<std::string>& actvs) {
     std::vector<ActivationFunctions> activations;
 
-    auto split = actvs | std::views::split('-');
-    for (const auto& range : split) {
-        std::string token(range.begin(), range.end());
+    for (size_t i = 0; i < actvs.size(); i++) {
+        // get number of layers
+        size_t n = 1;
+        std::string token = actvs[i];
+        if (actvs[i].find('X') != std::string::npos) {
+            n = std::stoi(actvs[i].substr(actvs[i].find('X')+1));
+            token = actvs[i].substr(0, actvs[i].find('X'));
 
+        }
+
+        // add n number of token
         if (token == "sigmoid") {
-            activations.push_back(ActivationFunctions::sigmoid);
+            for (size_t i = 0; i < n; i++) {
+                activations.push_back(ActivationFunctions::sigmoid);
+            }
         } else if (token == "relu") {
-            activations.push_back(ActivationFunctions::relu);
+            for (size_t i = 0; i < n; i++) {
+                activations.push_back(ActivationFunctions::relu);
+            }
         } else if (token == "leakyrelu") {
-            activations.push_back(ActivationFunctions::leakyrelu);
+            for (size_t i = 0; i < n; i++) {
+                activations.push_back(ActivationFunctions::leakyrelu);
+            }
         } else if (token == "elu") {
-            activations.push_back(ActivationFunctions::elu);
+            for (size_t i = 0; i < n; i++) {
+                activations.push_back(ActivationFunctions::elu);
+            }
         } else if (token == "softmax") {
-            activations.push_back(ActivationFunctions::softmax);
+            for (size_t i = 0; i < n; i++) {
+                activations.push_back(ActivationFunctions::softmax);
+            }
         }
     }
 
