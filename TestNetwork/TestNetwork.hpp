@@ -22,6 +22,7 @@ public:
     // math util tests
     static void TestExp(size_t n);
     static void TestSum(size_t n);
+    static void BenchmarkCpy(size_t n);
     static void TestMathUtils();
 
     // metric tests

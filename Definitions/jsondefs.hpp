@@ -10,6 +10,7 @@
 #define SEED "Seed"
 #define WEIGHTS "Weights"
 #define BESTEVSCORE "Best Ever Score"
+#define LAYERS "Layers"
 
 #define START "Start"
 #define EPOCHS "Epochs"

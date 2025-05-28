@@ -1,23 +1,41 @@
 #include "NeuralNetwork.hpp"
 
-std::string NeuralNetwork::CompactDimensions() const {
-    std::string compact = "";
-    
-    for (size_t i = 0; i < m_layers.size() - 1; i++) {
-        compact += std::to_string(m_layers[i].nodes).append("-");
+std::vector<std::string> NeuralNetwork::CompactDimensions() const {
+    std::vector<std::string> compact;
+    for (size_t i = 0; i < m_layers.size(); i++) {
+
+        size_t n = 1;
+        size_t token = m_layers[i].nodes;
+
+        // collect number of same dimensions
+        for (; m_layers[i+1].nodes == token && i < m_layers.size()-1; n++, i++){}
+
+        if (n > 1) {
+            compact.push_back(std::to_string(token).append("X").append(std::to_string(n)));
+        } else {
+            compact.push_back(std::to_string(token));
+        }
     }
 
-    compact += std::to_string(m_layers.back().nodes);
     return compact;
 }
-std::string NeuralNetwork::CompactActvations() const {
-    std::string compact = "";
+std::vector<std::string> NeuralNetwork::CompactActvations() const {
+    std::vector<std::string> compact;
+    for (size_t i = 1; i < m_layers.size(); i++) {
 
-    for (size_t i = 1; i < m_layers.size() - 1; i++) {
-        compact += ActivationString(m_layers[i].actvtype).append("-");
+        size_t n = 1;
+        ActivationFunction token = m_layers[i].actvtype;
+
+        // collect number of same activations
+        for (; m_layers[i+1].actvtype == token && i < m_layers.size()-1; n++, i++){}
+
+        if (n > 1) {
+            compact.push_back(ActivationString(token).append("X").append(std::to_string(n)));
+        } else {
+            compact.push_back(ActivationString(token));
+        }
     }
 
-    compact += ActivationString(m_layers.back().actvtype);
     return compact;
 }
 
@@ -84,30 +102,30 @@ void NeuralNetwork::SaveBest(nlohmann::json& history, float score, size_t e) {
     close(fd);
 }
 
-void NeuralNetwork::AssignActvFunctions(const std::vector<ActivationFunctions>& actvs) {
-    m_layers[0].actvtype = ActivationFunctions::none;
+void NeuralNetwork::AssignActvFunctions(const std::vector<ActivationFunction>& actvs) {
+    m_layers[0].actvtype = ActivationFunction::none;
 
     for (size_t i = 1; i < m_layers.size(); i++) {
         m_layers[i].actvtype = actvs[i-1];
 
         switch (actvs[i-1]) {
-            case ActivationFunctions::sigmoid:
+            case ActivationFunction::sigmoid:
                 m_layers[i].activation = &Sigmoid;
                 m_layers[i].derivative = &SigmoidDerivative;
                 break;
-            case ActivationFunctions::relu:
+            case ActivationFunction::relu:
                 m_layers[i].activation = &ReLU;
                 m_layers[i].derivative = &ReLUDerivative;
                 break;
-            case ActivationFunctions::leakyrelu:
+            case ActivationFunction::leakyrelu:
                 m_layers[i].activation = &LeakyReLU;
                 m_layers[i].derivative = &LeakyReLUDerivative;
                 break;
-            case ActivationFunctions::elu:
+            case ActivationFunction::elu:
                 m_layers[i].activation = &ELU;
                 m_layers[i].derivative = &ELUDerivative;
                 break;
-            case ActivationFunctions::softmax:
+            case ActivationFunction::softmax:
                 m_layers[i].activation = &Softmax;
                 m_layers[i].derivative = nullptr;
                 break;
@@ -177,10 +195,14 @@ __m256 NeuralNetwork::Exp256(__m256 _x) {
     return _mm256_castsi256_ps(_res);
 }
 void NeuralNetwork::FastCopy(const float* __restrict src, float* __restrict dst, size_t n) {
+    const size_t r = n-(n%8);
+    
     for (size_t i = 0; i <= n-8; i += 8) {
         const __m256 _src = _mm256_loadu_ps(&src[i]);
         _mm256_storeu_ps(&dst[i], _src);
     }
-    const size_t r = n-(n%8);
-    std::memcpy(&dst[r], &src[r], (n-r)*sizeof(float));
+
+    if (r < n) {
+        std::memcpy(&dst[r], &src[r], (n-r)*sizeof(float));
+    }
 }

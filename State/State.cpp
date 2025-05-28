@@ -33,6 +33,7 @@ void State::Load() {
     // load state.meta file
     std::ifstream f(p_models+"/"+modelname+"/state.meta");
     nlohmann::json metadata = nlohmann::json::parse(f);
+    f.close();
 
     // build with no weights, just setting dimensions, activations etc
     Build(metadata);
@@ -61,7 +62,7 @@ void State::Build(const std::vector<std::string>& pdims, const std::vector<std::
         dataset = DataLoader::LoadDataset(data, dsargs);
     }
     
-    std::vector<NeuralNetwork::ActivationFunctions> activations = NeuralNetwork::ParseActvs(pactvs);
+    std::vector<NeuralNetwork::ActivationFunction> activations = NeuralNetwork::ParseActvs(pactvs);
     std::vector<size_t> dimensions = NeuralNetwork::ParseCompact(pdims);
     dimensions.insert(dimensions.begin(), dataset.trainDataCols);
 
@@ -78,7 +79,7 @@ void State::Build(const nlohmann::json& meta) {
         dataset = DataLoader::LoadDataset(meta[DATASET], meta[DSARGS]);
     }
 
-    std::vector<NeuralNetwork::ActivationFunctions> activations = NeuralNetwork::ParseActvs(meta[ACTIVATIONS]);
+    std::vector<NeuralNetwork::ActivationFunction> activations = NeuralNetwork::ParseActvs(meta[ACTIVATIONS]);
     std::vector<size_t> dimensions = NeuralNetwork::ParseCompact(meta[DIMENSIONS]);
 
     NeuralNetwork::LossMetric metric = NeuralNetwork::ParseLossMetric(meta[METRIC]);

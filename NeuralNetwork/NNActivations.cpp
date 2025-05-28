@@ -1,5 +1,8 @@
 #include "NeuralNetwork.hpp"
 
+void NeuralNetwork::Linear(const float* __restrict x, float* __restrict y, size_t n) {
+    return;
+}
 void NeuralNetwork::Sigmoid(const float* __restrict x, float* __restrict y, size_t n) {
     const __m256 _one = _mm256_set1_ps(1.0f);
     const __m256 _zero = _mm256_setzero_ps();

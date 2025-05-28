@@ -8,6 +8,7 @@ void TestNetwork::TestMathUtils() {
         std::cout << "Testing Math Utils (" << i << "):\n";
         TestSum(i);
         TestExp(i);
+        BenchmarkCpy(i);
         std::cout << "\n";
     }
 }
@@ -72,9 +73,45 @@ void TestNetwork::TestSum(size_t n) {
     }
     double dur = (std::chrono::high_resolution_clock::now() - start).count();
 
-    double mpe = ComputeMPE(expected, t, (size/8));
+    double mpe = ComputeMPE(expected, t, n);
     free(expected);
     free(t);
 
-    FinalizeTestOutput("Sum256", dur, mpe, acceptederror, (size/8));
+    FinalizeTestOutput("Sum256", dur, mpe, acceptederror, n);
+}
+
+void TestNetwork::BenchmarkCpy(size_t n) {
+    float* src = (float*)malloc(n*sizeof(float));
+    float* dst = (float*)malloc(n*sizeof(float));
+
+    float* expected = (float*)malloc(n*sizeof(float));
+
+    // memcpy warmup
+    for (size_t i = 0; i < 5; i++) {
+        std::memcpy(expected, src, n*sizeof(float));
+        asm volatile("" ::: "memory");
+    }
+
+    // test memcpy
+    auto mcpystart = std::chrono::high_resolution_clock::now();
+    std::memcpy(expected, src, n*sizeof(float));
+    asm volatile("" ::: "memory");
+    double mcpydur = (std::chrono::high_resolution_clock::now() - mcpystart).count();
+
+    FinalizeTestOutput("Memcpy", mcpydur, 0.0, 0.1, n);
+
+
+    // fastcopy warmup
+    for (size_t i = 0; i < 5; i++) {
+        NeuralNetwork::FastCopy(src, dst, n);
+        asm volatile("" ::: "memory");
+    }
+
+    // test fastcopy
+    auto fcpystart = std::chrono::high_resolution_clock::now();
+     NeuralNetwork::FastCopy(src, dst, n);
+    asm volatile("" ::: "memory");
+    double fcpydur = (std::chrono::high_resolution_clock::now() - fcpystart).count();
+
+    FinalizeTestOutput("FastCpy", fcpydur, 0.0, 0.1, n);
 }

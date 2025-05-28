@@ -69,40 +69,65 @@ std::string NeuralNetwork::TestNetwork(const Dataset& dataset, nlohmann::json& h
 void NeuralNetwork::ForwardProp(bool training, const float* __restrict x, float* __restrict results, size_t actvsize, size_t n) {
 
 	size_t weight_idx = 0;
-    size_t bias_idx = 0;
+	size_t bias_idx = 0;
 
-    size_t input_idx = 0;
-    size_t output_idx = 0;
+	size_t input_idx = 0;
+	size_t output_idx = 0;
 
-    for (size_t i = 0; i < m_layers.size()-1; i++) {
+	for (size_t i = 0; i < m_layers.size(); i++) {
+		const float* w = &m_network[weight_idx];
+		const float* b = &m_biases[bias_idx];
 
-        // set network pointers
-        float* weights_start = &m_network[weight_idx];
-        float* bias_start = &m_biases[bias_idx];
+		const float* input = i == 0 ? x : &results[input_idx+actvsize];
+		float* output = &results[output_idx];
 
-        // set data pointers
-        const float* input_start = i == 0 ? &x[0] : &results[input_idx+actvsize];
-        float* output_start = &results[output_idx];
+		layers[i].forward(training, w, b, input, output, &output[actvsize], n);
 
-        // initialize memory to bias values to avoid computation and clear existing values
-		for (size_t r = 0; r < n; r++) {
-			FastCopy(bias_start, &output_start[r*m_layers[i+1].nodes], m_layers[i+1].nodes);
-		}	
-		
-		DotProd(input_start, weights_start, output_start, n, m_layers[i].nodes, m_layers[i].nodes, m_layers[i+1].nodes, false);
-
-
-        // apply activation, apply next one since input layer doesn't technically have an activation
-        (*m_layers[i+1].activation)(output_start, &output_start[actvsize], m_layers[i+1].nodes*n);
-
-
-        // update pointers
-        weight_idx += m_layers[i].nodes * m_layers[i+1].nodes;
-        bias_idx += m_layers[i+1].nodes;
+		// update pointers
+        weight_idx += layers[i].pnodes*m_layers[i].nodes;
+        bias_idx += m_layers[i].nodes;
 
         input_idx += i == 0 ? 0 : (m_layers[i].nodes * n);
         output_idx += m_layers[i+1].nodes * n;
-    }
+	}
+
+
+
+	// size_t weight_idx = 0;
+    // size_t bias_idx = 0;
+
+    // size_t input_idx = 0;
+    // size_t output_idx = 0;
+
+    // for (size_t i = 0; i < m_layers.size()-1; i++) {
+
+    //     // set network pointers
+    //     float* weights_start = &m_network[weight_idx];
+    //     float* bias_start = &m_biases[bias_idx];
+
+    //     // set data pointers
+    //     const float* input_start = i == 0 ? &x[0] : &results[input_idx+actvsize];
+    //     float* output_start = &results[output_idx];
+
+    //     // initialize memory to bias values to avoid computation and clear existing values
+	// 	for (size_t r = 0; r < n; r++) {
+	// 		FastCopy(bias_start, &output_start[r*m_layers[i+1].nodes], m_layers[i+1].nodes);
+	// 	}	
+		
+	// 	DotProd(input_start, weights_start, output_start, n, m_layers[i].nodes, m_layers[i].nodes, m_layers[i+1].nodes, false);
+
+
+    //     // apply activation, apply next one since input layer doesn't technically have an activation
+    //     (*m_layers[i+1].activation)(output_start, &output_start[actvsize], m_layers[i+1].nodes*n);
+
+
+    //     // update pointers
+    //     weight_idx += m_layers[i].nodes * m_layers[i+1].nodes;
+    //     bias_idx += m_layers[i+1].nodes;
+
+    //     input_idx += i == 0 ? 0 : (m_layers[i].nodes * n);
+    //     output_idx += m_layers[i+1].nodes * n;
+    // }
 }
 void NeuralNetwork::BackProp(const float* __restrict x, const float* __restrict y, float lr, size_t n) {
 

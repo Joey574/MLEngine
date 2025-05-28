@@ -1,5 +1,6 @@
 #pragma once
 class TestNetwork;
+struct Layer;
 
 #define LOGLOSS 0
 #define LOGSCORE 0
@@ -7,6 +8,7 @@ class TestNetwork;
 
 class NeuralNetwork {
     friend class TestNetwork;
+    friend struct Layer;
 
 public:
 
@@ -17,8 +19,8 @@ public:
     enum class LossMetric {
         none, mae, mse, accuracy, onehot
     };
-    enum class ActivationFunctions {
-        none, sigmoid, relu, leakyrelu, elu, softmax
+    enum class ActivationFunction {
+        none, sigmoid, relu, leakyrelu, elu, softmax, linear
     };
 
     NeuralNetwork() {}
@@ -27,7 +29,7 @@ public:
         const std::string& path,
         const std::string& name,
         const std::vector<size_t>& dimensions,
-        const std::vector<ActivationFunctions>& activations,
+        const std::vector<ActivationFunction>& activations,
         LossMetric loss,
         LossMetric metric,
         WeightInitialization weightInit
@@ -48,8 +50,8 @@ public:
     std::string Summary() const;
     nlohmann::json Metadata();
 
-    std::string CompactDimensions() const;
-    std::string CompactActvations() const;
+    std::vector<std::string> CompactDimensions() const;
+    std::vector<std::string> CompactActvations() const;
 
     int Load(int fd, WeightInitialization trueweight);
     int Save(int fd) const;
@@ -57,11 +59,11 @@ public:
 
     // static utils
     static std::vector<size_t> ParseCompact(const std::vector<std::string>& dims);
-    static std::vector<ActivationFunctions> ParseActvs(const std::vector<std::string>& actvs);
+    static std::vector<ActivationFunction> ParseActvs(const std::vector<std::string>& actvs);
     static LossMetric ParseLossMetric(const std::string& lm);
     static WeightInitialization ParseWeight(const std::string& weight);
 
-    static std::string ActivationString(const ActivationFunctions actv);
+    static std::string ActivationString(const ActivationFunction actv);
     static std::string WeightString(const WeightInitialization w);
     static std::string LossMetricString(const LossMetric lm);
 
@@ -74,13 +76,6 @@ public:
 
 private:
 
-    struct Layer {
-        size_t nodes;
-        ActivationFunctions actvtype;
-        void (*activation)(const float*, float*, size_t);
-        void (*derivative)(const float*, float*, size_t);
-    };
-
     struct Metric {
         LossMetric type;
         bool highestIsBest;
@@ -91,6 +86,20 @@ private:
         LossMetric type;
         void (*loss)(const float*, const float*, float*, size_t, size_t);
     };
+
+    struct Activation {
+        Activation
+    }
+
+    struct Layer {
+        size_t nodes;
+        ActivationFunction actvtype;
+
+        void (*activation)(const float*, float*, size_t);
+        void (*derivative)(const float*, float*, size_t);
+    };
+
+    
 
     // pointers to various memory blocks that contain all the data
     float* m_network;
@@ -158,10 +167,11 @@ private:
 
     void SaveBest(nlohmann::json& history, float score, size_t e);
 
-    void AssignActvFunctions(const std::vector<ActivationFunctions>& actvs);
+    void AssignActvFunctions(const std::vector<ActivationFunction>& actvs);
     void AssignLossFunctions(LossMetric loss, LossMetric metric);
 
     // activation functions
+    static void Linear(const float* __restrict x, float* __restrict y, size_t n);
     static void Sigmoid(const float* __restrict x, float* __restrict y, size_t n);
     static void ReLU(const float* __restrict x, float* __restrict y, size_t n);
     static void LeakyReLU(const float* __restrict x, float* __restrict y, size_t n);
@@ -169,6 +179,7 @@ private:
     static void Softmax(const float* __restrict x, float* __restrict y, size_t n);
 
     // derivatives functions
+    static void LinearDerivative(const float* __restrict x, float* __restrict y, size_t n);
     static void SigmoidDerivative(const float* __restrict x, float* __restrict y, size_t n);
     static void ReLUDerivative(const float* __restrict x, float* __restrict y, size_t n);
     static void LeakyReLUDerivative(const float* __restrict x, float* __restrict y, size_t n);

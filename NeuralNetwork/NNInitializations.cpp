@@ -1,17 +1,16 @@
 #include "NeuralNetwork.hpp"
 
-void NeuralNetwork::Initialize(const std::string& path, const std::string& name, const std::vector<size_t>& dimensions, const std::vector<ActivationFunctions>& activations, LossMetric loss, LossMetric metric, WeightInitialization weightInit) {
+void NeuralNetwork::Initialize(const std::string& path, const std::string& name, const std::vector<size_t>& dimensions, const std::vector<ActivationFunction>& activations, LossMetric loss, LossMetric metric, WeightInitialization weightInit) {
     std::random_device rd;
     m_weight_init = weightInit;
     m_path = path;
     m_name = name;
     m_seed = rd();
 
-    // grab initial metadata, just need stored best ever score
+    // grab initial metadata
     std::ifstream f(path+"state.meta");
     try {
-        nlohmann::json tm = nlohmann::json::parse(f);
-        if (tm.contains(BESTEVSCORE)) { m_meta[BESTEVSCORE] = tm[BESTEVSCORE]; }
+        m_meta = nlohmann::json::parse(f);
     } catch (nlohmann::json::parse_error& e) {}
     f.close();
 

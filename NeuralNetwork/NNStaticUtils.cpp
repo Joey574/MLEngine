@@ -22,8 +22,8 @@ std::vector<size_t> NeuralNetwork::ParseCompact(const std::vector<std::string>& 
 
     return dimensions;
 }
-std::vector<NeuralNetwork::ActivationFunctions> NeuralNetwork::ParseActvs(const std::vector<std::string>& actvs) {
-    std::vector<ActivationFunctions> activations;
+std::vector<NeuralNetwork::ActivationFunction> NeuralNetwork::ParseActvs(const std::vector<std::string>& actvs) {
+    std::vector<ActivationFunction> activations;
 
     for (size_t i = 0; i < actvs.size(); i++) {
         // get number of layers
@@ -38,23 +38,27 @@ std::vector<NeuralNetwork::ActivationFunctions> NeuralNetwork::ParseActvs(const 
         // add n number of token
         if (token == "sigmoid") {
             for (size_t i = 0; i < n; i++) {
-                activations.push_back(ActivationFunctions::sigmoid);
+                activations.push_back(ActivationFunction::sigmoid);
             }
         } else if (token == "relu") {
             for (size_t i = 0; i < n; i++) {
-                activations.push_back(ActivationFunctions::relu);
+                activations.push_back(ActivationFunction::relu);
             }
         } else if (token == "leakyrelu") {
             for (size_t i = 0; i < n; i++) {
-                activations.push_back(ActivationFunctions::leakyrelu);
+                activations.push_back(ActivationFunction::leakyrelu);
             }
         } else if (token == "elu") {
             for (size_t i = 0; i < n; i++) {
-                activations.push_back(ActivationFunctions::elu);
+                activations.push_back(ActivationFunction::elu);
             }
         } else if (token == "softmax") {
             for (size_t i = 0; i < n; i++) {
-                activations.push_back(ActivationFunctions::softmax);
+                activations.push_back(ActivationFunction::softmax);
+            }
+        } else if (token == "linear") {
+            for (size_t i = 0; i < n; i++) {
+                activations.push_back(ActivationFunction::linear);
             }
         }
     }
@@ -87,18 +91,20 @@ NeuralNetwork::WeightInitialization NeuralNetwork::ParseWeight(const std::string
     return WeightInitialization::none;
 }
 
-std::string NeuralNetwork::ActivationString(const ActivationFunctions actv) {
+std::string NeuralNetwork::ActivationString(const ActivationFunction actv) {
     switch (actv) {
-        case ActivationFunctions::sigmoid:
+        case ActivationFunction::sigmoid:
             return "sigmoid";
-        case ActivationFunctions::relu:
+        case ActivationFunction::relu:
             return "relu";
-        case ActivationFunctions::leakyrelu:
+        case ActivationFunction::leakyrelu:
             return "leakyrelu";
-        case ActivationFunctions::elu:
+        case ActivationFunction::elu:
             return "elu";
-        case ActivationFunctions::softmax:
+        case ActivationFunction::softmax:
             return "softmax";
+        case ActivationFunction::linear:
+            return "linear";
         default:
             return "none";
     }
