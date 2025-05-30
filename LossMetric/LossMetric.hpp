@@ -4,19 +4,15 @@ public:
         none, mae, mse, accuracy, onehot
     };
 
-    struct Metric {
-        Type type;
-        bool highestIsBest;
-        float (*metric)(const float*, const float*, size_t, size_t);
-    };    
+    Type mtype;
+    bool highestIsBest;
+    float (*metric)(const float*, const float*, size_t, size_t);
 
-    struct Loss {
-        Type type;
-        void (*loss)(const float*, const float*, float*, size_t, size_t);
-    };
+    Type ltype;
+    void (*loss)(const float*, const float*, float*, size_t, size_t);
 
-    std::vector<Metric> metrics;
-    Loss loss;
+    LossMetric() { AssignPointers(Type::none, Type::none); };
+    LossMetric(Type l, Type m) { AssignPointers(l, m); };
 
 private:
 
@@ -36,4 +32,6 @@ private:
     // parsing utils
     static Type ParseType(const std::string& name);
     static std::string ParseName(Type type);
+
+    void AssignPointers(Type l, Type m);
 };

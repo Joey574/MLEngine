@@ -28,6 +28,49 @@ std::string LossMetric::ParseName(Type type) {
     }
 }
 
+void LossMetric::AssignPointers(Type l, Type m) {
+    ltype = l;
+    mtype = m;
+
+    switch (l) {
+        case Type::mae:
+            loss = &MaeLoss;
+            break;
+
+        case Type::mse:
+            loss = &MseLoss;
+            break;
+
+        case Type::onehot:
+            loss = &OneHotLoss;
+            break;
+
+        default:
+            loss = nullptr;
+    }
+
+    switch (m) {
+        case Type::mae:
+            highestIsBest = false;
+            metric = &MaeScore;
+            break;
+
+        case Type::mse:
+            highestIsBest = false;
+            metric = &MseScore;
+            break;
+
+        case Type::accuracy:
+            highestIsBest = true;
+            metric = &AccuracyScore;
+            break;
+
+        default:
+            metric = nullptr;
+            break;
+    }
+}
+
 float LossMetric::Sum256(__m256 _x) {
 	__m256 _sum1 = _mm256_hadd_ps(_x, _x);
     __m256 _sum2 = _mm256_hadd_ps(_sum1, _sum1);

@@ -4,6 +4,9 @@ public:
         none, linear, sigmoid, relu, leakyrelu, elu, softmax
     };
 
+    Activation() { AssignPointers(Type::none); }
+    Activation(Type a) { AssignPointers(a); }
+
     Type type;
     void (*activation)(const float*, float*, size_t);
     void (*derivative)(const float*, float*, size_t);
@@ -30,4 +33,6 @@ private:
     // parsing functions
     static std::vector<Type> ParseType(const std::vector<std::string>& actvs);
     std::string ParseName() const;
+
+    void AssignPointers(Type a);
 };

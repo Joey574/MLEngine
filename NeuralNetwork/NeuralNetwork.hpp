@@ -2,12 +2,15 @@
 
 #include "../Layer/Layer.hpp"
 #include "../Activation/Activation.hpp"
-#include "../LossMetric/LossMetric.hpp";
+#include "../LossMetric/LossMetric.hpp"
 
 class TestNetwork;
 
 class NeuralNetwork {
     friend class TestNetwork;
+    friend struct Layer;
+    friend struct Activation;
+    friend struct LossMetric;
 
 public:
 
@@ -21,10 +24,10 @@ public:
     void Initialize(
         const std::string& path,
         const std::string& name,
-        const std::vector<size_t>& dimensions,
-        const std::vector<Activation::Type>& activations,
-        LossMetric loss,
-        LossMetric metric,
+        const std::vector<size_t>& dims,
+        const std::vector<Activation::Type>& actvs,
+        LossMetric::Type loss,
+        LossMetric::Type metric,
         WeightInitialization weightInit
     );
 
@@ -46,11 +49,39 @@ public:
 
 private:
 
+    std::string m_path;
+    std::string m_name;
+    uint64_t m_seed;
+
+    nlohmann::json m_meta;
+
+    std::vector<Layer> m_layers;
+
+    
+    float* m_network;
+    float* m_biases;
+    size_t m_network_size;
+    size_t m_weights_size;
+    size_t m_biases_size;
+
+    float* m_batch_data;
+    float* m_batch_actv;
+    float* m_d_total;
+    float* m_d_weights;
+    float* m_d_biases;
+    size_t m_batch_data_size;
+    size_t m_batch_actv_size;
+
+    float* m_test_data;
+    float* m_test_actv;
+    size_t m_test_data_size;
+    size_t m_test_actv_size;
+    
+
     void ForwardProp(
         bool training,
         const float* __restrict x,
-        float* __restrict results,
-        size_t actvsize,
+        float* __restrict y,
         size_t n
     );
 
@@ -66,9 +97,14 @@ private:
         nlohmann::json& history,
         size_t e
     ); 
-    
-    std::vector<Layer> m_layers;
-   
+
+
+    // initilization function
+    void InitializeNetwork(const std::vector<size_t>& dims);
+    void InitializeWeights(WeightInitialization type);
+    void InitializeBatchData(size_t n);
+    void InitializeTestData(size_t n);
+       
     // dot prods
     static void DotProd(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
     static void DotProdTA(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
