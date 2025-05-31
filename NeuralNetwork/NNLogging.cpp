@@ -1,6 +1,5 @@
 #include "NeuralNetwork.hpp"
 
-
 void NeuralNetwork::FitStart(nlohmann::json& history, size_t e, size_t bs, float lr) {
     auto now = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
     auto local = std::chrono::zoned_time{std::chrono::current_zone(), now};

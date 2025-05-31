@@ -2,6 +2,7 @@
 
 void NeuralNetwork::Initialize(const std::string& path, const std::string& name, const std::vector<size_t>& dims, const std::vector<Activation::Type>& actvs, LossMetric::Type loss, LossMetric::Type metric, WeightInitialization weightInit) {
     std::random_device rd;
+    m_weightinit = weightInit;
     m_path = path;
     m_name = name;
     m_seed = rd();
@@ -19,10 +20,10 @@ void NeuralNetwork::Initialize(const std::string& path, const std::string& name,
     }
 
     // initialize network memory
-    InitializeNetwork(dims);    
+    InitializeNetwork(dims);   
 
     // initialize weights
-    InitializeWeights(weightInit);
+    InitializeWeights(weightInit, dims);
 
     // initialize layer size
     m_layers.reserve(dims.size());
@@ -40,8 +41,12 @@ void NeuralNetwork::Initialize(const std::string& path, const std::string& name,
 
         Activation actv = i == 0 ? Activation() : Activation(actvs[i-1]);
         LossMetric lm = i < dims.size()-1 ? LossMetric() : LossMetric(loss, metric);
-
         m_layers.emplace_back(w, b, in, n, actv, lm);
+        
+        m_layers.back().type = 
+            i == 0 ? Layer::LayerType::input : 
+            i == dims.size()-1 ? Layer::LayerType::output : 
+            Layer::LayerType::hidden;
 
         widx += in*n;
         widx += i == 0 ? 0 : n;
@@ -60,8 +65,9 @@ void NeuralNetwork::InitializeNetwork(const std::vector<size_t>& dims) {
 
     m_network_size = m_weights_size + m_biases_size;
     m_network = (float*)aligned_alloc(32, m_network_size*sizeof(float));
+    m_biases = &m_network[m_weights_size];
 }
-void NeuralNetwork::InitializeWeights(WeightInitialization type) {
+void NeuralNetwork::InitializeWeights(WeightInitialization type, const std::vector<std::size_t>& layers) {
     float lowerRand;
     float upperRand;
     size_t idx = 0;
@@ -75,11 +81,11 @@ void NeuralNetwork::InitializeWeights(WeightInitialization type) {
         case WeightInitialization::he:
             lowerRand = 0.0f;
 
-            for (size_t i = 0; i < m_layers.size() - 1; i++) {
-                upperRand = std::sqrt(2.0f / m_layers[i+1].nodes);
+            for (size_t i = 0; i < layers.size()-1; i++) {
+                upperRand = std::sqrt(2.0f / layers[i+1]);
 
                 std::normal_distribution<float> dist(lowerRand, upperRand);
-                for(size_t j = 0; j < m_layers[i].nodes * m_layers[i+1].nodes; j++, idx++) {
+                for(size_t j = 0; j < layers[i] * layers[i+1]; j++, idx++) {
                     m_network[idx] = dist(gen);
                 }
             }
@@ -89,23 +95,23 @@ void NeuralNetwork::InitializeWeights(WeightInitialization type) {
             lowerRand = -0.5f;
             upperRand = 0.5f;
 
-            for (size_t i = 0; i < m_layers.size() - 1; i++) {
+            for (size_t i = 0; i < layers.size()-1; i++) {
                 std::uniform_real_distribution<float> dist(lowerRand, upperRand);
 
-                for (size_t j = 0; j < m_layers[i].nodes * m_layers[i+1].nodes; j++, idx++) {
-                    m_network[idx] = dist(gen) * std::sqrt(1.0f / m_layers[i+1].nodes);
+                for (size_t j = 0; j < layers[i]*layers[i+1]; j++, idx++) {
+                    m_network[idx] = dist(gen) * std::sqrt(1.0f / layers[i+1]);
                 }
             }
 
             break;
         case WeightInitialization::xavier:
 
-            for (size_t i = 0; i < m_layers.size() - 1; i++) {
-                lowerRand = (-1.0f / std::sqrt(m_layers[i+1].nodes));
-                upperRand = 1.0f / std::sqrt(m_layers[i+1].nodes);
+            for (size_t i = 0; i < layers.size()-1; i++) {
+                lowerRand = (-1.0f / std::sqrt(layers[i+1]));
+                upperRand = 1.0f / std::sqrt(layers[i+1]);
 
                 std::uniform_real_distribution<float> dist(lowerRand, upperRand);
-                for (size_t j = 0; j < m_layers[i].nodes * m_layers[i+1].nodes; j++, idx++) {
+                for (size_t j = 0; j < layers[i]*layers[i+1]; j++, idx++) {
                     m_network[idx] = dist(gen);
                 }
             }

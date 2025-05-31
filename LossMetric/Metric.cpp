@@ -1,4 +1,5 @@
 #include "LossMetric.hpp"
+#include "../NeuralNetwork/NeuralNetwork.hpp"
 
 float LossMetric::MaeScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
     const __m256 _absmask = _mm256_castsi256_ps(_mm256_set1_epi32(0x7FFFFFFF));
@@ -15,7 +16,7 @@ float LossMetric::MaeScore(const float* __restrict x, const float* __restrict y,
         _sum = _mm256_add_ps(_sum, _res);
     }
 
-    float error = Sum256(_sum);
+    float error = NeuralNetwork::Sum256(_sum);
     for (; i < rows*cols; i++) {
         error += std::abs(x[i] - y[i]);
     }
@@ -36,7 +37,7 @@ float LossMetric::MseScore(const float* __restrict x, const float* __restrict y,
         _sum = _mm256_add_ps(_sum, _se);
     }
 
-    float error = Sum256(_sum);
+    float error = NeuralNetwork::Sum256(_sum);
     for (; i < rows*cols; i++) {
         error += (x[i]-y[i])*(x[i]-y[i]);
     }

@@ -10,7 +10,6 @@ std::vector<Activation::Type> Activation::ParseType(const std::vector<std::strin
         if (actvs[i].find('X') != std::string::npos) {
             n = std::stoi(actvs[i].substr(actvs[i].find('X')+1));
             token = actvs[i].substr(0, actvs[i].find('X'));
-
         }
 
         // add n number of token
@@ -43,7 +42,7 @@ std::vector<Activation::Type> Activation::ParseType(const std::vector<std::strin
 
     return activations;
 }
-std::string Activation::ParseName() const {
+std::string Activation::ParseName(Type type) {
     switch(type) {
         case Type::linear:
             return "linear";
@@ -63,45 +62,41 @@ std::string Activation::ParseName() const {
 }
 
 void Activation::AssignPointers(Type a) {
+    type = a;
+
     switch (a) {
         case Type::linear:
-            activation = &Linear;
-            derivative = &LinearDerivative;
+            activation = Linear;
+            derivative = LinearDerivative;
             break;
 
         case Type::sigmoid:
-            activation = &Sigmoid;
-            derivative = &SigmoidDerivative;
+            activation = Sigmoid;
+            derivative = SigmoidDerivative;
             break;
 
         case Type::relu:
-            activation = &ReLU;
-            derivative = &ReLUDerivative;
+            activation = ReLU;
+            derivative = ReLUDerivative;
             break;
 
         case Type::leakyrelu:
-            activation = &LeakyReLU;
-            derivative = &LeakyReLUDerivative;
+            activation = LeakyReLU;
+            derivative = LeakyReLUDerivative;
             break;
 
         case Type::elu:
-            activation = &ELU;
-            derivative = &ELUDerivative;
+            activation = ELU;
+            derivative = ELUDerivative;
             break;
 
         case Type::softmax:
-            activation = &Softmax;
+            activation = Softmax;
+            derivative = nullptr;
+            break;
+        default:
+            activation = nullptr;
             derivative = nullptr;
             break;
     }
-}
-
-__m256 Activation::Exp256(__m256 _x) {
-    __m256 _a = _mm256_set1_ps(12102203.0f); 
-    __m256 _b = _mm256_set1_ps(127.0f * (1 << 23));
-    __m256 _c = _mm256_fmadd_ps(_x, _a, _b);
-
-    __m256i _res = _mm256_cvtps_epi32(_c);
-
-    return _mm256_castsi256_ps(_res);
 }

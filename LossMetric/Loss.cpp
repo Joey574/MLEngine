@@ -1,10 +1,6 @@
 #include "LossMetric.hpp"
 
 void LossMetric::MaeLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols) {
-    #if LOGLOSS
-        printf("Loss applied [%zu x %zu]\n", rows, cols);
-    #endif
-
     const __m256 _zero = _mm256_setzero_ps();
     const __m256 _one = _mm256_set1_ps(1.0f);
     const __m256 _none = _mm256_set1_ps(-1.0f);
@@ -27,10 +23,6 @@ void LossMetric::MaeLoss(const float* __restrict x, const float* __restrict y, f
 
 }
 void LossMetric::MseLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols) {
-    #if LOGLOSS
-        printf("Loss applied [%zu x %zu]\n", rows, cols);
-    #endif
-
     const __m256 _two = _mm256_set1_ps(2.0f);
 
     #pragma omp parallel for
@@ -48,10 +40,6 @@ void LossMetric::MseLoss(const float* __restrict x, const float* __restrict y, f
     }
 }
 void LossMetric::OneHotLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols) {
-    #if LOGLOSS
-        printf("Loss applied [%zu x %zu]\n", rows, cols);
-    #endif
-
     std::memcpy(c, x, rows*cols*sizeof(float));
 
     #pragma omp parallel for simd

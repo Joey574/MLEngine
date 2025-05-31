@@ -35,11 +35,15 @@ flagsdeb="-std=c++20 -O0 -g -DDEBUG -fno-omit-frame-pointer -fno-lto -mavx2 -mfm
 
 # .cpp dependency files
 nndependencies="\
-    NeuralNetwork/NNActivations.cpp NeuralNetwork/NNDerivatives.cpp \
+    Activation/Activations.cpp Activation/Derivatives.cpp Activation/Utils.cpp \
+    
+    LossMetric/Loss.cpp LossMetric/Metric.cpp LossMetric/Utils.cpp \
+
+    Layer/LayerTraining.cpp Layer/LayerUtils.cpp \
+
     NeuralNetwork/NNDotProds.cpp NeuralNetwork/NNInitializations.cpp \
-    NeuralNetwork/NNLogging.cpp NeuralNetwork/NNMetrics.cpp \
-    NeuralNetwork/NNStaticUtils.cpp NeuralNetwork/NNTraining.cpp \
-    NeuralNetwork/NNUtils.cpp"
+    NeuralNetwork/NNLogging.cpp NeuralNetwork/NNMathUtils.cpp \
+    NeuralNetwork/NNTraining.cpp NeuralNetwork/NNUtils.cpp"
 
 dldependencies="DataLoader/DataLoader.cpp"
 stdependencies="State/State.cpp State/StaticUtils.cpp State/StateUtils.cpp"

@@ -1,17 +1,16 @@
 #include "Layer.hpp"
+#include "../NeuralNetwork/NeuralNetwork.hpp"
 
-void Layer::forward(bool training, const float* __restrict const x, size_t n) {
+
+void Layer::forward(bool training, const float* __restrict x, float* __restrict z, float* __restrict a, size_t n) {
     if (type == LayerType::input) { return; }
     
     const float* __restrict const w = m_w;
     const float* __restrict const b = m_b;
 
-    float* __restrict const z = m_z;
-    float* __restrict const a = m_a;
-
     // copy bias values into total
     for (size_t i = 0; i < n; i++) {
-        std::memcpy(&z[i*nodes], b, nodes);
+        std::memcpy(&z[i*nodes], b, nodes*sizeof(float));
     }
 
     // perform dot prod with input
@@ -21,23 +20,14 @@ void Layer::forward(bool training, const float* __restrict const x, size_t n) {
     activation.activation(z, a, n*nodes);
 }
 
-void Layer::backward(const float* __restrict y, const float* __restrict pa, size_t n) {
+void Layer::backward(const float* __restrict y, const float* __restrict pa, const float* __restrict z, const float* __restrict a, float* __restrict dt, float* __restrict dw, float* __restrict db, size_t n) {
     if (type == LayerType::input) { return; }
 
     const float* __restrict w = m_w;
     const float* __restrict b = m_b;
 
-    const float* __restrict z = m_z;
-    const float* __restrict a = m_a;
-
-    float* __restrict dt = m_dt;
-    float* __restrict dw = m_dw;
-    float* __restrict db = m_db;
-    
     // compute dt
     switch (type) {
-        case LayerType::input:
-            return;
         case LayerType::hidden:
             NeuralNetwork::DotProdTB(y, w, dt, n, nodes, inodes, nodes, true);
             (activation.derivative)(z, dt, n*nodes);
@@ -62,7 +52,7 @@ void Layer::backward(const float* __restrict y, const float* __restrict pa, size
 				_sum = _mm256_add_ps(_sum, _a);
 			}
 
-			db[j] = Sum256(_sum);
+			db[j] = NeuralNetwork::Sum256(_sum);
 
 			for (; k < n; k++) {
 				db[j] += dt[j * n + k];

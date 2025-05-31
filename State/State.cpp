@@ -62,12 +62,12 @@ void State::Build(const std::vector<std::string>& pdims, const std::vector<std::
         dataset = DataLoader::LoadDataset(data, dsargs);
     }
     
-    std::vector<NeuralNetwork::ActivationFunction> activations = NeuralNetwork::ParseActvs(pactvs);
+    std::vector<Activation::Type> activations = Activation::ParseType(pactvs);
     std::vector<size_t> dimensions = NeuralNetwork::ParseCompact(pdims);
     dimensions.insert(dimensions.begin(), dataset.trainDataCols);
 
-    NeuralNetwork::LossMetric metric = NeuralNetwork::ParseLossMetric(pmetric);
-    NeuralNetwork::LossMetric loss = NeuralNetwork::ParseLossMetric(ploss);
+    LossMetric::Type metric = LossMetric::ParseType(pmetric);
+    LossMetric::Type loss = LossMetric::ParseType(ploss);
 
     NeuralNetwork::WeightInitialization weight = NeuralNetwork::ParseWeight(pweight);
 
@@ -79,11 +79,11 @@ void State::Build(const nlohmann::json& meta) {
         dataset = DataLoader::LoadDataset(meta[DATASET], meta[DSARGS]);
     }
 
-    std::vector<NeuralNetwork::ActivationFunction> activations = NeuralNetwork::ParseActvs(meta[ACTIVATIONS]);
+    std::vector<Activation::Type> activations = Activation::ParseType(meta[ACTIVATIONS]);
     std::vector<size_t> dimensions = NeuralNetwork::ParseCompact(meta[DIMENSIONS]);
 
-    NeuralNetwork::LossMetric metric = NeuralNetwork::ParseLossMetric(meta[METRIC]);
-    NeuralNetwork::LossMetric loss = NeuralNetwork::ParseLossMetric(meta[LOSS]);
+    LossMetric::Type metric = LossMetric::ParseType(meta[METRIC]);
+    LossMetric::Type loss = LossMetric::ParseType(meta[LOSS]);
 
     NeuralNetwork::WeightInitialization weight = NeuralNetwork::ParseWeight(meta[WEIGHTS]);
 

@@ -34,50 +34,40 @@ void LossMetric::AssignPointers(Type l, Type m) {
 
     switch (l) {
         case Type::mae:
-            loss = &MaeLoss;
+            loss = MaeLoss;
             break;
 
         case Type::mse:
-            loss = &MseLoss;
+            loss = MseLoss;
             break;
 
         case Type::onehot:
-            loss = &OneHotLoss;
+            loss = OneHotLoss;
             break;
 
         default:
             loss = nullptr;
+            break;
     }
 
     switch (m) {
         case Type::mae:
             highestIsBest = false;
-            metric = &MaeScore;
+            metric = MaeScore;
             break;
 
         case Type::mse:
             highestIsBest = false;
-            metric = &MseScore;
+            metric = MseScore;
             break;
 
         case Type::accuracy:
             highestIsBest = true;
-            metric = &AccuracyScore;
+            metric = AccuracyScore;
             break;
 
         default:
             metric = nullptr;
             break;
     }
-}
-
-float LossMetric::Sum256(__m256 _x) {
-	__m256 _sum1 = _mm256_hadd_ps(_x, _x);
-    __m256 _sum2 = _mm256_hadd_ps(_sum1, _sum1);
-
-    __m128 _low  = _mm256_castps256_ps128(_sum2);
-    __m128 _high = _mm256_extractf128_ps(_sum2, 1);
-    __m128 _res  = _mm_add_ps(_low, _high);
-
-    return _mm_cvtss_f32(_res);
 }

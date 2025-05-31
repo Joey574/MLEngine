@@ -1,13 +1,13 @@
 #pragma once
-
-#include "../Layer/Layer.hpp"
 #include "../Activation/Activation.hpp"
 #include "../LossMetric/LossMetric.hpp"
+#include "../Layer/Layer.hpp"
 
 class TestNetwork;
 
 class NeuralNetwork {
     friend class TestNetwork;
+
     friend struct Layer;
     friend struct Activation;
     friend struct LossMetric;
@@ -47,8 +47,16 @@ public:
     int Load(int fd, WeightInitialization trueweight);
     int Save(int fd) const;
 
+    static WeightInitialization ParseWeight(const std::string& w);
+    static std::vector<size_t> ParseCompact(const std::vector<std::string>& dims);
+    
+    static std::string WeightName(WeightInitialization w);
+    std::vector<std::string> CompactDimensions() const;
+    std::vector<std::string> CompactActivations() const;
+
 private:
 
+    WeightInitialization m_weightinit;
     std::string m_path;
     std::string m_name;
     uint64_t m_seed;
@@ -80,8 +88,9 @@ private:
 
     void ForwardProp(
         bool training,
-        const float* __restrict x,
-        float* __restrict y,
+        float* __restrict x,
+        float* __restrict z,
+        float* __restrict a,
         size_t n
     );
 
@@ -93,7 +102,7 @@ private:
     );
 
     std::string TestNetwork(
-        const Dataset& dataset,
+        Dataset& dataset,
         nlohmann::json& history,
         size_t e
     ); 
@@ -101,14 +110,25 @@ private:
 
     // initilization function
     void InitializeNetwork(const std::vector<size_t>& dims);
-    void InitializeWeights(WeightInitialization type);
+    void InitializeWeights(WeightInitialization type, const std::vector<std::size_t>& layers);
     void InitializeBatchData(size_t n);
     void InitializeTestData(size_t n);
+
+    // logging utils
+    static void FitStart(nlohmann::json& history, size_t e, size_t bs, float lr);
+    static void FitEnd(nlohmann::json& history, std::chrono::system_clock::time_point starttime);
+    static void EpochStart(nlohmann::json& history);
+    static void EpochEnd(nlohmann::json& history, const std::string& res, double ns, size_t e);
+    void SaveBest(nlohmann::json& history, float score, size_t e);
        
     // dot prods
     static void DotProd(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
     static void DotProdTA(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
     static void DotProdTB(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
+
+    // math utils
+    static float Sum256(__m256 _x);
+    static __m256 Exp256(__m256 _x);
 };
 
 /* Memory Layout

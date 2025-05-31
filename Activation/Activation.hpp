@@ -1,3 +1,5 @@
+#pragma once
+
 struct Activation {
 public:
     enum class Type {
@@ -10,6 +12,10 @@ public:
     Type type;
     void (*activation)(const float*, float*, size_t);
     void (*derivative)(const float*, float*, size_t);
+
+    // parsing functions
+    static std::vector<Type> ParseType(const std::vector<std::string>& actvs);
+    static std::string ParseName(Type type);
 
 private:
     // activation functions
@@ -26,13 +32,6 @@ private:
     static void ReLUDerivative(const float* __restrict x, float* __restrict y, size_t n);
     static void LeakyReLUDerivative(const float* __restrict x, float* __restrict y, size_t n);
     static void ELUDerivative(const float* __restrict x, float* __restrict y, size_t n);
-
-    // math utils
-    static __m256 Exp256(__m256 _x);
-
-    // parsing functions
-    static std::vector<Type> ParseType(const std::vector<std::string>& actvs);
-    std::string ParseName() const;
 
     void AssignPointers(Type a);
 };

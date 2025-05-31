@@ -1,3 +1,5 @@
+#pragma once
+
 struct LossMetric {
 public:
     enum class Type {
@@ -14,6 +16,10 @@ public:
     LossMetric() { AssignPointers(Type::none, Type::none); };
     LossMetric(Type l, Type m) { AssignPointers(l, m); };
 
+    // parsing utils
+    static Type ParseType(const std::string& name);
+    static std::string ParseName(Type type);
+
 private:
 
     // loss functions
@@ -25,13 +31,6 @@ private:
     static float MaeScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols);
     static float MseScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols);
     static float AccuracyScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols);
-
-    // simd utils
-    static float Sum256(__m256 _x);
-
-    // parsing utils
-    static Type ParseType(const std::string& name);
-    static std::string ParseName(Type type);
 
     void AssignPointers(Type l, Type m);
 };
