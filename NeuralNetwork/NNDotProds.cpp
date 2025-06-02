@@ -3,6 +3,9 @@
 /// @brief Computes the dot prod between a and b and stores in c,
 /// @brief if clear is passed data already in c will be cleared during computation
 void NeuralNetwork::DotProd(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear) {
+	#if LOGDP
+		printf("[%zu x %zu] * [%zu x %zu] = [%zu x %zu]\n", a_r, a_c, b_r, b_c, a_r, b_c);
+	#endif
 
 	#pragma omp parallel for
     for (size_t i = 0; i < a_r; i++) {
@@ -21,7 +24,7 @@ void NeuralNetwork::DotProd(const float* __restrict a, const float* __restrict b
                 _mm256_storeu_ps(&c[i * b_c + k], _c);
             }
             for(; k < b_c; k++) {
-                c[i * b_c + k] = a[i * a_c + 0] * b[0 * b_c + k];
+                c[i*b_c+k] = a[i*a_c+0] * b[0*b_c+k];
             }
         }
 
@@ -39,7 +42,7 @@ void NeuralNetwork::DotProd(const float* __restrict a, const float* __restrict b
                 _mm256_storeu_ps(&c[i * b_c + k], _res);
             }
             for(; k < b_c; k++) {
-                c[i * b_c + k] += a[i * a_c + j] * b[j * b_c + k];
+                c[i*b_c+k] += a[i*a_c+j] * b[j*b_c+k];
             }
         }
     }
@@ -71,7 +74,7 @@ void NeuralNetwork::DotProdTA(const float* __restrict a, const float* __restrict
 			}
 
 			for (; k < b_c; k++) {
-				c[i * b_c + k] = a[0 * a_c + i] * b[0 * b_c + k];
+				c[i*b_c+k] = a[0*a_c+i] * b[0*b_c+k];
 			}
 		}
 
@@ -89,7 +92,7 @@ void NeuralNetwork::DotProdTA(const float* __restrict a, const float* __restrict
 			}
 
 			for (; k < b_c; k++) {
-				c[i * b_c + k] += a[j * a_c + i] * b[j * b_c + k];
+				c[i*b_c+k] += a[j*a_c+i] * b[j*b_c+k];
 			}
 		}
     }
@@ -109,7 +112,7 @@ void NeuralNetwork::DotProdTB(const float* __restrict a, const float* __restrict
 			size_t j = clear ? 1 : 0;
 
 			if (clear) {
-				c[i * b_r + k] = a[i * a_c + 0] * b[k * b_c + 0];
+				c[i*b_r+k] = a[i*a_c+0] * b[k*b_c+0];
 			}
 
 			__m256 sum = _mm256_setzero_ps();
@@ -123,7 +126,7 @@ void NeuralNetwork::DotProdTB(const float* __restrict a, const float* __restrict
 			c[i * b_r + k] += Sum256(sum);
 			
 			for (; j < b_c; j++) {
-				c[i * b_r + k] += a[i * a_c + j] * b[k * b_c + j];
+				c[i*b_r+k] += a[i*a_c+j] * b[k* b_c+j];
 			}
 		}
     }

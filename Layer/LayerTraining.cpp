@@ -1,7 +1,6 @@
 #include "Layer.hpp"
 #include "../NeuralNetwork/NeuralNetwork.hpp"
 
-
 void Layer::forward(bool training, const float* __restrict x, float* __restrict z, float* __restrict a, size_t n) {
     if (type == LayerType::input) { return; }
     
@@ -20,16 +19,13 @@ void Layer::forward(bool training, const float* __restrict x, float* __restrict 
     activation.activation(z, a, n*nodes);
 }
 
-void Layer::backward(const float* __restrict y, const float* __restrict pa, const float* __restrict z, const float* __restrict a, float* __restrict dt, float* __restrict dw, float* __restrict db, size_t n) {
+void Layer::backward(const float* __restrict y, const float* __restrict pa, const float* __restrict z, const float* __restrict a, const float* __restrict nw, float* __restrict dt, float* __restrict dw, float* __restrict db, size_t nenodes, size_t n) {
     if (type == LayerType::input) { return; }
-
-    const float* __restrict w = m_w;
-    const float* __restrict b = m_b;
 
     // compute dt
     switch (type) {
         case LayerType::hidden:
-            NeuralNetwork::DotProdTB(y, w, dt, n, nodes, inodes, nodes, true);
+            NeuralNetwork::DotProdTB(y, nw, dt, n, nenodes, nodes, nenodes, true);
             (activation.derivative)(z, dt, n*nodes);
             break;
         case LayerType::output:
@@ -40,22 +36,24 @@ void Layer::backward(const float* __restrict y, const float* __restrict pa, cons
 
     // compute dw
     NeuralNetwork::DotProdTA(pa, dt, dw, n, inodes, n, nodes, true);
+    
+    // prep db by copying in first values, clearing existing ones
+    std::memcpy(db, dt, nodes*sizeof(float));
 
     // compute db
-    #pragma omp parallel for
-		for (size_t j = 0; j < nodes; j++) {
-			__m256 _sum = _mm256_setzero_ps();
+    for (size_t i = 1; i < n; i++) {
 
-			size_t k = 0;
-			for (; k <= n-8; k += 8) {
-				const __m256 _a = _mm256_loadu_ps(&dt[j*n+k]);
-				_sum = _mm256_add_ps(_sum, _a);
-			}
+        size_t j = 0;
+        for (; j <= nodes-8; j+= 8) {
+            const __m256 _a = _mm256_loadu_ps(&dt[i*nodes+j]);
+            const __m256 _b = _mm256_loadu_ps(&db[j]);
+            const __m256 _c = _mm256_add_ps(_a, _b);
 
-			db[j] = NeuralNetwork::Sum256(_sum);
+            _mm256_storeu_ps(&db[j], _c);
+        }
 
-			for (; k < n; k++) {
-				db[j] += dt[j * n + k];
-			}
-		}
+        for (; j < nodes; j++) {
+            db[j] += dt[i*nodes+j];
+        }
+    }
 }

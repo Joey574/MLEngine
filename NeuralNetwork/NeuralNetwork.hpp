@@ -3,6 +3,8 @@
 #include "../LossMetric/LossMetric.hpp"
 #include "../Layer/Layer.hpp"
 
+#define LOGDP 1
+
 class TestNetwork;
 
 class NeuralNetwork {

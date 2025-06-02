@@ -20,7 +20,6 @@ nlohmann::json NeuralNetwork::Fit(Dataset& dataset, size_t batch_size, size_t ep
 		dataset.Shuffle();
 
 		for (size_t i = 0; i < iterations; i++) {
-			std::cout << i << "\n";
 			float* __restrict x = &dataset.trainData[(i * batch_size) * dataset.trainDataCols];
 			float* __restrict y = &dataset.trainLabels[(i * batch_size) * dataset.trainLabelCols];
 
@@ -89,47 +88,43 @@ void NeuralNetwork::ForwardProp(bool training, float* __restrict x, float* __res
     }
 }
 void NeuralNetwork::BackProp(const float* __restrict x, const float* __restrict y, float lr, size_t n) {
-	std::cout << "a\n";
 
 	size_t aidx = m_batch_actv_size-(n*m_layers.back().nodes);
-	size_t widx = m_weights_size-(m_layers.back().inodes*m_layers.back().nodes);
+	size_t widx = m_weights_size-(m_layers.back().size);
 	size_t bidx = m_biases_size-(m_layers.back().nodes);
-
-	float* __restrict dt = nullptr;
-	float* __restrict dw = nullptr;
-	float* __restrict db = nullptr;
 
 	for (size_t i = m_layers.size()-1; i > 0; i--) {
 
-		std::cout << i << "\n";
-
 		// build pointers to relevent data
+		
+		// this layers activation
 		const float* __restrict a = &m_batch_actv[aidx];
+		// this layers total
 		const float* __restrict z = &m_batch_data[aidx];
 
-		const float* __restrict pa = i == 1 ? x : &m_batch_actv[aidx-(n*m_layers[i].inodes)];
-		const float* __restrict truth = i == m_layers.size()-1 ? y : dt;
+		// next layers dt or ground truth
+		const float* __restrict truth = i == m_layers.size()-1 ? y : &m_d_total[aidx+n*m_layers[i].nodes];
+		// previous layers activation
+		const float* __restrict pa = i <= 1 ? x : &m_batch_actv[aidx-n*m_layers[i-1].nodes];
+		// previous layers weights
+		const float* __restrict nw = i == m_layers.size()-1 ? nullptr : &m_network[widx+m_layers[i].size];
+		
+		// this layers dt
+		float* __restrict dt = &m_d_total[aidx];
+		// this layers dw
+		float* __restrict dw = &m_d_weights[widx];
+		// this layers db
+		float* __restrict db = &m_d_biases[bidx];
 
-		dt = &m_d_total[aidx];
-		dw = &m_d_weights[widx];
-		db = &m_d_biases[bidx];
+		size_t nenodes = i == m_layers.size()-1 ? 0 : m_layers[i+1].nodes;
 
-		std::cout << "truth: " << (truth-m_d_total) << "\n";
-		std::cout << "pa: " << pa << "\n";
-		std::cout << "z: " << (z-m_batch_data) << "\n";
-		std::cout << "a: " << (a-m_batch_actv) << "\n";
-		std::cout << "dt: " << (dt-m_d_total) << "\n";
-		std::cout << "dw: " << (dw-m_d_weights) << "\n";
-		std::cout << "db: " << (db-m_d_biases) << "\n\n";
-		m_layers[i].backward(truth, pa, z, a, dt, dw, db, n);
+		m_layers[i].backward(truth, pa, z, a, nw, dt, dw, db, nenodes, n);
 
 		// update offsets
 		aidx -= n*m_layers[i-1].nodes;
-		widx -= m_layers[i-1].inodes*m_layers[i-1].nodes;
+		widx -= m_layers[i-1].size;
 		bidx -= m_layers[i-1].nodes;
 	}
-
-	std::cout << "b\n";
 
 	// adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
@@ -148,6 +143,4 @@ void NeuralNetwork::BackProp(const float* __restrict x, const float* __restrict 
 	for (size_t i = m_network_size-(m_network_size%8); i < m_network_size; i++) {
 		m_network[i] -= m_d_weights[i] * factor;
 	}
-
-	std::cout << "bp done\n";
 }

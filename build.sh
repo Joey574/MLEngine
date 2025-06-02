@@ -31,7 +31,7 @@ flagsopt="\
     -frename-registers -fschedule-insns -fschedule-insns2 -fweb -fno-semantic-interposition \
     -frandom-seed=123 -s\
 "
-flagsdeb="-std=c++20 -O0 -g -DDEBUG -fno-omit-frame-pointer -fno-lto -mavx2 -mfma -fopenmp"
+flagsdeb="-std=c++20 -O0 -g -DDEBUG -rdynamic -fno-omit-frame-pointer -fno-lto -mavx2 -mfma -fopenmp"
 
 # .cpp dependency files
 nndependencies="\
@@ -81,7 +81,6 @@ else
 
         # link phase
         ccache g++ -static-libgcc -static-libstdc++ -Wl,-Bdynamic -lgomp -Wl,-Bstatic -lstdc++ -lpthread -lm -ldl $FLAGS $(find . -name "*.o") -o MLTestEngine
-        strip ./MLTestEngine
 
         # cleanup object files
         find . -name "*.o" -delete
@@ -97,14 +96,12 @@ else
 
         # link phase
         ccache g++ -static-libgcc -static-libstdc++ -Wl,-Bdynamic -lgomp -Wl,-Bstatic -lstdc++ -lpthread -lm -ldl $FLAGS $(find . -name "*.o") -o MLEngine
-        strip ./MLEngine
 
         # cleanup object files
         find . -name "*.o" -delete
     
         file_size=$(stat -c %s "MLEngine")
     fi
-
 fi
 
 # output information about build process
