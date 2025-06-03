@@ -9,15 +9,17 @@ public:
         none, input, hidden, output
     };
 
-    Layer(float* w, float* b, size_t in, size_t n, Activation actv, LossMetric lm) : 
-    m_w(w), m_b(b), inodes(in), nodes(n), size(in*n), activation(actv), lossmetric(lm) {}
+    Layer(LayerType type, float* w, float* b, size_t in, size_t n, size_t nn, Activation actv, LossMetric lm) : 
+    type(type), m_w(w), m_b(b), inodes(in), nodes(n), nenodes(nn), size(in*n), activation(actv), lossmetric(lm) {}
 
     std::string name;
     LayerType type;
 
     size_t nodes;
     size_t inodes;
+    size_t nenodes;
     size_t size;
+
 
     LossMetric lossmetric;
     Activation activation;
@@ -39,7 +41,6 @@ public:
         float* __restrict dt,
         float* __restrict dw,
         float* __restrict db,
-        size_t nenodes,
         size_t n
     );
     

@@ -3,7 +3,7 @@
 #include "../LossMetric/LossMetric.hpp"
 #include "../Layer/Layer.hpp"
 
-#define LOGDP 1
+#define LOGDP 0
 
 class TestNetwork;
 

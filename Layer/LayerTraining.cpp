@@ -4,8 +4,8 @@
 void Layer::forward(bool training, const float* __restrict x, float* __restrict z, float* __restrict a, size_t n) {
     if (type == LayerType::input) { return; }
     
-    const float* __restrict const w = m_w;
-    const float* __restrict const b = m_b;
+    const float* __restrict w = m_w;
+    const float* __restrict b = m_b;
 
     // copy bias values into total
     for (size_t i = 0; i < n; i++) {
@@ -19,7 +19,7 @@ void Layer::forward(bool training, const float* __restrict x, float* __restrict 
     activation.activation(z, a, n*nodes);
 }
 
-void Layer::backward(const float* __restrict y, const float* __restrict pa, const float* __restrict z, const float* __restrict a, const float* __restrict nw, float* __restrict dt, float* __restrict dw, float* __restrict db, size_t nenodes, size_t n) {
+void Layer::backward(const float* __restrict y, const float* __restrict pa, const float* __restrict z, const float* __restrict a, const float* __restrict nw, float* __restrict dt, float* __restrict dw, float* __restrict db, size_t n) {
     if (type == LayerType::input) { return; }
 
     // compute dt

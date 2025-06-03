@@ -33,23 +33,25 @@ void NeuralNetwork::Initialize(const std::string& path, const std::string& name,
 
     // construct layers
     for (size_t i = 0; i < dims.size(); i++) {
+        Layer::LayerType type = 
+            i == 0 ? Layer::LayerType::input : 
+            i == dims.size()-1 ? Layer::LayerType::output : 
+            Layer::LayerType::hidden;
+
         float* w = &m_network[widx];
         float* b = &m_biases[bidx];
 
         size_t in = i == 0 ? 0 : dims[i-1];
         size_t n = dims[i];
+        size_t nn = i == dims.size()-1 ? 0 : dims[i+1];
 
         Activation actv = i == 0 ? Activation() : Activation(actvs[i-1]);
         LossMetric lm = i < dims.size()-1 ? LossMetric() : LossMetric(loss, metric);
-        m_layers.emplace_back(w, b, in, n, actv, lm);
         
-        m_layers.back().type = 
-            i == 0 ? Layer::LayerType::input : 
-            i == dims.size()-1 ? Layer::LayerType::output : 
-            Layer::LayerType::hidden;
+        m_layers.emplace_back(type, w, b, in, n, nn, actv, lm);
 
         widx += in*n;
-        widx += i == 0 ? 0 : n;
+        bidx += i == 0 ? 0 : n;
     }
 }
 
@@ -133,7 +135,6 @@ void NeuralNetwork::InitializeBatchData(size_t n) {
     m_batch_data_size = (3 * m_batch_actv_size) + m_network_size;
     m_batch_data = (float*)aligned_alloc(32, m_batch_data_size*sizeof(float));
 
-    // set pointers
     m_batch_actv = &m_batch_data[m_batch_actv_size];
     m_d_total = &m_batch_actv[m_batch_actv_size];
     m_d_weights = &m_d_total[m_batch_actv_size];

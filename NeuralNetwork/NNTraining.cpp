@@ -73,8 +73,8 @@ void NeuralNetwork::ForwardProp(bool training, float* __restrict x, float* __res
 	float* __restrict ta = x;
 
     for (size_t i = 0; i < m_layers.size(); i++) {
-		// input will always just be previous layers output
-		const float* __restrict input = tz;
+		// input will always just be previous layers activation
+		const float* __restrict input = ta;
 
 		// set new outputs
 		tz = i == 0 ? x : &z[ouidx];
@@ -96,29 +96,18 @@ void NeuralNetwork::BackProp(const float* __restrict x, const float* __restrict 
 	for (size_t i = m_layers.size()-1; i > 0; i--) {
 
 		// build pointers to relevent data
-		
-		// this layers activation
 		const float* __restrict a = &m_batch_actv[aidx];
-		// this layers total
 		const float* __restrict z = &m_batch_data[aidx];
 
-		// next layers dt or ground truth
 		const float* __restrict truth = i == m_layers.size()-1 ? y : &m_d_total[aidx+n*m_layers[i].nodes];
-		// previous layers activation
 		const float* __restrict pa = i <= 1 ? x : &m_batch_actv[aidx-n*m_layers[i-1].nodes];
-		// previous layers weights
 		const float* __restrict nw = i == m_layers.size()-1 ? nullptr : &m_network[widx+m_layers[i].size];
 		
-		// this layers dt
 		float* __restrict dt = &m_d_total[aidx];
-		// this layers dw
 		float* __restrict dw = &m_d_weights[widx];
-		// this layers db
 		float* __restrict db = &m_d_biases[bidx];
 
-		size_t nenodes = i == m_layers.size()-1 ? 0 : m_layers[i+1].nodes;
-
-		m_layers[i].backward(truth, pa, z, a, nw, dt, dw, db, nenodes, n);
+		m_layers[i].backward(truth, pa, z, a, nw, dt, dw, db, n);
 
 		// update offsets
 		aidx -= n*m_layers[i-1].nodes;
