@@ -39,7 +39,7 @@ nndependencies="\
     
     LossMetric/Loss.cpp LossMetric/Metric.cpp LossMetric/Utils.cpp \
 
-    Layer/LayerTraining.cpp Layer/LayerUtils.cpp \
+    Layer/LayerTraining.cpp Layer/LayerUtils.cpp Layer/LayerInitializations.cpp\
 
     NeuralNetwork/NNDotProds.cpp NeuralNetwork/NNInitializations.cpp \
     NeuralNetwork/NNLogging.cpp NeuralNetwork/NNMathUtils.cpp \

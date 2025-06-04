@@ -69,7 +69,7 @@ void State::Build(const std::vector<std::string>& pdims, const std::vector<std::
     LossMetric::Type metric = LossMetric::ParseType(pmetric);
     LossMetric::Type loss = LossMetric::ParseType(ploss);
 
-    NeuralNetwork::WeightInitialization weight = NeuralNetwork::ParseWeight(pweight);
+    Layer::WeightInitialization weight = NeuralNetwork::ParseWeight(pweight);
 
     // initialize model with provided options
     model->Initialize(p_models+"/"+modelname+"/", modelname, dimensions, activations, loss, metric, weight);
@@ -85,7 +85,7 @@ void State::Build(const nlohmann::json& meta) {
     LossMetric::Type metric = LossMetric::ParseType(meta[METRIC]);
     LossMetric::Type loss = LossMetric::ParseType(meta[LOSS]);
 
-    NeuralNetwork::WeightInitialization weight = NeuralNetwork::ParseWeight(meta[WEIGHTS]);
+    Layer::WeightInitialization weight = NeuralNetwork::ParseWeight(meta[WEIGHTS]);
 
     // initialize model with provided options
     model->Initialize(p_models+"/"+modelname+"/", modelname, dimensions, activations, loss, metric, weight);

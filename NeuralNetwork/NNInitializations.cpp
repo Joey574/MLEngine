@@ -1,6 +1,6 @@
 #include "NeuralNetwork.hpp"
 
-void NeuralNetwork::Initialize(const std::string& path, const std::string& name, const std::vector<size_t>& dims, const std::vector<Activation::Type>& actvs, LossMetric::Type loss, LossMetric::Type metric, WeightInitialization weightInit) {
+void NeuralNetwork::Initialize(const std::string& path, const std::string& name, const std::vector<size_t>& dims, const std::vector<Activation::Type>& actvs, LossMetric::Type loss, LossMetric::Type metric, Layer::WeightInitialization weightInit) {
     std::random_device rd;
     m_weightinit = weightInit;
     m_path = path;
@@ -19,27 +19,18 @@ void NeuralNetwork::Initialize(const std::string& path, const std::string& name,
         return;
     }
 
-    // initialize network memory
-    InitializeNetwork(dims);   
-
-    // initialize weights
-    InitializeWeights(weightInit, dims);
-
     // initialize layer size
     m_layers.reserve(dims.size());
 
-    size_t widx = 0;
-    size_t bidx = 0;
+    m_network_size = 0;
 
     // construct layers
     for (size_t i = 0; i < dims.size(); i++) {
+
         Layer::LayerType type = 
             i == 0 ? Layer::LayerType::input : 
             i == dims.size()-1 ? Layer::LayerType::output : 
             Layer::LayerType::hidden;
-
-        float* w = &m_network[widx];
-        float* b = &m_biases[bidx];
 
         size_t in = i == 0 ? 0 : dims[i-1];
         size_t n = dims[i];
@@ -47,108 +38,62 @@ void NeuralNetwork::Initialize(const std::string& path, const std::string& name,
 
         Activation actv = i == 0 ? Activation() : Activation(actvs[i-1]);
         LossMetric lm = i < dims.size()-1 ? LossMetric() : LossMetric(loss, metric);
-        
-        m_layers.emplace_back(type, w, b, in, n, nn, actv, lm);
 
-        widx += in*n;
-        bidx += i == 0 ? 0 : n;
-    }
-}
+        Layer l;
+        l.Initialize(type, in, n, nn, actv, lm);        
+        m_layers.push_back(l);
 
-void NeuralNetwork::InitializeNetwork(const std::vector<size_t>& dims) {
-    m_weights_size = 0;
-    m_biases_size = 0;
-
-    // set network sizing based on layers
-    for (size_t i = 1; i < dims.size(); i++) {
-        m_weights_size += dims[i-1] * dims[i];
-        m_biases_size += dims[i];
+        m_network_size += l.layer_size;
     }
 
-    m_network_size = m_weights_size + m_biases_size;
+    // initialize network memory
     m_network = (float*)aligned_alloc(32, m_network_size*sizeof(float));
 
-    m_biases = &m_network[m_weights_size];
+    // initialize weights
+    InitializeWeights(weightInit, dims);
 }
-void NeuralNetwork::InitializeWeights(WeightInitialization type, const std::vector<std::size_t>& layers) {
-    float lowerRand;
-    float upperRand;
-    size_t idx = 0;
-    
-    std::default_random_engine gen(m_seed);
+void NeuralNetwork::InitializeWeights(Layer::WeightInitialization type, const std::vector<std::size_t>& layers) {
+    size_t dataidx = 0;
 
-    // zero out biases
-    memset(m_biases, 0, m_biases_size*sizeof(float));
-
-    switch (type) {
-        case WeightInitialization::he:
-            lowerRand = 0.0f;
-
-            for (size_t i = 0; i < layers.size()-1; i++) {
-                upperRand = std::sqrt(2.0f / layers[i+1]);
-
-                std::normal_distribution<float> dist(lowerRand, upperRand);
-                for(size_t j = 0; j < layers[i] * layers[i+1]; j++, idx++) {
-                    m_network[idx] = dist(gen);
-                }
-            }
-
-            break;
-        case WeightInitialization::normalize:
-            lowerRand = -0.5f;
-            upperRand = 0.5f;
-
-            for (size_t i = 0; i < layers.size()-1; i++) {
-                std::uniform_real_distribution<float> dist(lowerRand, upperRand);
-
-                for (size_t j = 0; j < layers[i]*layers[i+1]; j++, idx++) {
-                    m_network[idx] = dist(gen) * std::sqrt(1.0f / layers[i+1]);
-                }
-            }
-
-            break;
-        case WeightInitialization::xavier:
-
-            for (size_t i = 0; i < layers.size()-1; i++) {
-                lowerRand = (-1.0f / std::sqrt(layers[i+1]));
-                upperRand = 1.0f / std::sqrt(layers[i+1]);
-
-                std::uniform_real_distribution<float> dist(lowerRand, upperRand);
-                for (size_t j = 0; j < layers[i]*layers[i+1]; j++, idx++) {
-                    m_network[idx] = dist(gen);
-                }
-            }
-
-            break;
-        default:
-            // no weight initialization has been set, zero the network
-            memset(m_network, 0, m_weights_size*sizeof(float));
+    for (Layer& layer : m_layers) {
+        layer.InitializeWeights(&m_network[dataidx], type, m_seed++);
+        dataidx += layer.layer_size;
     }
 }
-void NeuralNetwork::InitializeBatchData(size_t n) {
-    m_batch_actv_size = 0;
+void NeuralNetwork::InitializeLayerData(size_t bn, size_t tn) {
+    m_batch_data_size = 0;
+    m_test_data_size = 0;
 
-    for (size_t i = 1; i < m_layers.size(); i++) {
-        m_batch_actv_size += m_layers[i].nodes * n;
+    for (Layer& layer : m_layers) {
+        layer.InitializeSizes(bn, tn);
+
+        m_batch_data_size += layer.layer_batch_size;
+        m_test_data_size += layer.layer_test_size;
     }
 
-    m_batch_data_size = (3 * m_batch_actv_size) + m_network_size;
     m_batch_data = (float*)aligned_alloc(32, m_batch_data_size*sizeof(float));
-
-    m_batch_actv = &m_batch_data[m_batch_actv_size];
-    m_d_total = &m_batch_actv[m_batch_actv_size];
-    m_d_weights = &m_d_total[m_batch_actv_size];
-	m_d_biases = &m_d_weights[m_weights_size];
+    m_test_data = (float*)aligned_alloc(32, m_test_data_size*sizeof(float));
 }
-void NeuralNetwork::InitializeTestData(size_t n) {
-    m_test_actv_size = 0;
+void NeuralNetwork::InitializeLayerPointers(size_t bn, size_t tn) {
+    size_t dataidx = 0;
+    size_t batchidx = 0;
+    size_t testidx = 0;
+    
+    for (size_t i = 0; i < m_layers.size(); i++) {
+        float* data = &m_network[dataidx];
+        float* batchdata = &m_batch_data[batchidx];
+        float* testdata = &m_test_data[testidx];
 
-    for (size_t i = 1; i < m_layers.size(); i++) {
-        m_test_actv_size += m_layers[i].nodes * n;
+        m_layers[i].InitializePointers(data, batchdata, testdata, bn, tn);
+
+        dataidx += m_layers[i].layer_size;
+        batchidx += m_layers[i].layer_batch_size;
+        testidx += m_layers[i].layer_test_size;
     }
 
-    m_test_data_size = m_test_actv_size * 2;
-    m_test_data = (float*)aligned_alloc(32, m_test_data_size*sizeof(float));
-    
-    m_test_actv = &m_test_data[m_test_actv_size];
+    for (size_t i = 0; i < m_layers.size(); i++) {
+        float* nextweights = i == m_layers.size()-1 ? nullptr : m_layers[i+1].Weights();
+
+        m_layers[i].InitializeSpecialPointers(nextweights);
+    }
 }

@@ -27,16 +27,16 @@ void NeuralNetwork::SaveBest(nlohmann::json& history, float score, size_t e) {
     close(fd);
 }
 
-NeuralNetwork::WeightInitialization NeuralNetwork::ParseWeight(const std::string& w) {
+Layer::WeightInitialization NeuralNetwork::ParseWeight(const std::string& w) {
     if (w == "he") {
-        return WeightInitialization::he;
+        return Layer::WeightInitialization::he;
     } else if (w == "xavier") {
-        return WeightInitialization::xavier;
+        return Layer::WeightInitialization::xavier;
     } else if (w == "normalize") {
-        return WeightInitialization::normalize;
+        return Layer::WeightInitialization::normalize;
     }
 
-    return WeightInitialization::none;
+    return Layer::WeightInitialization::none;
 }
 std::vector<size_t> NeuralNetwork::ParseCompact(const std::vector<std::string>& dims) {
     std::vector<size_t> dimensions;
@@ -61,13 +61,13 @@ std::vector<size_t> NeuralNetwork::ParseCompact(const std::vector<std::string>& 
     return dimensions;
 }
 
-std::string NeuralNetwork::WeightName(WeightInitialization w) {
+std::string NeuralNetwork::WeightName(Layer::WeightInitialization w) {
     switch (w) {
-        case WeightInitialization::he:
+        case Layer::WeightInitialization::he:
             return "he";
-        case WeightInitialization::xavier:
+        case Layer::WeightInitialization::xavier:
             return "xavier";
-        case WeightInitialization::normalize:
+        case Layer::WeightInitialization::normalize:
             return "normalize";
         default:
             return "none";
@@ -116,7 +116,7 @@ int NeuralNetwork::Save(int fd) const {
     ssize_t n = write(fd, m_network, m_network_size*sizeof(float));
     return n != m_network_size*sizeof(float);    
 }
-int NeuralNetwork::Load(int fd, WeightInitialization trueweight) {
+int NeuralNetwork::Load(int fd, Layer::WeightInitialization trueweight) {
     m_weightinit = trueweight;
 
     ssize_t n = read(fd, m_network, m_network_size*sizeof(float));

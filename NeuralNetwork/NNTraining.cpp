@@ -8,10 +8,10 @@ nlohmann::json NeuralNetwork::Fit(Dataset& dataset, size_t batch_size, size_t ep
 	nlohmann::json history;
 	FitStart(history, epochs, batch_size, learning_rate);
 
-	InitializeBatchData(batch_size);
-	InitializeTestData(dataset.testDataRows);
+	InitializeLayerData(batch_size, dataset.testDataRows);
+	InitializeLayerPointers(batch_size, dataset.testDataRows);
 
-	const size_t iterations = (dataset.trainDataRows + (batch_size-1)) / batch_size;
+	const size_t iterations = std::ceil((double)dataset.trainDataRows/(double)batch_size);
 
 	for (size_t e = 0; e < epochs && KEEPRUNNING; e++) {
 		auto epochstart = std::chrono::high_resolution_clock::now();
@@ -27,7 +27,7 @@ nlohmann::json NeuralNetwork::Fit(Dataset& dataset, size_t batch_size, size_t ep
 			size_t remaining_elements = (dataset.trainDataRows - (i * batch_size));
 			size_t effective_size = batch_size > remaining_elements ? remaining_elements : batch_size;
 
-			ForwardProp(true, x, m_batch_data, m_batch_actv, effective_size);
+			ForwardProp(true, x, effective_size);
 			BackProp(x, y, learning_rate, effective_size);
 		}
 
@@ -48,10 +48,10 @@ nlohmann::json NeuralNetwork::Fit(Dataset& dataset, size_t batch_size, size_t ep
 }
 
 std::string NeuralNetwork::TestNetwork(Dataset& dataset, nlohmann::json& history, size_t e) {
-	ForwardProp(false, dataset.testData.data(), m_test_data, m_test_actv, dataset.testDataRows);
-	const float* predications = &m_test_actv[m_test_actv_size - (m_layers.back().nodes*dataset.testDataRows)];
+	ForwardProp(false, dataset.testData.data(), dataset.testDataRows);
+	const float* predictions = m_layers.back().Output(false);
 
-	float score = m_layers.back().lossmetric.metric(predications, &dataset.testLabels[0], dataset.testDataRows, m_layers.back().nodes);
+	float score = m_layers.back().lossmetric.metric(predictions, &dataset.testLabels[0], dataset.testDataRows, m_layers.back().nodes);
 
 	SaveBest(history, score, e);
 	std::string curs = "Score: " + std::to_string(score);
@@ -65,71 +65,29 @@ std::string NeuralNetwork::TestNetwork(Dataset& dataset, nlohmann::json& history
 	return fmt;
 }
 
-void NeuralNetwork::ForwardProp(bool training, float* __restrict x, float* __restrict z, float* __restrict a, size_t n) {
-	
-	size_t ouidx = 0;
-
-	float* __restrict tz = x;
-	float* __restrict ta = x;
+void NeuralNetwork::ForwardProp(bool training, float* __restrict x, size_t n) {
 
     for (size_t i = 0; i < m_layers.size(); i++) {
-		// input will always just be previous layers activation
-		const float* __restrict input = ta;
-
-		// set new outputs
-		tz = i == 0 ? x : &z[ouidx];
-		ta = i == 0 ? x : &a[ouidx];
+		// input will always just be previous layers output
+		float* __restrict input = i == 0 ? x : m_layers[i-1].Output(training);
 
 		// does all the fun math stuff for us
-		m_layers[i].forward(training, input, tz, ta, n);
-
-		// update offsets
-		ouidx += i == 0 ? 0 : n*m_layers[i].nodes;
+		m_layers[i].forward(training, input, n);
     }
 }
 void NeuralNetwork::BackProp(const float* __restrict x, const float* __restrict y, float lr, size_t n) {
 
-	size_t aidx = m_batch_actv_size-(n*m_layers.back().nodes);
-	size_t widx = m_weights_size-(m_layers.back().size);
-	size_t bidx = m_biases_size-(m_layers.back().nodes);
+	// compute gradient
+	for (ssize_t i = m_layers.size()-1; i >= 0; i--) {
 
-	for (size_t i = m_layers.size()-1; i > 0; i--) {
+		const float* truth = i == m_layers.size()-1 ? y : m_layers[i+1].Truth();
+		const float* input = i == 0 ? x : m_layers[i-1].Output(true);
 
-		// build pointers to relevent data
-		const float* __restrict a = &m_batch_actv[aidx];
-		const float* __restrict z = &m_batch_data[aidx];
-
-		const float* __restrict truth = i == m_layers.size()-1 ? y : &m_d_total[aidx+n*m_layers[i].nodes];
-		const float* __restrict pa = i <= 1 ? x : &m_batch_actv[aidx-n*m_layers[i-1].nodes];
-		const float* __restrict nw = i == m_layers.size()-1 ? nullptr : &m_network[widx+m_layers[i].size];
-		
-		float* __restrict dt = &m_d_total[aidx];
-		float* __restrict dw = &m_d_weights[widx];
-		float* __restrict db = &m_d_biases[bidx];
-
-		m_layers[i].backward(truth, pa, z, a, nw, dt, dw, db, n);
-
-		// update offsets
-		aidx -= n*m_layers[i-1].nodes;
-		widx -= m_layers[i-1].size;
-		bidx -= m_layers[i-1].nodes;
+		m_layers[i].backward(truth, input, n);
 	}
 
-	// adjust learning rate to factor in number of elements
-    const float factor = lr / (float)n;
-    const __m256 _factor = _mm256_set1_ps(factor);
-
-	// update network (bias and weights currently use same formula to update, so both happen here)
-	#pragma omp parallel for
-	for (size_t i = 0; i <= m_network_size-8; i += 8) {
-		const __m256 _a = _mm256_loadu_ps(&m_d_weights[i]);
-		const __m256 _b = _mm256_loadu_ps(&m_network[i]);
-		const __m256 _res = _mm256_fnmadd_ps(_a, _factor, _b);
-
-		_mm256_storeu_ps(&m_network[i], _res);
-	}
-
-	for (size_t i = m_network_size-(m_network_size%8); i < m_network_size; i++) {
-		m_network[i] -= m_d_weights[i] * factor;
+	// update layers
+	for (size_t i = 0; i < m_layers.size(); i++) {
+		m_layers[i].update(lr, n);
 	}
 }
