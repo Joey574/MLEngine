@@ -5,7 +5,6 @@ MLEngine is a C++ command line tool for linux aimed to allow easy iteration on d
 #### In the works
 * Dropout
 * Adding/Removing layers through iterations
-* Abstracting math into layer structs to allow more customization
 
 #### Future ideas
 * GPU compatability

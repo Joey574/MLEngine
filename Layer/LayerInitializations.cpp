@@ -1,8 +1,9 @@
 #include "Layer.hpp"
 
 /// @brief Initializes basic layer data, sets layer size, does not touch batchsize or testsize
-void Layer::Initialize(LayerType type, size_t in, size_t n, size_t nn, Activation actv, LossMetric lm) {
+void Layer::Initialize(LayerType type, size_t in, size_t n, size_t nn, Activation actv, LossMetric lm, float dropout) {
     this->type = type;
+    this-> m_dropout = dropout;
     
     inodes = in;
     nodes = n;
@@ -21,6 +22,14 @@ void Layer::Initialize(LayerType type, size_t in, size_t n, size_t nn, Activatio
             layer_size = in*n + n;
             wsize = in*n;
     }
+
+    if (dropout > 0.0f) {
+        executeForward = &Layer::DropoutForward;
+        executeBackward = &Layer::DropoutBackward;
+    } else {
+        executeForward = &Layer::BasicForward;
+        executeBackward = &Layer::BasicBackward;        
+    }
 }
 
 /// @brief Initializes batchsize and testsize
@@ -30,9 +39,18 @@ void Layer::InitializeSizes(size_t bn, size_t tn) {
             layer_batch_size = 0;
             layer_test_size = 0;
             break;
-        default:
+        case LayerType::hidden:
             layer_batch_size = (3*nodes*bn)+wsize+nodes;
             layer_test_size = 2*nodes*tn;
+
+            if (m_dropout > 0.0f) {
+                layer_batch_size += nodes*bn;
+            }
+            break;
+        case LayerType::output:
+            layer_batch_size = (3*nodes*bn)+wsize+nodes;
+            layer_test_size = 2*nodes*tn;
+            break;
     }
 }
 
@@ -58,13 +76,29 @@ void Layer::InitializePointers(float* data, float* batchdata, float* testdata, s
             m_dt = nullptr;
             m_dw = nullptr;
             m_db = nullptr;
+            m_dpmask = nullptr;
             break;
-        default:
+        case LayerType::hidden:
             m_z = batchdata;
             m_a = &batchdata[nodes*bn];
             m_dt = &m_a[nodes*bn];
             m_dw = &m_dt[nodes*bn];
             m_db = &m_dw[wsize];
+
+            if (m_dropout > 0.0f) {
+                m_dpmask = &m_db[nodes];
+            } else {
+                m_dpmask = nullptr;
+            }
+            break;
+        case LayerType::output:
+            m_z = batchdata;
+            m_a = &batchdata[nodes*bn];
+            m_dt = &m_a[nodes*bn];
+            m_dw = &m_dt[nodes*bn];
+            m_db = &m_dw[wsize];
+            m_dpmask = nullptr;
+            break;
     }
 
     // assign test data pointers

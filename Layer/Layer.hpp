@@ -12,7 +12,7 @@ public:
         none, he, normalize, xavier
     };
 
-    void Initialize(LayerType type, size_t in, size_t n, size_t nn, Activation actv, LossMetric lm);
+    void Initialize(LayerType type, size_t in, size_t n, size_t nn, Activation actv, LossMetric lm, float dropout);
     void InitializeSizes(size_t bn, size_t tn);
     void InitializePointers(float* data, float* batchdata, float* testdata, size_t bn, size_t tn);
     void InitializeSpecialPointers(float* nextweight);
@@ -57,6 +57,22 @@ public:
     size_t layer_test_size;
 
 private:
+
+    void (Layer::*executeForward)(bool, float* __restrict, size_t n);
+    void (Layer::*executeBackward)(const float* __restrict, const float* __restrict, size_t n);
+
+    // forward prop methods
+    void BasicForward(bool training, float* __restrict input, size_t n);
+    void DropoutForward(bool training, float* __restrict input, size_t n);
+
+    // backprop methods
+    void BasicBackward(const float* __restrict truth, const float* __restrict input, size_t n);
+    void DropoutBackward(const float* __restrict truth, const float* __restrict input, size_t n);
+
+    // backprop utils
+    void ComputeDT(const float* __restrict truth, size_t n);
+    void ComputeDN(const float* __restrict input, size_t n);
+
     // network data
     float* m_w;
     float* m_b;
@@ -75,6 +91,6 @@ private:
 
     size_t wsize;
 
-    float dropout;
-    float* m_dropoutmask;
+    float m_dropout;
+    float* m_dpmask;
 };
