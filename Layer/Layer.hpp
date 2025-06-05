@@ -14,7 +14,7 @@ public:
 
     void Initialize(LayerType type, size_t in, size_t n, size_t nn, Activation actv, LossMetric lm, float dropout);
     void InitializeSizes(size_t bn, size_t tn);
-    void InitializePointers(float* data, float* batchdata, float* testdata, size_t bn, size_t tn);
+    void InitializePointers(char* data, char* batchdata, char* testdata, size_t bn, size_t tn);
     void InitializeSpecialPointers(float* nextweight);
 
     void InitializeWeights(float* data, WeightInitialization init, uint64_t seed);
@@ -52,9 +52,11 @@ public:
     LossMetric lossmetric;
     Activation activation;
 
-    size_t layer_size;
-    size_t layer_batch_size;
-    size_t layer_test_size;
+    size_t layer_bytes;
+    size_t layer_batch_bytes;
+    size_t layer_test_bytes;
+
+    size_t params;
 
 private:
 
@@ -90,7 +92,8 @@ private:
     float* m_ta;
 
     size_t wsize;
+    size_t bsize;
 
     float m_dropout;
-    float* m_dpmask;
+    uint8_t* m_dpmask;
 };

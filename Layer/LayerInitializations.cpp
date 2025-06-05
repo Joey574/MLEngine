@@ -15,12 +15,16 @@ void Layer::Initialize(LayerType type, size_t in, size_t n, size_t nn, Activatio
     // set network size
     switch (type) {
         case LayerType::input:
-            layer_size = 0;
+            layer_bytes = 0;
             wsize = 0;
+            bsize = 0;
+            params = 0;
             break;
         default:
-            layer_size = in*n + n;
+            layer_bytes = (in*n+n)*sizeof(float);
             wsize = in*n;
+            bsize = n;
+            params = wsize+bsize;
     }
 
     if (dropout > 0.0f) {
@@ -36,26 +40,27 @@ void Layer::Initialize(LayerType type, size_t in, size_t n, size_t nn, Activatio
 void Layer::InitializeSizes(size_t bn, size_t tn) {
     switch (type) {
         case LayerType::input:
-            layer_batch_size = 0;
-            layer_test_size = 0;
+            layer_batch_bytes = 0;
+            layer_test_bytes = 0;
             break;
         case LayerType::hidden:
-            layer_batch_size = (3*nodes*bn)+wsize+nodes;
-            layer_test_size = 2*nodes*tn;
+            layer_batch_bytes = ((3*nodes*bn)+wsize+nodes)*sizeof(float);
+            layer_test_bytes = (2*nodes*tn)*sizeof(float);
 
             if (m_dropout > 0.0f) {
-                layer_batch_size += nodes*bn;
+                // packed to uint8_t, in future should be bit packed
+                layer_batch_bytes += nodes*bn;
             }
             break;
         case LayerType::output:
-            layer_batch_size = (3*nodes*bn)+wsize+nodes;
-            layer_test_size = 2*nodes*tn;
+            layer_batch_bytes = ((3*nodes*bn)+wsize+nodes)*sizeof(float);
+            layer_test_bytes = (2*nodes*tn)*sizeof(float);
             break;
     }
 }
 
 /// @brief Sets the internal pointers for network data, batch data, and test data, bn and tn MUST match previously passed
-void Layer::InitializePointers(float* data, float* batchdata, float* testdata, size_t bn, size_t tn) {
+void Layer::InitializePointers(char* data, char* batchdata, char* testdata, size_t bn, size_t tn) {
 
     // assign data pointers
     switch (type) {
@@ -64,8 +69,8 @@ void Layer::InitializePointers(float* data, float* batchdata, float* testdata, s
             m_b = nullptr;
             break;
         default:
-            m_w = data;
-            m_b = &data[wsize];
+            m_w = (float*)data;
+            m_b = &m_w[wsize];
     }
 
     // assign batch data pointers
@@ -79,21 +84,21 @@ void Layer::InitializePointers(float* data, float* batchdata, float* testdata, s
             m_dpmask = nullptr;
             break;
         case LayerType::hidden:
-            m_z = batchdata;
-            m_a = &batchdata[nodes*bn];
+            m_z = (float*)batchdata;
+            m_a = &m_z[nodes*bn];
             m_dt = &m_a[nodes*bn];
             m_dw = &m_dt[nodes*bn];
             m_db = &m_dw[wsize];
 
             if (m_dropout > 0.0f) {
-                m_dpmask = &m_db[nodes];
+                m_dpmask = (uint8_t*)&m_db[nodes];
             } else {
                 m_dpmask = nullptr;
             }
             break;
         case LayerType::output:
-            m_z = batchdata;
-            m_a = &batchdata[nodes*bn];
+            m_z = (float*)batchdata;
+            m_a = &m_z[nodes*bn];
             m_dt = &m_a[nodes*bn];
             m_dw = &m_dt[nodes*bn];
             m_db = &m_dw[wsize];
@@ -108,8 +113,8 @@ void Layer::InitializePointers(float* data, float* batchdata, float* testdata, s
             m_ta = nullptr;
             break;
         default:
-            m_tz = testdata;
-            m_ta = &testdata[nodes*tn];
+            m_tz = (float*)testdata;
+            m_ta = &m_tz[nodes*tn];
     }
 }
 

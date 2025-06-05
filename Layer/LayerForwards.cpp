@@ -2,6 +2,7 @@
 #include "../NeuralNetwork/NeuralNetwork.hpp"
 
 void Layer::BasicForward(bool training, float* __restrict input, size_t n) {
+
     if (type == LayerType::input) { 
         if (training) {
             m_z = input; m_a = input; 
@@ -32,7 +33,7 @@ void Layer::BasicForward(bool training, float* __restrict input, size_t n) {
     }
 
     // perform dot prod with input
-    NeuralNetwork::DotProd(input, w, z, n, inodes, inodes, nodes, false);
+    NeuralNetwork::DotProd<false>(input, w, z, n, inodes, inodes, nodes);
 
     // apply activation
     activation.activation(z, a, n*nodes);
@@ -49,7 +50,7 @@ void Layer::DropoutForward(bool training, float* __restrict input, size_t n) {
 
     if (training) {
         float* __restrict a = m_a;
-        float* __restrict mask = m_dpmask;
+        uint8_t* __restrict mask = m_dpmask;
 
         // apply dropout
         const float scale = 1.0f/(1.0f-m_dropout);
@@ -64,10 +65,10 @@ void Layer::DropoutForward(bool training, float* __restrict input, size_t n) {
 
             if (k) {
                 a[i] *= scale;
-                mask[i] = 1.0f;            
+                mask[i] = 1;            
             } else {
                 a[i] = 0.0f;
-                mask[i] = 0.0f;
+                mask[i] = 0;
             }
         }
     }

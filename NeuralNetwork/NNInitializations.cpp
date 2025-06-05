@@ -43,7 +43,7 @@ void NeuralNetwork::Initialize(const std::string& path, const std::string& name,
         layer.Initialize(type, in, n, nn, actv, lm, 0.2f);        
         m_layers.push_back(layer);
 
-        m_network_size += layer.layer_size;
+        m_network_size += layer.params;
     }
 
     // initialize network memory
@@ -57,38 +57,45 @@ void NeuralNetwork::InitializeWeights(Layer::WeightInitialization type, const st
 
     for (size_t i = 0; i < m_layers.size(); i++) {
         m_layers[i].InitializeWeights(&m_network[dataidx], type, m_seed+i);
-        dataidx += m_layers[i].layer_size;
+        dataidx += m_layers[i].params;
     }
 }
 void NeuralNetwork::InitializeLayerData(size_t bn, size_t tn) {
-    m_batch_data_size = 0;
-    m_test_data_size = 0;
+    size_t batch_bytes = 0;
+    size_t test_bytes = 0;
 
     for (Layer& layer : m_layers) {
         layer.InitializeSizes(bn, tn);
 
-        m_batch_data_size += layer.layer_batch_size;
-        m_test_data_size += layer.layer_test_size;
+        batch_bytes += layer.layer_batch_bytes;
+        test_bytes += layer.layer_test_bytes;
     }
 
-    m_batch_data = (float*)aligned_alloc(32, m_batch_data_size*sizeof(float));
-    m_test_data = (float*)aligned_alloc(32, m_test_data_size*sizeof(float));
+    m_batch_data_size = batch_bytes/sizeof(float);
+    m_test_data_size = test_bytes/sizeof(float);
+
+    m_batch_data = (float*)aligned_alloc(32, batch_bytes);
+    m_test_data = (float*)aligned_alloc(32, test_bytes);
 }
 void NeuralNetwork::InitializeLayerPointers(size_t bn, size_t tn) {
     size_t dataidx = 0;
     size_t batchidx = 0;
     size_t testidx = 0;
+
+    char* net = (char*)m_network;
+    char* batch = (char*)m_batch_data;
+    char* test = (char*)m_test_data;
     
     for (size_t i = 0; i < m_layers.size(); i++) {
-        float* data = &m_network[dataidx];
-        float* batchdata = &m_batch_data[batchidx];
-        float* testdata = &m_test_data[testidx];
+        char* data = &net[dataidx];
+        char* batchdata = &batch[batchidx];
+        char* testdata = &test[testidx];
 
         m_layers[i].InitializePointers(data, batchdata, testdata, bn, tn);
 
-        dataidx += m_layers[i].layer_size;
-        batchidx += m_layers[i].layer_batch_size;
-        testidx += m_layers[i].layer_test_size;
+        dataidx += m_layers[i].layer_bytes;
+        batchidx += m_layers[i].layer_batch_bytes;
+        testidx += m_layers[i].layer_test_bytes;
     }
 
     for (size_t i = 0; i < m_layers.size(); i++) {

@@ -1,7 +1,9 @@
+#pragma once
 #include "NeuralNetwork.hpp"
 
 /// @brief Computes the dot prod between a and b and stores in c, if clear is passed data already in c will be cleared during computation
-void NeuralNetwork::DotProd(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear) {
+template <bool clear>
+void NeuralNetwork::DotProd(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c) {
 	#if LOGDP
 		printf("[%zu x %zu] * [%zu x %zu] = [%zu x %zu]\n", a_r, a_c, b_r, b_c, a_r, b_c);
 	#endif
@@ -11,7 +13,7 @@ void NeuralNetwork::DotProd(const float* __restrict a, const float* __restrict b
         size_t j = 0;
 
         // first j loop to clear existing c values
-        if (clear) {
+        if constexpr (clear) {
             j = 1;
             const __m256 _a = _mm256_set1_ps(a[i * a_c + 0]);
 
@@ -50,7 +52,8 @@ void NeuralNetwork::DotProd(const float* __restrict a, const float* __restrict b
 /// @brief Computes the dot prod between a transpose and b and stores in c,
 /// @brief a will be transposed during computation and will not be modified,
 /// @brief if clear is passed data already in c will be cleared during computation
-void NeuralNetwork::DotProdTA(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear) {
+template <bool clear>
+void NeuralNetwork::DotProdTA(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c) {
 	#if LOGDP
 		printf("[%zu x %zu].T * [%zu x %zu] = [%zu x %zu]\n", a_r, a_c, b_r, b_c, a_c, b_c);
 	#endif
@@ -60,7 +63,7 @@ void NeuralNetwork::DotProdTA(const float* __restrict a, const float* __restrict
         size_t j = 0;
 
 		// first j loop to clear existing c values
-		if (clear) {
+		if constexpr (clear) {
             j = 1;
 			const __m256 _a_t = _mm256_set1_ps(a[0 * a_c + i]);
 
@@ -100,7 +103,8 @@ void NeuralNetwork::DotProdTA(const float* __restrict a, const float* __restrict
 /// @brief Computes the dot prod between a and b transpose and stores in c,
 /// @brief b will be transposed during computation and will not be modified,
 /// @brief if clear is passed data already in c will be cleared during computation
-void NeuralNetwork::DotProdTB(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear) {
+template <bool clear>
+void NeuralNetwork::DotProdTB(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c) {
 	#if LOGDP
 		printf("[%zu x %zu] * [%zu x %zu].T = [%zu x %zu]\n", a_r, a_c, b_r, b_c, a_r, b_r);
 	#endif
@@ -108,9 +112,10 @@ void NeuralNetwork::DotProdTB(const float* __restrict a, const float* __restrict
 	#pragma omp parallel for
 	for (size_t i = 0; i < a_r; i++) {
 		for (size_t k = 0; k < b_r; k++) {
-			size_t j = clear ? 1 : 0;
+			size_t j = 0;
 
-			if (clear) {
+			if constexpr (clear) {
+				j = 1;
 				c[i*b_r+k] = a[i*a_c+0] * b[k*b_c+0];
 			}
 

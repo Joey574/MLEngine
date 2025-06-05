@@ -41,7 +41,7 @@ nndependencies="\
 
     Layer/LayerBackwards.cpp Layer/LayerForwards.cpp Layer/LayerInitializations.cpp Layer/LayerTraining.cpp Layer/LayerUtils.cpp \
 
-    NeuralNetwork/NNDotProds.cpp NeuralNetwork/NNInitializations.cpp \
+    NeuralNetwork/NNInitializations.cpp \
     NeuralNetwork/NNLogging.cpp NeuralNetwork/NNMathUtils.cpp \
     NeuralNetwork/NNTraining.cpp NeuralNetwork/NNUtils.cpp"
 

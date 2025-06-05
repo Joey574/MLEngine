@@ -107,14 +107,19 @@ private:
     void SaveBest(nlohmann::json& history, float score, size_t e);
 
     // dot prods
-    static void DotProd(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
-    static void DotProdTA(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
-    static void DotProdTB(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c, bool clear);
+    template <bool clear>
+    static void DotProd(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
+    template <bool clear>
+    static void DotProdTA(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
+    template <bool clear>
+    static void DotProdTB(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
 
     // math utils
     static float Sum256(__m256 _x);
     static __m256 Exp256(__m256 _x);
 };
+
+#include "NNDotProds.impl.hpp"
 
 /* Memory Layout
 

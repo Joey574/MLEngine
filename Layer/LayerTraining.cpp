@@ -23,7 +23,7 @@ void Layer::update(float lr, size_t n) {
 
 	// update network (bias and weights currently use same formula to update and are contiguous in memory, so both happen here)
 	#pragma omp parallel for
-	for (size_t i = 0; i <= layer_size-8; i += 8) {
+	for (size_t i = 0; i <= params-8; i += 8) {
 		const __m256 _a = _mm256_loadu_ps(&dw[i]);
 		const __m256 _b = _mm256_loadu_ps(&w[i]);
 		const __m256 _res = _mm256_fnmadd_ps(_a, _factor, _b);
@@ -31,7 +31,7 @@ void Layer::update(float lr, size_t n) {
 		_mm256_storeu_ps(&w[i], _res);
 	}
 
-	for (size_t i = layer_size-(layer_size%8); i < layer_size; i++) {
+	for (size_t i = params-(params%8); i < params; i++) {
 		w[i] -= dw[i] * factor;
 	}
 }

@@ -12,7 +12,7 @@ void Layer::ComputeDT(const float* __restrict truth, size_t n) {
     // compute dt
     switch (type) {
         case LayerType::hidden:
-            NeuralNetwork::DotProdTB(truth, nw, dt, n, nenodes, nodes, nenodes, true);
+            NeuralNetwork::DotProdTB<true>(truth, nw, dt, n, nenodes, nodes, nenodes);
             (activation.derivative)(z, dt, n*nodes);
             break;
         case LayerType::output:
@@ -27,7 +27,7 @@ void Layer::ComputeDN(const float* __restrict input, size_t n) {
     float* __restrict db = m_db;
 
     // compute dw
-    NeuralNetwork::DotProdTA(input, dt, dw, n, inodes, n, nodes, true);
+    NeuralNetwork::DotProdTA<true>(input, dt, dw, n, inodes, n, nodes);
     
     // prep db by copying in first values, clearing existing ones
     std::memcpy(db, dt, nodes*sizeof(float));
@@ -70,12 +70,12 @@ void Layer::DropoutBackward(const float* __restrict truth, const float* __restri
     }
 
     float* __restrict dt = m_dt;
-    const float* __restrict mask = m_dpmask;
+    const uint8_t* __restrict mask = m_dpmask;
 
     // apply dropout
     #pragma omp parallel for simd
     for (size_t i = 0; i < n*nodes; i++) {
-        bool k = mask[i] == 1.0f;
+        bool k = mask[i] == 1;
 
         if (!k) {
             dt[i] = 0.0f;
