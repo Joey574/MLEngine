@@ -3,8 +3,6 @@
 #include "../LossMetric/LossMetric.hpp"
 #include "../Layer/Layer.hpp"
 
-#define LOGDP 0
-
 class TestNetwork;
 
 class NeuralNetwork {
@@ -38,7 +36,6 @@ public:
         bool shuffle
     );
 
-
     nlohmann::json Metadata();
 
     int Load(int fd, Layer::WeightInitialization trueweight);
@@ -62,7 +59,6 @@ private:
 
     std::vector<Layer> m_layers;
 
-
     float* m_network;
     size_t m_network_size;
 
@@ -73,8 +69,7 @@ private:
     size_t m_test_data_size;
     
 
-    void ForwardProp(
-        bool training,
+    template <bool training> void ForwardProp(
         float* __restrict x,
         size_t n
     );
@@ -106,20 +101,10 @@ private:
     static void EpochEnd(nlohmann::json& history, const std::string& res, double ns, size_t e);
     void SaveBest(nlohmann::json& history, float score, size_t e);
 
-    // dot prods
-    template <bool clear>
-    static void DotProd(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
-    template <bool clear>
-    static void DotProdTA(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
-    template <bool clear>
-    static void DotProdTB(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
-
     // math utils
     static float Sum256(__m256 _x);
     static __m256 Exp256(__m256 _x);
 };
-
-#include "NNDotProds.impl.hpp"
 
 /* Memory Layout
 

@@ -1,5 +1,6 @@
 #pragma once
 
+// model stuff
 #define ACTIVATIONS "Activations"
 #define DATASET "Dataset"
 #define DSARGS "Dataset Args"
@@ -12,6 +13,7 @@
 #define BESTEVSCORE "Best Ever Score"
 #define LAYERS "Layers"
 
+// training stuff
 #define START "Start"
 #define EPOCHS "Epochs"
 #define BATCHSIZE "Batch Size"
@@ -20,3 +22,8 @@
 #define FINISH "Finish"
 #define BESTSCORE "Best Score"
 #define BESTEPOCH "Best Epoch"
+
+// layer stuff
+#define NODES "Nodes"
+#define ACTV "Activation"
+#define DROPOUT "Dropout"

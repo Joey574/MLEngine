@@ -6,7 +6,7 @@ void LossMetric::MaeLoss(const float* __restrict x, const float* __restrict y, f
     const __m256 _none = _mm256_set1_ps(-1.0f);
 
     #pragma omp parallel for
-    for (size_t i = 0; i <= rows*cols-8; i += 8) {
+    for (ssize_t i = 0; i <= (ssize_t)(rows*cols)-8; i += 8) {
         const __m256 _x = _mm256_loadu_ps(&x[i]);
         const __m256 _y = _mm256_loadu_ps(&y[i]);
 
@@ -26,7 +26,7 @@ void LossMetric::MseLoss(const float* __restrict x, const float* __restrict y, f
     const __m256 _two = _mm256_set1_ps(2.0f);
 
     #pragma omp parallel for
-    for (size_t i = 0; i <= rows*cols-8; i += 8) {
+    for (ssize_t i = 0; i <= (ssize_t)(rows*cols)-8; i += 8) {
         const __m256 _x = _mm256_loadu_ps(&x[i]);
         const __m256 _y = _mm256_loadu_ps(&y[i]);
 

@@ -125,7 +125,7 @@ int main(int argc, char* argv[]) {
     training_options->add_option("-e,--epochs", epochs, "number of epochs to train for")->default_val(1);
     training_options->add_option("-t,--tf", train_for, "length of time to train for");
     training_options->add_option("-a,--lr", learning_rate, "learning rate to use for training")->default_val(0.1);
-    training_options->add_option("-b,--bs", batch_size, "batch size to use for training")->default_val(500);
+    training_options->add_option("-b,--bs", batch_size, "batch size to use for training")->default_val(512);
     training_options->add_option("-f,--vfreq", validation_freq, "how often to validate the model in epochs")->default_val(-1);
     training_options->add_option("-s,--vsplit", validation_split, "percentage (0-1) of dataset to use as validation set if one isn't provided")->default_val(0.0);
 

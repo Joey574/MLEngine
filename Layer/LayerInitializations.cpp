@@ -12,109 +12,124 @@ void Layer::Initialize(LayerType type, size_t in, size_t n, size_t nn, Activatio
     activation = actv;
     lossmetric = lm;
 
+    std::random_device rd;
+    gen = std::mt19937(rd());
+
+    layer_bytes = 0;
+    wsize = 0;
+    bsize = 0;
+    params = 0;
+
     // set network size
     switch (type) {
         case LayerType::input:
-            layer_bytes = 0;
-            wsize = 0;
-            bsize = 0;
-            params = 0;
             break;
-        default:
-            layer_bytes = (in*n+n)*sizeof(float);
+        case LayerType::hidden: case LayerType::output:
             wsize = in*n;
             bsize = n;
             params = wsize+bsize;
+
+            // size for weights and biases
+            layer_bytes += RoundTo(32, wsize*sizeof(float));
+            layer_bytes += RoundTo(32, bsize*sizeof(float));
+            break;
+        case LayerType::convolutional:
+            break;
     }
 
     if (dropout > 0.0f) {
-        executeForward = &Layer::DropoutForward;
+        executeForwardTrain = &Layer::DropoutForward<true>;
+        executeForwardInfer = &Layer::DropoutForward<false>;
         executeBackward = &Layer::DropoutBackward;
+
+        // create rng for dropout
+        m_dropoutdist = std::bernoulli_distribution(1.0f-m_dropout);
     } else {
-        executeForward = &Layer::BasicForward;
+        executeForwardTrain = &Layer::BasicForward<true>;
+        executeForwardInfer = &Layer::BasicForward<false>;
         executeBackward = &Layer::BasicBackward;        
     }
 }
 
 /// @brief Initializes batchsize and testsize
 void Layer::InitializeSizes(size_t bn, size_t tn) {
+    layer_batch_bytes = 0;
+    layer_test_bytes = 0;
+
     switch (type) {
         case LayerType::input:
-            layer_batch_bytes = 0;
-            layer_test_bytes = 0;
+            // space for activation
+            layer_batch_bytes += RoundTo(32, nodes*bn*sizeof(float));
+
+            // space for test activation
+            layer_test_bytes += RoundTo(32, nodes*tn*sizeof(float));
+            
             break;
         case LayerType::hidden:
-            layer_batch_bytes = ((3*nodes*bn)+wsize+nodes)*sizeof(float);
-            layer_test_bytes = (2*nodes*tn)*sizeof(float);
-
-            if (m_dropout > 0.0f) {
-                // packed to uint8_t, in future should be bit packed
-                layer_batch_bytes += nodes*bn;
-            }
+            SetHiddenBatchTestBytes(bn, tn);
             break;
         case LayerType::output:
-            layer_batch_bytes = ((3*nodes*bn)+wsize+nodes)*sizeof(float);
-            layer_test_bytes = (2*nodes*tn)*sizeof(float);
+            SetOutputBatchTestBytes(bn, tn);
             break;
     }
 }
 
 /// @brief Sets the internal pointers for network data, batch data, and test data, bn and tn MUST match previously passed
 void Layer::InitializePointers(char* data, char* batchdata, char* testdata, size_t bn, size_t tn) {
+    // initialize all to nullptr
+    m_w = nullptr;
+    m_b = nullptr;
+    m_z = nullptr;
+    m_a = nullptr;
+    m_dt = nullptr;
+    m_dw = nullptr;
+    m_db = nullptr;
+    m_dpmask = nullptr;
+    m_tz = nullptr;
+    m_ta = nullptr;
+
 
     // assign data pointers
+    size_t offset = 0;
     switch (type) {
         case LayerType::input:
-            m_w = nullptr;
-            m_b = nullptr;
             break;
-        default:
-            m_w = (float*)data;
-            m_b = &m_w[wsize];
+        case LayerType::hidden: case LayerType::output:
+            m_w = (float*)(data+offset);
+            offset += RoundTo(32, wsize*sizeof(float));
+
+            m_b = (float*)(data+offset);
+            offset += RoundTo(32, bsize*sizeof(float));
+            break;
     }
 
     // assign batch data pointers
+    offset = 0;
     switch (type) {
         case LayerType::input:
-            m_z = nullptr;
-            m_a = nullptr;
-            m_dt = nullptr;
-            m_dw = nullptr;
-            m_db = nullptr;
-            m_dpmask = nullptr;
+            m_a = m_z = (float*)batchdata;
             break;
         case LayerType::hidden:
-            m_z = (float*)batchdata;
-            m_a = &m_z[nodes*bn];
-            m_dt = &m_a[nodes*bn];
-            m_dw = &m_dt[nodes*bn];
-            m_db = &m_dw[wsize];
-
-            if (m_dropout > 0.0f) {
-                m_dpmask = (uint8_t*)&m_db[nodes];
-            } else {
-                m_dpmask = nullptr;
-            }
+            AssignHiddenBatchPtrs(batchdata, bn);
             break;
         case LayerType::output:
-            m_z = (float*)batchdata;
-            m_a = &m_z[nodes*bn];
-            m_dt = &m_a[nodes*bn];
-            m_dw = &m_dt[nodes*bn];
-            m_db = &m_dw[wsize];
-            m_dpmask = nullptr;
+            AssignOutputBatchPtrs(batchdata, bn);
             break;
     }
 
     // assign test data pointers
+    offset = 0;
     switch (type) {
         case LayerType::input:
-            m_tz = nullptr;
-            m_ta = nullptr;
+            m_ta = m_tz = (float*)testdata;
             break;
-        default:
-            m_tz = (float*)testdata;
-            m_ta = &m_tz[nodes*tn];
+        case LayerType::hidden: case LayerType::output:
+            m_tz = (float*)(testdata+offset);
+            offset += RoundTo(32, nodes*tn*sizeof(float));
+
+            m_ta = (float*)(testdata+offset);
+            offset += RoundTo(32, nodes*tn*sizeof(float));
+            break;
     }
 }
 
@@ -128,52 +143,17 @@ void Layer::InitializeSpecialPointers(float* nextweight) {
 void Layer::InitializeWeights(float* data, WeightInitialization init, uint64_t seed) {
     if (type == LayerType::input) { return; }
 
-    float lowerRand;
-    float upperRand;
-    size_t idx = 0;
-    
-    std::default_random_engine gen(seed);
-
-    // zero out biases
-    memset(&data[wsize], 0, nodes*sizeof(float));
-
     switch (init) {
         case WeightInitialization::he:
-        {
-            lowerRand = 0.0f;
-            upperRand = std::sqrt(2.0f/nodes);
-
-            std::normal_distribution<float> dist(lowerRand, upperRand);
-            for (size_t i = 0; i < wsize; i++) {
-                data[i] = dist(gen);
-            }
-        }
+            SetWeights<WeightInitialization::he>(data, seed);
             break;
         case WeightInitialization::normalize:
-        {
-            lowerRand = -0.5f;
-            upperRand = 0.5f;
-
-            std::uniform_real_distribution<float> dist(lowerRand, upperRand);
-            for (size_t i = 0; i < wsize; i++) {
-                data[i] = dist(gen) * std::sqrt(1.0f/nodes);
-            }
-        }
+            SetWeights<WeightInitialization::normalize>(data, seed);
             break;
         case WeightInitialization::xavier:
-        {
-            lowerRand = (-1.0f/std::sqrt(nodes));
-            upperRand = 1.0f/std::sqrt(nodes);
-
-            std::uniform_real_distribution<float> dist(lowerRand, upperRand);
-
-            for (size_t i = 0; i < wsize; i++) {
-                data[i] = dist(gen);
-            }
-        }
+            SetWeights<WeightInitialization::xavier>(data, seed);
             break;
         default:
-            // no weight initialization has been set, zero the weights
-            memset(data, 0, wsize*sizeof(float));
+            SetWeights<WeightInitialization::none>(data, seed);
     }
 }

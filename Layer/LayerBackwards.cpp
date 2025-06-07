@@ -1,5 +1,5 @@
 #include "Layer.hpp"
-#include "../NeuralNetwork/NeuralNetwork.hpp"
+#include "../MathUtils/MathUtils.hpp"
 
 void Layer::ComputeDT(const float* __restrict truth, size_t n) {
     const float* __restrict z = m_z;
@@ -12,7 +12,8 @@ void Layer::ComputeDT(const float* __restrict truth, size_t n) {
     // compute dt
     switch (type) {
         case LayerType::hidden:
-            NeuralNetwork::DotProdTB<true>(truth, nw, dt, n, nenodes, nodes, nenodes);
+            //MathUtils::DotProdTBDerv<true>(activation.type, truth, nw, dt, z, n, nenodes, nodes, nenodes);
+            MathUtils::DotProdTB<true>(truth, nw, dt, n, nenodes, nodes, nenodes);
             (activation.derivative)(z, dt, n*nodes);
             break;
         case LayerType::output:
@@ -27,8 +28,8 @@ void Layer::ComputeDN(const float* __restrict input, size_t n) {
     float* __restrict db = m_db;
 
     // compute dw
-    NeuralNetwork::DotProdTA<true>(input, dt, dw, n, inodes, n, nodes);
-    
+    MathUtils::DotProdTA<true>(input, dt, dw, n, inodes, n, nodes);
+
     // prep db by copying in first values, clearing existing ones
     std::memcpy(db, dt, nodes*sizeof(float));
 
@@ -36,7 +37,7 @@ void Layer::ComputeDN(const float* __restrict input, size_t n) {
     for (size_t i = 1; i < n; i++) {
 
         size_t j = 0;
-        for (; j <= nodes-8; j+= 8) {
+        for (; j+8 <= nodes; j+= 8) {
             const __m256 _a = _mm256_loadu_ps(&dt[i*nodes+j]);
             const __m256 _b = _mm256_loadu_ps(&db[j]);
             const __m256 _c = _mm256_add_ps(_a, _b);
@@ -70,12 +71,15 @@ void Layer::DropoutBackward(const float* __restrict truth, const float* __restri
     }
 
     float* __restrict dt = m_dt;
-    const uint8_t* __restrict mask = m_dpmask;
+    const uint8_t* __restrict mask = m_d_dpmask;
 
     // apply dropout
     #pragma omp parallel for simd
     for (size_t i = 0; i < n*nodes; i++) {
-        bool k = mask[i] == 1;
+        size_t byteidx = i >> 3;
+        uint8_t bitidx = i & 7;
+
+        const bool k = (mask[byteidx] >> bitidx) & 1;
 
         if (!k) {
             dt[i] = 0.0f;

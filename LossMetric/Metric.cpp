@@ -6,7 +6,7 @@ float LossMetric::MaeScore(const float* __restrict x, const float* __restrict y,
     __m256 _sum = _mm256_setzero_ps();
 
     size_t i = 0;
-    for (; i <= rows*cols-8; i += 8) {
+    for (; i+8 <= rows*cols; i += 8) {
         const __m256 _x = _mm256_loadu_ps(&x[i]);
         const __m256 _y = _mm256_loadu_ps(&y[i]);
 
@@ -27,7 +27,7 @@ float LossMetric::MseScore(const float* __restrict x, const float* __restrict y,
     __m256 _sum = _mm256_setzero_ps();
 
     size_t i = 0;
-    for (; i <= rows*cols-8; i += 8) {
+    for (; i+8 <= rows*cols; i += 8) {
         const __m256 _x = _mm256_loadu_ps(&x[i]);
         const __m256 _y = _mm256_loadu_ps(&y[i]);
 

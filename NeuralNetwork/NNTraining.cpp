@@ -24,10 +24,10 @@ nlohmann::json NeuralNetwork::Fit(Dataset& dataset, size_t batch_size, size_t ep
 			float* __restrict y = &dataset.trainLabels[(i * batch_size) * dataset.trainLabelCols];
 
 			// set batch size here to be either batch size or number of elements remaining
-			size_t remaining_elements = (dataset.trainDataRows - (i * batch_size));
-			size_t effective_size = batch_size > remaining_elements ? remaining_elements : batch_size;
+			ssize_t remaining_elements = (dataset.trainDataRows - (i * batch_size));
+			ssize_t effective_size = batch_size > remaining_elements ? remaining_elements : batch_size;
 
-			ForwardProp(true, x, effective_size);
+			ForwardProp<true>(x, effective_size);
 			BackProp(x, y, learning_rate, effective_size);
 		}
 
@@ -48,7 +48,7 @@ nlohmann::json NeuralNetwork::Fit(Dataset& dataset, size_t batch_size, size_t ep
 }
 
 std::string NeuralNetwork::TestNetwork(Dataset& dataset, nlohmann::json& history, size_t e) {
-	ForwardProp(false, dataset.testData.data(), dataset.testDataRows);
+	ForwardProp<false>(dataset.testData.data(), dataset.testDataRows);
 	const float* predictions = m_layers.back().Output(false);
 
 	float score = m_layers.back().lossmetric.metric(predictions, &dataset.testLabels[0], dataset.testDataRows, m_layers.back().nodes);
@@ -65,14 +65,15 @@ std::string NeuralNetwork::TestNetwork(Dataset& dataset, nlohmann::json& history
 	return fmt;
 }
 
-void NeuralNetwork::ForwardProp(bool training, float* __restrict x, size_t n) {
+template <bool training>
+void NeuralNetwork::ForwardProp(float* __restrict x, size_t n) {
 
     for (size_t i = 0; i < m_layers.size(); i++) {
 		// input will always just be previous layers output
 		float* __restrict input = i == 0 ? x : m_layers[i-1].Output(training);
 
 		// does all the fun math stuff for us
-		m_layers[i].forward(training, input, n);
+		m_layers[i].forward<training>(input, n);
     }
 }
 void NeuralNetwork::BackProp(const float* __restrict x, const float* __restrict y, float lr, size_t n) {

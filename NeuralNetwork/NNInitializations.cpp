@@ -52,6 +52,7 @@ void NeuralNetwork::Initialize(const std::string& path, const std::string& name,
     // initialize weights
     InitializeWeights(weightInit, dims);
 }
+
 void NeuralNetwork::InitializeWeights(Layer::WeightInitialization type, const std::vector<std::size_t>& layers) {
     size_t dataidx = 0;
 
