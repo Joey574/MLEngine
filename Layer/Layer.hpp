@@ -12,7 +12,7 @@ public:
         none, he, normalize, xavier
     };
 
-    void Initialize(LayerType type, size_t in, size_t n, size_t nn, Activation actv, LossMetric lm, float dropout);
+    void Initialize(LayerType type, size_t in, size_t n, size_t nn, Activation actv, LossMetric lm, float dropout, bool momentum);
     void InitializeSizes(size_t bn, size_t tn);
     void InitializePointers(char* data, char* batchdata, char* testdata, size_t bn, size_t tn);
     void InitializeSpecialPointers(float* nextweight);
@@ -59,25 +59,35 @@ public:
 
 private:
 
-    void (Layer::*executeForwardTrain)(float* __restrict, size_t n);
-    void (Layer::*executeForwardInfer)(float* __restrict, size_t n);
-    void (Layer::*executeBackward)(const float* __restrict, const float* __restrict, size_t n);
+    void (Layer::*executeForwardTrain)(float* __restrict, size_t);
+    void (Layer::*executeForwardInfer)(float* __restrict, size_t);
+    void (Layer::*executeBackward)(const float* __restrict, const float* __restrict, size_t);
+    void (Layer::*updateLayer)(float, size_t);
 
     // template methods
     template <WeightInitialization> void SetWeights(float* data, uint64_t seed);
 
     // forward prop methods
-    template<bool> void BasicForward(float* __restrict input, size_t n);
-    template<bool> void DropoutForward(float* __restrict input, size_t n);
-    template <bool> void ConvolutionalForward(float* __restrict input, size_t n);
+    template<bool training, bool dropout> void BasicForward (float* __restrict input, size_t n);
+    template <bool training> void ConvolutionalForward(float* __restrict input, size_t n);
 
     // backprop methods
-    void BasicBackward(const float* __restrict truth, const float* __restrict input, size_t n);
-    void DropoutBackward(const float* __restrict truth, const float* __restrict input, size_t n);
+    template<bool dropout> void BasicBackward(const float* __restrict truth, const float* __restrict input, size_t n);
+
+    // update methods
+    template <bool momentum> void BasicUpdate(float lr, size_t n);
+
+    // forward prop utils
+    template<bool training> void InputForward(float* __restrict input, size_t n);
+    void ApplyDropoutFP(size_t n);
 
     // backprop utils
     void ComputeDT(const float* __restrict truth, size_t n);
     void ComputeDN(const float* __restrict input, size_t n);
+    void ApplyDropoutBP(size_t n);
+
+    // update utils
+    void MomentumUpdate(float lr, size_t n);
 
     /// @brief only works with powers of 2
     inline size_t RoundTo(size_t alignment, size_t n) {
@@ -114,7 +124,8 @@ private:
     size_t bsize;
 
     // dropout data
-    float m_d_dropout;
+    bool m_d_dropout;
+    float m_d_rate;
     uint8_t* m_d_dpmask;
     std::bernoulli_distribution m_d_dropoutdist;
 
@@ -122,7 +133,13 @@ private:
     size_t m_c_filters;
     size_t m_c_stride;
     size_t m_c_size;
-    
+
+    // momentum data
+    bool m_m_momentum;
+    float m_m_coefficient = 0.9f;
+    float* m_m_vw;
+    float* m_m_vb;
+
     // general rng
     std::mt19937 gen;
 
@@ -130,5 +147,4 @@ private:
     nlohmann::json m_meta;
 };
 
-#include "LayerForwards.impl.hpp"
 #include "LayerTemplates.impl.hpp"

@@ -18,22 +18,10 @@ public:
     static std::string ParseName(Type type);
 
     // single mm256 activations
-    inline static __m256 Linear(const __m256 _x) {
-        return _x;
-    }
+    static __m256 Linear(const __m256 _x);
     static __m256 Sigmoid(const __m256 _x);
-    inline static __m256 ReLU(const __m256 _x) {
-        const __m256 _zero = _mm256_setzero_ps();
-        const __m256 _res = _mm256_max_ps(_x, _zero);
-        return _res;
-    }
-    inline static __m256 LeakyReLU(const __m256 _x) {
-        const __m256 _cof = _mm256_set1_ps(0.1f);
-        const __m256 _zero = _mm256_setzero_ps();
-        const __m256 _x2 = _mm256_mul_ps(_x, _cof);
-        const __m256 _res = _mm256_max_ps(_x2, _x);
-        return _res;
-    }
+    static __m256 ReLU(const __m256 _x);
+    static __m256 LeakyReLU(const __m256 _x);
     static __m256 ELU(const __m256 _x);
 
     // single float activations

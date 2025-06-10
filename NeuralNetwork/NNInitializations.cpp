@@ -40,7 +40,7 @@ void NeuralNetwork::Initialize(const std::string& path, const std::string& name,
         LossMetric lm = i < dims.size()-1 ? LossMetric() : LossMetric(loss, metric);
 
         Layer layer;
-        layer.Initialize(type, in, n, nn, actv, lm, 0.2f);        
+        layer.Initialize(type, in, n, nn, actv, lm, 0.2f, true);        
         m_layers.push_back(layer);
 
         m_network_size += layer.params;
@@ -77,6 +77,9 @@ void NeuralNetwork::InitializeLayerData(size_t bn, size_t tn) {
 
     m_batch_data = (float*)aligned_alloc(32, batch_bytes);
     m_test_data = (float*)aligned_alloc(32, test_bytes);
+
+    memset(m_batch_data, 0, batch_bytes);
+    memset(m_test_data, 0, test_bytes);
 }
 void NeuralNetwork::InitializeLayerPointers(size_t bn, size_t tn) {
     size_t dataidx = 0;

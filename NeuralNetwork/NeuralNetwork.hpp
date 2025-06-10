@@ -6,8 +6,6 @@
 class TestNetwork;
 
 class NeuralNetwork {
-    friend class TestNetwork;
-
     friend struct Layer;
     friend struct Activation;
     friend struct LossMetric;

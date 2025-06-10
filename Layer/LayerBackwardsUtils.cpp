@@ -51,27 +51,13 @@ void Layer::ComputeDN(const float* __restrict input, size_t n) {
     }
 }
 
-void Layer::BasicBackward(const float* __restrict truth, const float* __restrict input, size_t n) {
-    if (type == LayerType::input) { return; }
-
-    ComputeDT(truth, n);
-    ComputeDN(input, n);
-}
-
-void Layer::DropoutBackward(const float* __restrict truth, const float* __restrict input, size_t n) {
-    if (type == LayerType::input) { return; }
-
-    // start by computing dt
-    ComputeDT(truth, n);
-
-    // output doesn't have dropout, early out
-    if (type == LayerType::output) {
-        ComputeDN(input, n);
+void Layer::ApplyDropoutBP(size_t n) {
+    if (type == LayerType::input || type == LayerType::output) {
         return;
     }
-
+    
     float* __restrict dt = m_dt;
-    const uint8_t* __restrict mask = m_d_dpmask;
+    uint8_t* mask = m_d_dpmask;
 
     // apply dropout
     #pragma omp parallel for simd
@@ -85,7 +71,4 @@ void Layer::DropoutBackward(const float* __restrict truth, const float* __restri
             dt[i] = 0.0f;
         }
     }
-
-    // compute other derivatives
-    ComputeDN(input, n);
 }

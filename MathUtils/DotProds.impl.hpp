@@ -6,9 +6,9 @@ template <bool clear> void MathUtils::DotProd(const float* __restrict a, const f
 		printf("[%zu x %zu] * [%zu x %zu] = [%zu x %zu]\n", a_r, a_c, b_r, b_c, a_r, b_c);
 	#endif
 
-	if ((uintptr_t)a%32!=0||(uintptr_t)b%32!=0||(uintptr_t)c%32!=0) {
-		std::cout << "alignment issue\n";
-	}
+	assert((uintptr_t)a%32==0);
+	assert((uintptr_t)b%32==0);
+	assert((uintptr_t)c%32==0);
 
 	#pragma omp parallel for schedule(static)
     for (size_t i = 0; i < a_r; i++) {		
@@ -60,9 +60,9 @@ template <bool clear> void MathUtils::DotProdTA(const float* __restrict a, const
 		printf("[%zu x %zu].T * [%zu x %zu] = [%zu x %zu]\n", a_r, a_c, b_r, b_c, a_c, b_c);
 	#endif
 
-	if ((uintptr_t)a%32!=0||(uintptr_t)b%32!=0||(uintptr_t)c%32!=0) {
-		std::cout << "alignment issue ta\n";
-	}
+	assert((uintptr_t)a%32==0);
+	assert((uintptr_t)b%32==0);
+	assert((uintptr_t)c%32==0);
 
 	#pragma omp parallel for schedule(static)
 	for (size_t i = 0; i < a_c; i++) {
@@ -114,9 +114,9 @@ template <bool clear> void MathUtils::DotProdTB(const float* __restrict a, const
 		printf("[%zu x %zu] * [%zu x %zu].T = [%zu x %zu]\n", a_r, a_c, b_r, b_c, a_r, b_r);
 	#endif
 
-	if ((uintptr_t)a%32!=0||(uintptr_t)b%32!=0||(uintptr_t)c%32!=0) {
-		std::cout << "alignment issue tb\n";
-	}
+	assert((uintptr_t)a%32==0);
+	assert((uintptr_t)b%32==0);
+	assert((uintptr_t)c%32==0);
 
 	#pragma omp parallel for schedule(static)
 	for (size_t i = 0; i < a_r; i++) {

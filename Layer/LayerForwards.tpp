@@ -1,34 +1,22 @@
-#pragma once
 #include "Layer.hpp"
 #include "../MathUtils/MathUtils.hpp"
 
-template <bool training>
-void Layer::forward(float* __restrict x, size_t n) {
-    // calls out to the right forward prop based on passed arguments
-	if constexpr (training) {
-    	(this->*executeForwardTrain)(x, n);
-	} else {
-		(this->*executeForwardInfer)(x, n);
-	}
+template <bool training> 
+void Layer::InputForward(float* __restrict input, size_t n) {
+    if constexpr (training) {
+        std::memcpy(m_a, input, nodes*n*sizeof(float));
+    } else {
+        std::memcpy(m_ta, input, nodes*n*sizeof(float));
+    }
+
+    assert((uintptr_t)m_a%32==0);
+    assert((uintptr_t)m_ta%32==0);
 }
 
-template <bool training>
+template <bool training, bool dropout>
 void Layer::BasicForward(float* __restrict input, size_t n) {
-
-    if (type == LayerType::input) { 
-        if constexpr (training) {
-            if ((uintptr_t)input%32 == 0) {
-                m_a = input;
-            } else {
-                std::memcpy(m_a, input, nodes*n*sizeof(float));
-            }
-        } else {
-            if ((uintptr_t)input%32 == 0) {
-                m_ta = input;
-            } else {
-                std::memcpy(m_ta, input, nodes*n*sizeof(float));
-            }
-        }
+    if (type == LayerType::input) {
+        InputForward<training>(input, n);
         return; 
     }
 
@@ -53,46 +41,14 @@ void Layer::BasicForward(float* __restrict input, size_t n) {
     }
 
     MathUtils::DotProdActv<false>(activation.type, input, w, z, a, n, inodes, inodes, nodes);
-}
 
-template <bool training>
-void Layer::DropoutForward(float* __restrict input, size_t n) {
-    // start by doing normal forward prop
-    BasicForward<training>(input, n);
-
-    // input and output should skip dropout
-    if (type == LayerType::input || type == LayerType::output) {
-        return;
-    }
-
-    // apply dropout if training
-    if constexpr (training) {
-        float* __restrict a = m_a;
-        uint8_t* __restrict mask = m_d_dpmask;
-
-        const float scale = 1.0f/(1.0f-m_d_dropout);
-
-        #pragma omp parallel for simd
-        for (size_t i = 0; i < n*nodes; i++) {
-            const bool k = m_dropoutdist(gen);
-
-            const size_t byteidx = i >> 3;
-            const uint8_t bitidx = i & 7;
-
-            if (k) {
-                a[i] *= scale;
-                mask[byteidx] |= (1 << bitidx);
-            } else {
-                a[i] = 0.0f;
-                mask[byteidx] &= (0 << bitidx);
-            }
-        }
+    if constexpr (dropout && training) {
+        ApplyDropoutFP(n);
     }
 }
 
 template <bool training>
 void Layer::ConvolutionalForward(float* __restrict input, size_t n) {
-    const float* __restrict w = m_w;
     const float* __restrict b = m_b;
 
     float* __restrict z;
@@ -121,10 +77,26 @@ void Layer::ConvolutionalForward(float* __restrict input, size_t n) {
 
     const size_t halfsize = (m_c_size+1)/2;
 
+    for (size_t f = 0; f < m_c_filters; f++) {
+        const float* __restrict w = &m_w[f*bsize*bsize];
+
+        for (size_t in = 0; in < n; in++) {
+            const float* __restrict x = &input[inodes*in];
+        }
+
+        for (size_t r = halfsize; r < height-halfsize; r += m_c_stride) {
+            for (size_t c = halfsize; c < width-halfsize; c += m_c_stride) {
+                //z[0] += MathUtils::DotProdConv()
+            }
+        }
+
+    }
+
     #pragma omp parallel for collapse(2) schedule(static)
     for (size_t x = halfsize; x < width-halfsize; x += m_c_stride) {
         for (size_t y = halfsize; y < height-halfsize; y += m_c_stride) {
             // call special convolutional dotprod here, effectively returns 1 value
+            //z[0] += MathUtils::DotProdConv(input, w, );
         }
     }
 }

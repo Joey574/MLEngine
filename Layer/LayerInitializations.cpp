@@ -1,9 +1,11 @@
 #include "Layer.hpp"
 
 /// @brief Initializes basic layer data, sets layer size, does not touch batchsize or testsize
-void Layer::Initialize(LayerType type, size_t in, size_t n, size_t nn, Activation actv, LossMetric lm, float dropout) {
+void Layer::Initialize(LayerType type, size_t in, size_t n, size_t nn, Activation actv, LossMetric lm, float dropout, bool momentum) {
     this->type = type;
-    this-> m_dropout = dropout;
+    this-> m_d_rate = dropout;
+    this->m_d_dropout = dropout > 0.0f;
+    this-> m_m_momentum = momentum;
     
     inodes = in;
     nodes = n;
@@ -14,6 +16,7 @@ void Layer::Initialize(LayerType type, size_t in, size_t n, size_t nn, Activatio
 
     std::random_device rd;
     gen = std::mt19937(rd());
+    m_d_dropoutdist = std::bernoulli_distribution(1.0f-m_d_rate);
 
     layer_bytes = 0;
     wsize = 0;
@@ -37,17 +40,39 @@ void Layer::Initialize(LayerType type, size_t in, size_t n, size_t nn, Activatio
             break;
     }
 
-    if (dropout > 0.0f) {
-        executeForwardTrain = &Layer::DropoutForward<true>;
-        executeForwardInfer = &Layer::DropoutForward<false>;
-        executeBackward = &Layer::DropoutBackward;
-
-        // create rng for dropout
-        m_dropoutdist = std::bernoulli_distribution(1.0f-m_dropout);
-    } else {
-        executeForwardTrain = &Layer::BasicForward<true>;
-        executeForwardInfer = &Layer::BasicForward<false>;
-        executeBackward = &Layer::BasicBackward;        
+    switch (m_d_dropout) {
+        case true:
+            switch (m_m_momentum) {
+                case true:
+                    executeForwardTrain = &Layer::BasicForward<true, true>;
+                    executeForwardInfer = &Layer::BasicForward<false, true>;
+                    executeBackward = &Layer::BasicBackward<true>;
+                    updateLayer = &Layer::BasicUpdate<true>;
+                    break;
+                case false:
+                    executeForwardTrain = &Layer::BasicForward<true, true>;
+                    executeForwardInfer = &Layer::BasicForward<false, true>;
+                    executeBackward = &Layer::BasicBackward<true>;
+                    updateLayer = &Layer::BasicUpdate<false>;
+                    break;
+            }
+            break;
+        case false:
+            switch (m_m_momentum) {
+                case true:
+                    executeForwardTrain = &Layer::BasicForward<true, false>;
+                    executeForwardInfer = &Layer::BasicForward<false, false>;
+                    executeBackward = &Layer::BasicBackward<false>;
+                    updateLayer = &Layer::BasicUpdate<true>;
+                    break;
+                case false:
+                    executeForwardTrain = &Layer::BasicForward<true, false>;
+                    executeForwardInfer = &Layer::BasicForward<false, false>;
+                    executeBackward = &Layer::BasicBackward<false>;
+                    updateLayer = &Layer::BasicUpdate<false>;
+                    break;
+            }
+            break;
     }
 }
 
@@ -84,9 +109,11 @@ void Layer::InitializePointers(char* data, char* batchdata, char* testdata, size
     m_dt = nullptr;
     m_dw = nullptr;
     m_db = nullptr;
-    m_dpmask = nullptr;
+    m_d_dpmask = nullptr;
     m_tz = nullptr;
     m_ta = nullptr;
+    m_m_vw = nullptr;
+    m_m_vb = nullptr;
 
 
     // assign data pointers

@@ -64,6 +64,9 @@ void Activation::Softmax(const float* __restrict x, float* __restrict y, size_t 
     
 }
 
+__m256 Activation::Linear(const __m256 _x) {
+    return _x;
+}
 __m256 Activation::Sigmoid(const __m256 _x) {
     const __m256 _zero = _mm256_setzero_ps();
     const __m256 _one = _mm256_set1_ps(1.0f);
@@ -74,6 +77,18 @@ __m256 Activation::Sigmoid(const __m256 _x) {
 
     const __m256 _x2 = _mm256_add_ps(_one, _ex);
     const __m256 _res = _mm256_rcp_ps(_x2);
+    return _res;
+}
+__m256 Activation::ReLU(const __m256 _x) {
+    const __m256 _zero = _mm256_setzero_ps();
+    const __m256 _res = _mm256_max_ps(_x, _zero);
+    return _res;
+}
+__m256 Activation::LeakyReLU(const __m256 _x) {
+    const __m256 _cof = _mm256_set1_ps(0.1f);
+    const __m256 _zero = _mm256_setzero_ps();
+    const __m256 _x2 = _mm256_mul_ps(_x, _cof);
+    const __m256 _res = _mm256_max_ps(_x2, _x);
     return _res;
 }
 __m256 Activation::ELU(const __m256 _x) {

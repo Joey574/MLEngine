@@ -18,11 +18,19 @@ void Layer::AssignHiddenBatchPtrs(char* batchdata, size_t bn) {
     m_db = (float*)(batchdata+offset);
     offset += RoundTo(32, bsize*sizeof(float));
 
-    if (m_d_dropout > 0.0f) {
+    if (m_d_dropout) {
         m_d_dpmask = (uint8_t*)(batchdata+offset);
         offset += RoundTo(32, nodes*bn);
     } else {
         m_d_dpmask = nullptr;
+    }
+
+    if (m_m_momentum) {
+        m_m_vw = (float*)(batchdata+offset);
+        offset += RoundTo(32, wsize*sizeof(float));
+
+        m_m_vb = (float*)(batchdata+offset);
+        offset += RoundTo(32, bsize*sizeof(float));
     }
 }
 void Layer::AssignOutputBatchPtrs(char* batchdata, size_t bn) {
@@ -42,6 +50,14 @@ void Layer::AssignOutputBatchPtrs(char* batchdata, size_t bn) {
 
     m_db = (float*)(batchdata+offset);
     offset += RoundTo(32, bsize*sizeof(float));
+
+    if (m_m_momentum) {
+        m_m_vw = (float*)(batchdata+offset);
+        offset += RoundTo(32, wsize*sizeof(float));
+
+        m_m_vb = (float*)(batchdata+offset);
+        offset += RoundTo(32, bsize*sizeof(float));
+    }
 }
 
 void Layer::SetHiddenBatchTestBytes(size_t bn, size_t tn) {
@@ -58,14 +74,20 @@ void Layer::SetHiddenBatchTestBytes(size_t bn, size_t tn) {
     layer_test_bytes += RoundTo(32, nodes*tn*sizeof(float));
     layer_test_bytes += RoundTo(32, nodes*tn*sizeof(float));
 
-    if (m_d_dropout > 0.0f) {
-        // packed to uint8_t, in future should be bit packed, 
+    if (m_d_dropout) {
+        // bit packed
         layer_batch_bytes += RoundTo(32, (nodes+(bn-1))*bn/8);
     }
 
-    // ensure total bytes are all aligned to 32, should already be true since previous adds are rounded, this is just a sanity check
-    layer_batch_bytes = RoundTo(32, layer_batch_bytes);
-    layer_test_bytes = RoundTo(32, layer_test_bytes);
+    // space for velocity data
+    if (m_m_momentum) {
+        layer_batch_bytes += RoundTo(32, wsize*sizeof(float));
+        layer_batch_bytes += RoundTo(32, bsize*sizeof(float));
+    }
+
+    // ensure total bytes are all aligned to 32
+    assert(layer_batch_bytes%32==0);
+    assert(layer_test_bytes%32==0);
 }
 void Layer::SetOutputBatchTestBytes(size_t bn, size_t tn) {
     // space for total, activation, and dt
@@ -81,7 +103,13 @@ void Layer::SetOutputBatchTestBytes(size_t bn, size_t tn) {
     layer_test_bytes += RoundTo(32, nodes*tn*sizeof(float));
     layer_test_bytes += RoundTo(32, nodes*tn*sizeof(float));
 
-    // ensure total bytes are all aligned to 32, should already be true since previous adds are rounded, this is just a sanity check
-    layer_batch_bytes = RoundTo(32, layer_batch_bytes);
-    layer_test_bytes = RoundTo(32, layer_test_bytes);
+    // space for velocity data
+    if (m_m_momentum) {
+        layer_batch_bytes += RoundTo(32, wsize*sizeof(float));
+        layer_batch_bytes += RoundTo(32, bsize*sizeof(float));
+    }
+
+    // ensure total bytes are all aligned to 32
+    assert(layer_batch_bytes%32==0);
+    assert(layer_test_bytes%32==0);
 }

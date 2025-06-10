@@ -33,23 +33,6 @@ flagsopt="\
 "
 flagsdeb="-std=c++20 -O0 -g -DDEBUG -rdynamic -fno-omit-frame-pointer -fno-lto -mavx2 -mfma -fopenmp"
 
-# .cpp dependency files
-nndependencies="\
-    Activation/Activations.cpp Activation/Derivatives.cpp Activation/Utils.cpp \
-    
-    LossMetric/Loss.cpp LossMetric/Metric.cpp LossMetric/Utils.cpp \
-
-    Layer/LayerBackwards.cpp Layer/LayerInitializations.cpp Layer/LayerInitializationUtils.cpp Layer/LayerTraining.cpp Layer/LayerUtils.cpp \
-
-    NeuralNetwork/NNInitializations.cpp \
-    NeuralNetwork/NNLogging.cpp NeuralNetwork/NNMathUtils.cpp \
-    NeuralNetwork/NNTraining.cpp NeuralNetwork/NNUtils.cpp"
-
-dldependencies="DataLoader/DataLoader.cpp"
-stdependencies="State/State.cpp State/StaticUtils.cpp State/StateUtils.cpp"
-TESTFILES="TestNetwork/ActivationTests.cpp TestNetwork/DerivativeTests.cpp TestNetwork/Initializations.cpp TestNetwork/MathUtilTests.cpp TestNetwork/TNUtils.cpp"
-DEPENDENCIES="$nndependencies $dldependencies $stdependencies"
-
 declare file_size
 declare FLAGS
 declare build
@@ -90,7 +73,7 @@ else
         printf "Compiling program (%s)\n" $build
 
         # compiling phase
-        for src in $DEPENDENCIES main.cpp; do
+        for src in $(find . -name "*.cpp") ; do
             ccache g++ -c $FLAGS "$src" -include ./Dependencies/pch.h -o "${src%.cpp}.o"
         done
 
