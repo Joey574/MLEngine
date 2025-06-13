@@ -1,13 +1,17 @@
 #pragma once
 #include "../Activation/Activation.hpp"
 
+
 struct MathUtils {
 public:
+    using DotProdActvP = void (*)(const float*, const float*, float*, float*, size_t, size_t, size_t, size_t);
+
     // dot prods
     template <bool> static void DotProd(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
     template <bool> static void DotProdTA(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
     template <bool> static void DotProdTB(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
 
+    template <bool> static DotProdActvP DotProdActvPtr(Activation::Type type);
     template <bool> static void DotProdActv(Activation::Type type, const float* __restrict a, const float* __restrict b, float* __restrict c, float* __restrict d, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
     template <bool> static void DotProdTBDerv(Activation::Type type, const float* __restrict a, const float* __restrict b, float* __restrict c, const float* __restrict d, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
 

@@ -1,10 +1,6 @@
 #include "Layer.hpp"
 
 void Layer::ApplyDropoutFP(size_t n) {
-    if (type == LayerType::input || type == LayerType::output) {
-        return;
-    }
-
     float* __restrict a = m_a;
     uint8_t* __restrict mask = m_d_dpmask;
 

@@ -24,6 +24,7 @@
 #define BESTEPOCH "Best Epoch"
 
 // layer stuff
+#define LAYERTYPE "Layer Type"
 #define NODES "Nodes"
 #define ACTV "Activation"
 #define DROPOUT "Dropout"

@@ -40,7 +40,7 @@ void NeuralNetwork::Initialize(const std::string& path, const std::string& name,
         LossMetric lm = i < dims.size()-1 ? LossMetric() : LossMetric(loss, metric);
 
         Layer layer;
-        layer.Initialize(type, in, n, nn, actv, lm, 0.2f, true);        
+        layer.Initialize(type, in, n, nn, actv, lm, 0.3f, false);        
         m_layers.push_back(layer);
 
         m_network_size += layer.params;
@@ -55,7 +55,8 @@ void NeuralNetwork::Initialize(const std::string& path, const std::string& name,
 
 void NeuralNetwork::InitializeWeights(Layer::WeightInitialization type, const std::vector<std::size_t>& layers) {
     size_t dataidx = 0;
-
+    memset(m_network, 0, m_network_size*sizeof(float));
+    
     for (size_t i = 0; i < m_layers.size(); i++) {
         m_layers[i].InitializeWeights(&m_network[dataidx], type, m_seed+i);
         dataidx += m_layers[i].params;

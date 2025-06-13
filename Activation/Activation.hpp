@@ -15,6 +15,7 @@ public:
 
     // parsing functions
     static std::vector<Type> ParseType(const std::vector<std::string>& actvs);
+    static Type ParseSingleType(const std::string& actv);
     static std::string ParseName(Type type);
 
     // single mm256 activations
@@ -59,6 +60,8 @@ public:
         return x > 0.0f ? y : (y * std::exp(x));
     }
 
+    void AssignPointers(Type a);
+
 private:
     // activation functions
     static void Linear(const float* __restrict x, float* __restrict y, size_t n);
@@ -74,6 +77,4 @@ private:
     static void ReLUDerivative(const float* __restrict x, float* __restrict y, size_t n);
     static void LeakyReLUDerivative(const float* __restrict x, float* __restrict y, size_t n);
     static void ELUDerivative(const float* __restrict x, float* __restrict y, size_t n);
-
-    void AssignPointers(Type a);
 };

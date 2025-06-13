@@ -52,16 +52,12 @@ void Layer::ComputeDN(const float* __restrict input, size_t n) {
 }
 
 void Layer::ApplyDropoutBP(size_t n) {
-    if (type == LayerType::input || type == LayerType::output) {
-        return;
-    }
-    
     float* __restrict dt = m_dt;
     uint8_t* mask = m_d_dpmask;
 
     // apply dropout
     #pragma omp parallel for simd
-    for (size_t i = 0; i < n*nodes; i++) {
+    for (size_t i = 0; i < n*nodes; i ++) {
         size_t byteidx = i >> 3;
         uint8_t bitidx = i & 7;
 

@@ -3,8 +3,15 @@
 /// @brief Initializes basic layer data, sets layer size, does not touch batchsize or testsize
 void Layer::Initialize(LayerType type, size_t in, size_t n, size_t nn, Activation actv, LossMetric lm, float dropout, bool momentum) {
     this->type = type;
-    this-> m_d_rate = dropout;
-    this->m_d_dropout = dropout > 0.0f;
+
+    if (type == LayerType::hidden) {
+        m_d_rate = dropout;
+        m_d_dropout = dropout > 0.0f;
+    } else {
+        m_d_rate = 0.0f;
+        m_d_dropout = false;
+    }
+
     this-> m_m_momentum = momentum;
     
     inodes = in;
@@ -40,40 +47,21 @@ void Layer::Initialize(LayerType type, size_t in, size_t n, size_t nn, Activatio
             break;
     }
 
-    switch (m_d_dropout) {
-        case true:
-            switch (m_m_momentum) {
-                case true:
-                    executeForwardTrain = &Layer::BasicForward<true, true>;
-                    executeForwardInfer = &Layer::BasicForward<false, true>;
-                    executeBackward = &Layer::BasicBackward<true>;
-                    updateLayer = &Layer::BasicUpdate<true>;
-                    break;
-                case false:
-                    executeForwardTrain = &Layer::BasicForward<true, true>;
-                    executeForwardInfer = &Layer::BasicForward<false, true>;
-                    executeBackward = &Layer::BasicBackward<true>;
-                    updateLayer = &Layer::BasicUpdate<false>;
-                    break;
-            }
-            break;
-        case false:
-            switch (m_m_momentum) {
-                case true:
-                    executeForwardTrain = &Layer::BasicForward<true, false>;
-                    executeForwardInfer = &Layer::BasicForward<false, false>;
-                    executeBackward = &Layer::BasicBackward<false>;
-                    updateLayer = &Layer::BasicUpdate<true>;
-                    break;
-                case false:
-                    executeForwardTrain = &Layer::BasicForward<true, false>;
-                    executeForwardInfer = &Layer::BasicForward<false, false>;
-                    executeBackward = &Layer::BasicBackward<false>;
-                    updateLayer = &Layer::BasicUpdate<false>;
-                    break;
-            }
-            break;
-    }
+    AssignFunctionPointers();
+   
+}
+void Layer::Initialize(nlohmann::json meta, size_t in, size_t nn) {
+    m_meta = meta;
+    this->inodes = in;
+    this->nenodes = nn;
+    
+    type = ParseType(meta[LAYERTYPE]);
+    nodes = meta[NODES];
+    activation.AssignPointers(Activation::ParseSingleType(meta[ACTV]));
+    lossmetric.AssignPointers(
+        LossMetric::ParseType(meta[LOSS]),
+        LossMetric::ParseType(meta[METRIC])
+    );
 }
 
 /// @brief Initializes batchsize and testsize
@@ -114,7 +102,6 @@ void Layer::InitializePointers(char* data, char* batchdata, char* testdata, size
     m_ta = nullptr;
     m_m_vw = nullptr;
     m_m_vb = nullptr;
-
 
     // assign data pointers
     size_t offset = 0;

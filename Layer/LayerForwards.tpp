@@ -15,10 +15,7 @@ void Layer::InputForward(float* __restrict input, size_t n) {
 
 template <bool training, bool dropout>
 void Layer::BasicForward(float* __restrict input, size_t n) {
-    if (type == LayerType::input) {
-        InputForward<training>(input, n);
-        return; 
-    }
+    assert((uintptr_t)input%32==0);
 
     const float* __restrict w = m_w;
     const float* __restrict b = m_b;

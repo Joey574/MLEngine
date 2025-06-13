@@ -4,7 +4,7 @@ nlohmann::json NeuralNetwork::Fit(Dataset& dataset, size_t batch_size, size_t ep
 	auto fitstart = std::chrono::high_resolution_clock::now();
 
 	std::cout << m_meta.dump(4) << "\n";
-    
+
 	nlohmann::json history;
 	FitStart(history, epochs, batch_size, learning_rate);
 
@@ -49,7 +49,7 @@ nlohmann::json NeuralNetwork::Fit(Dataset& dataset, size_t batch_size, size_t ep
 
 std::string NeuralNetwork::TestNetwork(Dataset& dataset, nlohmann::json& history, size_t e) {
 	ForwardProp<false>(dataset.testData.data(), dataset.testDataRows);
-	const float* predictions = m_layers.back().Output(false);
+	const float* predictions = m_layers.back().Output<false>();
 
 	float score = m_layers.back().lossmetric.metric(predictions, &dataset.testLabels[0], dataset.testDataRows, m_layers.back().nodes);
 
@@ -70,7 +70,7 @@ void NeuralNetwork::ForwardProp(float* __restrict x, size_t n) {
 
     for (size_t i = 0; i < m_layers.size(); i++) {
 		// input will always just be previous layers output
-		float* __restrict input = i == 0 ? x : m_layers[i-1].Output(training);
+		float* __restrict input = i == 0 ? x : m_layers[i-1].Output<training>();
 
 		// does all the fun math stuff for us
 		m_layers[i].forward<training>(input, n);
@@ -82,7 +82,7 @@ void NeuralNetwork::BackProp(const float* __restrict x, const float* __restrict 
 	for (ssize_t i = m_layers.size()-1; i >= 0; i--) {
 
 		const float* truth = i == m_layers.size()-1 ? y : m_layers[i+1].Truth();
-		const float* input = i == 0 ? x : m_layers[i-1].Output(true);
+		const float* input = i == 0 ? x : m_layers[i-1].Output<true>();
 
 		m_layers[i].backward(truth, input, n);
 	}

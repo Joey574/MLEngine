@@ -12,14 +12,18 @@ public:
         none, he, normalize, xavier
     };
 
+    static std::string ParseName(LayerType type);
+    static LayerType ParseType(const std::string& type);
+
     void Initialize(LayerType type, size_t in, size_t n, size_t nn, Activation actv, LossMetric lm, float dropout, bool momentum);
+    void Initialize(nlohmann::json meta, size_t in, size_t nn);
     void InitializeSizes(size_t bn, size_t tn);
     void InitializePointers(char* data, char* batchdata, char* testdata, size_t bn, size_t tn);
     void InitializeSpecialPointers(float* nextweight);
 
     void InitializeWeights(float* data, WeightInitialization init, uint64_t seed);
 
-    float* Output(bool training) { return training ? m_a : m_ta; }
+    template<bool training>float* Output() { return training ? m_a : m_ta; }
     float* Truth() { return m_dt; }
     float* Weights() { return m_w; }
 
@@ -59,23 +63,25 @@ public:
 
 private:
 
-    void (Layer::*executeForwardTrain)(float* __restrict, size_t);
-    void (Layer::*executeForwardInfer)(float* __restrict, size_t);
-    void (Layer::*executeBackward)(const float* __restrict, const float* __restrict, size_t);
+    void (Layer::*executeForwardTrain)(float* , size_t);
+    void (Layer::*executeForwardInfer)(float*, size_t);
+    void (Layer::*executeBackward)(const float*, const float*, size_t);
     void (Layer::*updateLayer)(float, size_t);
 
     // template methods
     template <WeightInitialization> void SetWeights(float* data, uint64_t seed);
 
     // forward prop methods
-    template<bool training, bool dropout> void BasicForward (float* __restrict input, size_t n);
+    template <bool training, bool dropout> void BasicForward (float* __restrict input, size_t n);
     template <bool training> void ConvolutionalForward(float* __restrict input, size_t n);
 
     // backprop methods
-    template<bool dropout> void BasicBackward(const float* __restrict truth, const float* __restrict input, size_t n);
+    template <bool dropout> void BasicBackward(const float* __restrict truth, const float* __restrict input, size_t n);
 
     // update methods
-    template <bool momentum> void BasicUpdate(float lr, size_t n);
+    template <bool l2> void BasicUpdate(float lr, size_t n);
+    template <bool l2> void MomentumUpdate(float lr, size_t n);
+
 
     // forward prop utils
     template<bool training> void InputForward(float* __restrict input, size_t n);
@@ -86,21 +92,22 @@ private:
     void ComputeDN(const float* __restrict input, size_t n);
     void ApplyDropoutBP(size_t n);
 
-    // update utils
-    void MomentumUpdate(float lr, size_t n);
+    // upadte utils
+    void ApplyBasicUpdate(const float* __restrict d, float* __restrict p, const __m256 _factor);
+    void ApplyL2Update(const float* __restrict d, float* __restrict p, const __m256 _factor, const __m256 _coef);
+    float ApplyBasicUpdate(const float d, const float p, const float factor);
+    float ApplyL2Update(const float d, const float p, const float factor, const float coef);
 
-    /// @brief only works with powers of 2
-    inline size_t RoundTo(size_t alignment, size_t n) {
-        alignment--;
-        return (n+alignment) & ~alignment;
-    }
 
     // private initialization utils
     void AssignHiddenBatchPtrs(char* batchdata, size_t bn);
     void AssignOutputBatchPtrs(char* batchdata, size_t bn);
+    void AssignFunctionPointers();
+
 
     void SetHiddenBatchTestBytes(size_t bn, size_t tn);
     void SetOutputBatchTestBytes(size_t bn, size_t tn);
+    size_t RoundTo(size_t alignment, size_t n);
 
 
     // network data
@@ -139,6 +146,9 @@ private:
     float m_m_coefficient = 0.9f;
     float* m_m_vw;
     float* m_m_vb;
+
+    // l1/l2 data
+    float m_l2_lambda = 0.0001f;
 
     // general rng
     std::mt19937 gen;

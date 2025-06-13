@@ -149,6 +149,22 @@ template <bool clear> void MathUtils::DotProdTB(const float* __restrict a, const
     }
 }
 
+template <bool clear> MathUtils::DotProdActvP MathUtils::DotProdActvPtr(Activation::Type type) {
+	switch (type) {
+		case Activation::Type::linear:
+			return DotProdActv<clear, Activation::Type::linear>;
+		case Activation::Type::sigmoid:
+			return DotProdActv<clear, Activation::Type::sigmoid>;
+		case Activation::Type::relu:
+			return DotProdActv<clear, Activation::Type::relu>;
+		case Activation::Type::leakyrelu:
+			return DotProdActv<clear, Activation::Type::leakyrelu>;
+		case Activation::Type::elu:
+			return DotProdActv<clear, Activation::Type::elu>;
+		default:
+			return DotProdActv<clear, Activation::Type::none>;
+	}
+}
 template <bool clear> void MathUtils::DotProdActv(Activation::Type type, const float* __restrict a, const float* __restrict b, float* __restrict c, float* __restrict d, size_t a_r, size_t a_c, size_t b_r, size_t b_c) {
 	switch (type) {
 		case Activation::Type::linear:

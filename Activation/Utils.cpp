@@ -13,34 +13,29 @@ std::vector<Activation::Type> Activation::ParseType(const std::vector<std::strin
         }
 
         // add n number of token
-        if (token == "linear") {
-            for (size_t i = 0; i < n; i++) {
-                activations.push_back(Type::linear);
-            }
-        } else if (token == "sigmoid") {
-            for (size_t i = 0; i < n; i++) {
-                activations.push_back(Type::sigmoid);
-            }
-        } else if (token == "relu") {
-            for (size_t i = 0; i < n; i++) {
-                activations.push_back(Type::relu);
-            }
-        } else if (token == "leakyrelu") {
-            for (size_t i = 0; i < n; i++) {
-                activations.push_back(Type::leakyrelu);
-            }
-        } else if (token == "elu") {
-            for (size_t i = 0; i < n; i++) {
-                activations.push_back(Type::elu);
-            }
-        } else if (token == "softmax") {
-            for (size_t i = 0; i < n; i++) {
-                activations.push_back(Type::softmax);
-            }
+        Type t = Activation::ParseSingleType(token);
+        for (size_t i = 0; i < n; i++) {
+            activations.push_back(t);
         }
     }
 
     return activations;
+}
+Activation::Type Activation::ParseSingleType(const std::string& actv) {
+    if (actv == "linear") {
+        return Activation::Type::linear;
+    } else if (actv == "sigmoid") {
+        return Activation::Type::sigmoid;
+    } else if (actv == "relu") {
+        return Activation::Type::relu;
+    } else if (actv == "leakyrelu") {
+        return Activation::Type::leakyrelu;
+    } else if (actv == "elu") {
+        return Activation::Type::elu;
+    } else if (actv == "softmax") {
+        return Activation::Type::softmax;
+    }
+    return Activation::Type::none;
 }
 std::string Activation::ParseName(Type type) {
     switch(type) {

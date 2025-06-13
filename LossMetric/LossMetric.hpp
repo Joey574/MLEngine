@@ -20,6 +20,8 @@ public:
     static Type ParseType(const std::string& name);
     static std::string ParseName(Type type);
 
+    void AssignPointers(Type l, Type m);
+
 private:
 
     // loss functions
@@ -32,5 +34,4 @@ private:
     static float MseScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols);
     static float AccuracyScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols);
 
-    void AssignPointers(Type l, Type m);
 };

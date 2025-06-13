@@ -21,8 +21,6 @@ void Layer::AssignHiddenBatchPtrs(char* batchdata, size_t bn) {
     if (m_d_dropout) {
         m_d_dpmask = (uint8_t*)(batchdata+offset);
         offset += RoundTo(32, nodes*bn);
-    } else {
-        m_d_dpmask = nullptr;
     }
 
     if (m_m_momentum) {
@@ -79,7 +77,6 @@ void Layer::SetHiddenBatchTestBytes(size_t bn, size_t tn) {
         layer_batch_bytes += RoundTo(32, (nodes+(bn-1))*bn/8);
     }
 
-    // space for velocity data
     if (m_m_momentum) {
         layer_batch_bytes += RoundTo(32, wsize*sizeof(float));
         layer_batch_bytes += RoundTo(32, bsize*sizeof(float));
@@ -112,4 +109,73 @@ void Layer::SetOutputBatchTestBytes(size_t bn, size_t tn) {
     // ensure total bytes are all aligned to 32
     assert(layer_batch_bytes%32==0);
     assert(layer_test_bytes%32==0);
+}
+
+void Layer::AssignFunctionPointers() {
+    switch (m_d_dropout) {
+        case true:
+            switch (m_m_momentum) {
+                case true:
+                    switch (type) {
+                        case LayerType::input:
+                            executeForwardTrain = &Layer::InputForward<true>;
+                            executeForwardInfer = &Layer::InputForward<false>;
+                            break;
+                        default:
+                            executeForwardTrain = &Layer::BasicForward<true, true>;
+                            executeForwardInfer = &Layer::BasicForward<false, true>;
+                            break;
+                    }
+                    executeBackward = &Layer::BasicBackward<true>;
+                    updateLayer = &Layer::MomentumUpdate<false>;
+                    break;
+                case false:
+                    switch (type) {
+                        case LayerType::input:
+                            executeForwardTrain = &Layer::InputForward<true>;
+                            executeForwardInfer = &Layer::InputForward<false>;
+                            break;
+                        default:
+                            executeForwardTrain = &Layer::BasicForward<true, true>;
+                            executeForwardInfer = &Layer::BasicForward<false, true>;
+                            break;
+                    }
+                    executeBackward = &Layer::BasicBackward<true>;
+                    updateLayer = &Layer::BasicUpdate<false>;
+                    break;
+            }
+            break;
+        case false:
+            switch (m_m_momentum) {
+                case true:
+                    switch (type) {
+                        case LayerType::input:
+                            executeForwardTrain = &Layer::InputForward<true>;
+                            executeForwardInfer = &Layer::InputForward<false>;
+                            break;
+                        default:
+                            executeForwardTrain = &Layer::BasicForward<true, false>;
+                            executeForwardInfer = &Layer::BasicForward<false, false>;
+                            break;
+                    }
+                    executeBackward = &Layer::BasicBackward<false>;
+                    updateLayer = &Layer::MomentumUpdate<false>;
+                    break;
+                case false:
+                    switch (type) {
+                        case LayerType::input:
+                            executeForwardTrain = &Layer::InputForward<true>;
+                            executeForwardInfer = &Layer::InputForward<false>;
+                            break;
+                        default:
+                            executeForwardTrain = &Layer::BasicForward<true, false>;
+                            executeForwardInfer = &Layer::BasicForward<false, false>;
+                            break;
+                    }
+                    executeBackward = &Layer::BasicBackward<false>;
+                    updateLayer = &Layer::BasicUpdate<false>;
+                    break;
+            }
+            break;
+    }
 }
