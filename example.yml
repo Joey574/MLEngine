@@ -4,11 +4,13 @@ name: modelname
 # dataset to train on
 dataset: mnist
 
-# dataset_args:
-# - 200000 # example args for mandlebrot
-# - 500
-# - 64
-
+# dataset args, we're defining additional ways we want to load mnist
+# in this case we're defining what techniques we want to use to expand the training data
+# rotation is the max value to rotate images by in either direction, which is randomly taken
+# rot per sample times and appended to the dataset
+dataset_args:
+  rotation: 15
+  rot_per_sample: 10
 
 # weight initilization technique to use
 weight: he
@@ -42,6 +44,8 @@ layers:
   - type: output
     nodes: 10
     activation: sigmoid
+    loss: onehot
+    metric: accuracy
 
 # number of epochs to train for
 epochs: 1000
@@ -51,3 +55,6 @@ valid_freq: 1
 
 # learning rate to use during model training
 learning_rate: 0.01
+
+# batch size to use for training
+batch_size: 512

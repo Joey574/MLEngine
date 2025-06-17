@@ -1,6 +1,6 @@
 #include <execinfo.h>
 #include <cxxabi.h>
-
+#include <yaml-cpp/yaml.h>
 
 #include "NeuralNetwork/NeuralNetwork.hpp"
 #include "State/State.hpp"
@@ -25,7 +25,6 @@ void resetModel(State& state) {
     std::cout << state.ResetModel(state.modelname) << "\n";
     exit(0);
 }
-
 
 void handleInterupt(int signum) {
     std::cout << "\nProgram will exit after next epoch\n";
@@ -82,6 +81,8 @@ int main(int argc, char* argv[]) {
     State state;
     state.Init();
 
+    std::string config_file;
+
     // dataset args
     std::string dataset = "";
     std::vector<std::string> datasetargs;
@@ -113,6 +114,8 @@ int main(int argc, char* argv[]) {
     auto training_options = app.add_option_group("Training Options", "How the model will be trained");
     auto flags = app.add_option_group("Flags", "displays information, does not train model");
 
+    model_options->add_option("-c,--config", config_file, "config file path to load");
+
     model_options->add_option("-m,--model", state.modelname, "loads model from disk (if model doesn't exist new model will be made)");
     model_options->add_option("-d,--dataset", dataset, "trains on the given dataset");
     model_options->add_option("-g,--dsargs", datasetargs, "args for generating the dataset if applicable")->delimiter(',');
@@ -140,6 +143,12 @@ int main(int argc, char* argv[]) {
     if (listmodels) {
         displayModels(state);
     }
+
+    YAML::Node config = YAML::LoadFile(config_file);
+    std::stringstream ss;
+    ss << config;
+    std::string yaml_config = ss.str();
+    std::cout << "config: " << yaml_config << "\n";
 
 
     if (listmeta || listhistory || deletemodel || resetmodel) {

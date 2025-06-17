@@ -1,5 +1,5 @@
 #include "Activation.hpp"
-#include "../NeuralNetwork/NeuralNetwork.hpp"
+#include "../MathUtils/MathUtils.hpp"
 
 
 void Activation::Linear(const float* __restrict x, float* __restrict y, size_t n) {
@@ -73,7 +73,7 @@ __m256 Activation::Sigmoid(const __m256 _x) {
 
     const __m256 _nx = _mm256_sub_ps(_zero, _x);
         
-    const __m256 _ex = NeuralNetwork::Exp256(_nx);
+    const __m256 _ex = MathUtils::Exp256(_nx);
 
     const __m256 _x2 = _mm256_add_ps(_one, _ex);
     const __m256 _res = _mm256_rcp_ps(_x2);
@@ -95,7 +95,7 @@ __m256 Activation::ELU(const __m256 _x) {
     const __m256 _one = _mm256_set1_ps(1.0f);
     const __m256 _zero = _mm256_setzero_ps();
 
-    const __m256 _x2 = NeuralNetwork::Exp256(_x);
+    const __m256 _x2 = MathUtils::Exp256(_x);
     const __m256 _x3 = _mm256_sub_ps(_x2, _one);
         
     const __m256 _mask = _mm256_cmp_ps(_x, _zero, _CMP_GT_OS);

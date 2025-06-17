@@ -29,7 +29,7 @@ flagsopt="\
     -ftree-loop-distribution -ftree-loop-vectorize -ftree-slp-vectorize -ftree-vectorize \
     -Wno-unused-result \
     -frename-registers -fschedule-insns -fschedule-insns2 -fweb -fno-semantic-interposition \
-    -frandom-seed=123 -s\
+    -frandom-seed=123 -s \
 "
 flagsdeb="-std=c++20 -O0 -g -DDEBUG -rdynamic -fno-omit-frame-pointer -fno-lto -mavx2 -mfma -fopenmp"
 
@@ -49,42 +49,24 @@ fi
 if [ "$p_flag" = true ]; then
 
     printf "Compiling pch (%s)\n" $build
-    ccache g++ -x c++-header $FLAGS -Wno-pragmas ./Dependencies/pch.h -o ./Dependencies/pch.h.gch
+    ccache g++ -x c++-header $FLAGS -Wno-pragmas ./Dependencies/pch.h -lyaml-cpp -o ./Dependencies/pch.h.gch
 
     file_size=$(stat -c %s "./Dependencies/pch.h.gch")
 else
+    printf "Compiling program (%s)\n" $build
 
-    if [ "$t_flag" = true ]; then
-        printf "Compiling test suite (%s)\n" $build
+    # compiling phase
+    for src in $(find . -name "*.cpp") ; do
+        ccache g++ -c $FLAGS "$src" -include ./Dependencies/pch.h -o "${src%.cpp}.o"
+    done
 
-        # compiling phase
-        for src in $DEPENDENCIES $TESTFILES "test.cpp"; do
-            ccache g++ -c $FLAGS "$src" -include ./Dependencies/pch.h -o "${src%.cpp}.o"
-        done
+    # link phase
+    ccache g++ -static-libgcc -static-libstdc++ -Wl,-Bdynamic -lgomp -Wl,-Bstatic -lstdc++ -lpthread -lm -ldl $FLAGS $(find . -name "*.o") -lyaml-cpp -o MLEngine
 
-        # link phase
-        ccache g++ -static-libgcc -static-libstdc++ -Wl,-Bdynamic -lgomp -Wl,-Bstatic -lstdc++ -lpthread -lm -ldl $FLAGS $(find . -name "*.o") -o MLTestEngine
-
-        # cleanup object files
-        find . -name "*.o" -delete
-
-        file_size=$(stat -c %s "MLTestEngine")
-    else
-        printf "Compiling program (%s)\n" $build
-
-        # compiling phase
-        for src in $(find . -name "*.cpp") ; do
-            ccache g++ -c $FLAGS "$src" -include ./Dependencies/pch.h -o "${src%.cpp}.o"
-        done
-
-        # link phase
-        ccache g++ -static-libgcc -static-libstdc++ -Wl,-Bdynamic -lgomp -Wl,-Bstatic -lstdc++ -lpthread -lm -ldl $FLAGS $(find . -name "*.o") -o MLEngine
-
-        # cleanup object files
-        find . -name "*.o" -delete
+    # cleanup object files
+    find . -name "*.o" -delete
     
-        file_size=$(stat -c %s "MLEngine")
-    fi
+    file_size=$(stat -c %s "MLEngine")
 fi
 
 # output information about build process
