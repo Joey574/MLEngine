@@ -3,13 +3,12 @@
 MLEngine is a C++ command line tool for linux aimed to allow easy iteration on different neural network designs
 
 #### In the works
-* Dropout
 * Adding/Removing layers through iterations
+* Allow YAML config file to be used for network config
+* CNN
 
 #### Future ideas
 * GPU compatability
-* weight decay
-* CNN
 * better install
 
 ### Install

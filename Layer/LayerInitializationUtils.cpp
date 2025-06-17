@@ -1,5 +1,24 @@
 #include "Layer.hpp"
 
+void Layer::AssignLayerSize() {
+    // set network size
+    switch (type) {
+        case LayerType::input:
+            break;
+        case LayerType::hidden: case LayerType::output:
+            wsize = inodes*nodes;
+            bsize = nodes;
+            params = wsize+bsize;
+
+            // size for weights and biases
+            layer_bytes += RoundTo(32, wsize*sizeof(float));
+            layer_bytes += RoundTo(32, bsize*sizeof(float));
+            break;
+        case LayerType::convolutional:
+            break;
+    }
+}
+
 void Layer::AssignHiddenBatchPtrs(char* batchdata, size_t bn) {
     size_t offset = 0;
 
@@ -127,7 +146,7 @@ void Layer::AssignFunctionPointers() {
                             break;
                     }
                     executeBackward = &Layer::BasicBackward<true>;
-                    updateLayer = &Layer::MomentumUpdate<false>;
+                    updateLayer = &Layer::MomentumUpdate<false, false>;
                     break;
                 case false:
                     switch (type) {
@@ -141,7 +160,7 @@ void Layer::AssignFunctionPointers() {
                             break;
                     }
                     executeBackward = &Layer::BasicBackward<true>;
-                    updateLayer = &Layer::BasicUpdate<false>;
+                    updateLayer = &Layer::BasicUpdate<false, false>;
                     break;
             }
             break;
@@ -159,7 +178,7 @@ void Layer::AssignFunctionPointers() {
                             break;
                     }
                     executeBackward = &Layer::BasicBackward<false>;
-                    updateLayer = &Layer::MomentumUpdate<false>;
+                    updateLayer = &Layer::MomentumUpdate<false, false>;
                     break;
                 case false:
                     switch (type) {
@@ -173,7 +192,7 @@ void Layer::AssignFunctionPointers() {
                             break;
                     }
                     executeBackward = &Layer::BasicBackward<false>;
-                    updateLayer = &Layer::BasicUpdate<false>;
+                    updateLayer = &Layer::BasicUpdate<false, false>;
                     break;
             }
             break;

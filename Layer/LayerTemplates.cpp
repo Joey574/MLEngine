@@ -17,7 +17,12 @@ template void Layer::ConvolutionalForward<false>(float*, size_t);
 template void Layer::BasicBackward<true>(const float*, const float*, size_t);
 template void Layer::BasicBackward<false>(const float*, const float*, size_t);
 
-template void Layer::BasicUpdate<true>(float, size_t);
-template void Layer::BasicUpdate<false>(float, size_t);
-template void Layer::MomentumUpdate<true>(float, size_t);
-template void Layer::MomentumUpdate<false>(float, size_t);
+template void Layer::BasicUpdate<true, true>(float, size_t);
+template void Layer::BasicUpdate<true, false>(float, size_t);
+template void Layer::BasicUpdate<false, true>(float, size_t);
+template void Layer::BasicUpdate<false, false>(float, size_t);
+
+template void Layer::MomentumUpdate<true, true>(float, size_t);
+template void Layer::MomentumUpdate<true, false>(float, size_t);
+template void Layer::MomentumUpdate<false, true>(float, size_t);
+template void Layer::MomentumUpdate<false, false>(float, size_t);

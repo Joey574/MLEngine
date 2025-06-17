@@ -1,7 +1,7 @@
 #pragma once
 #include "Layer.hpp"
 
-template <bool l2>
+template <bool l1, bool l2>
 void Layer::BasicUpdate(float lr, size_t n) {
     if (type == LayerType::input) { return; }
 
@@ -18,7 +18,9 @@ void Layer::BasicUpdate(float lr, size_t n) {
 	#pragma omp parallel for
 	for (ssize_t i = 0; i <= ((ssize_t)wsize)-8; i += 8) {
 
-		if constexpr (l2) {
+		if constexpr (l1) {
+			ApplyL1Update(&dw[i], &w[i], _factor, _mm256_set1_ps(m_l1_lambda));
+		} else if constexpr (l2) {
 			ApplyL2Update(&dw[i], &w[i], _factor, _mm256_set1_ps(m_l2_lambda));
 		} else {
 			ApplyBasicUpdate(&dw[i], &w[i], _factor);
@@ -26,7 +28,9 @@ void Layer::BasicUpdate(float lr, size_t n) {
 	}
 
 	for (size_t i = wsize-(wsize%8); i < wsize; i++) {
-		if constexpr (l2) {
+		if constexpr (l1) {
+			w[i] = ApplyL1Update(dw[i], w[i], factor, m_l1_lambda);
+		} else if constexpr (l2) {
 			w[i] = ApplyL2Update(dw[i], w[i], factor, m_l2_lambda);
 		} else {
 			w[i] = ApplyBasicUpdate(dw[i], w[i], factor);
@@ -36,7 +40,9 @@ void Layer::BasicUpdate(float lr, size_t n) {
 	// update biases
 	#pragma omp parallel for
 	for (ssize_t i = 0; i <= ((ssize_t)bsize)-8; i += 8) {
-		if constexpr (l2) {
+		if constexpr (l1) {
+			ApplyL1Update(&db[i], &b[i], _factor, _mm256_set1_ps(m_l1_lambda));
+		} else if constexpr (l2) {
 			ApplyL2Update(&db[i], &b[i], _factor, _mm256_set1_ps(m_l2_lambda));
 		} else {
 			ApplyBasicUpdate(&db[i], &b[i], _factor);
@@ -44,7 +50,9 @@ void Layer::BasicUpdate(float lr, size_t n) {
 	}
 
 	for (size_t i = bsize-(bsize%8); i < bsize; i++) {
-		if constexpr (l2) {
+		if constexpr (l1) {
+			b[i] = ApplyL1Update(db[i], b[i], factor, m_l1_lambda);
+		} else if constexpr (l2) {
 			b[i] = ApplyL2Update(db[i], b[i], factor, m_l2_lambda);
 		} else {
 			b[i] = ApplyBasicUpdate(db[i], b[i], factor);
@@ -52,7 +60,7 @@ void Layer::BasicUpdate(float lr, size_t n) {
 	}
 }
 
-template <bool l2>
+template <bool l1, bool l2>
 void Layer::MomentumUpdate(float lr, size_t n) {
     if (type == LayerType::input) { return; }
 

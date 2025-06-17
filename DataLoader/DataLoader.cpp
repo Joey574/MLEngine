@@ -124,15 +124,30 @@ Dataset DataLoader::LoadMNIST() {
     testd.close();
     testl.close();
 
+
+    // generate randomly rotated images of test dataset
+    for (size_t i = 0; i < mnist.trainDataRows; i++) {
+        for (size_t j = 0; j < 8; j++) {
+            float rfloat = (float)rand() / (float)RAND_MAX;
+            float deg = (rfloat * 30.f)-15.0f;
+
+            std::vector<float> image = RotateImage(&mnist.trainData[i*mnist.trainDataCols], width, height, deg);
+
+            mnist.trainData.insert(mnist.trainData.end(), image.begin(), image.end());
+            mnist.trainLabels.push_back(mnist.trainLabels[i]);
+        }
+    }
+
+    mnist.trainDataRows *= 8;
+    mnist.trainLabelRows *= 8;
+
     return mnist;
 }
-
 Dataset DataLoader::LoadFMNIST() {
     Dataset fmnist(Datasets::FMNIST, "fmnist");
 
     return fmnist;
 }
-
 Dataset DataLoader::LoadMandlebrot(const std::vector<std::string>& args) {
     Dataset mandlebrot(Datasets::MANDLEBROT, "mandlebrot");
     mandlebrot.hasTestData = true;
@@ -241,6 +256,37 @@ int DataLoader::ReadBigInt(std::ifstream* f) {
 
     return lint;
 }
+std::vector<float> DataLoader::RotateImage(const float* image, size_t width, size_t height, float deg) {
+    const double rad = deg * M_PI / 180.0;
+    const double cos_a = std::cos(rad);
+    const double sin_a = std::sin(rad);
+
+    const double cx = width / 2.0;
+    const double cy = height / 2.0;
+
+    std::vector<float>rimage(width*height, 0.0f);
+
+    for (size_t y = 0; y < height; y++) {
+        for (size_t x = 0; x < width; x++) {
+            double x0 = x - cx;
+            double y0 = y - cy;
+
+            double src_x =  cos_a * x0 + sin_a * y0 + cx;
+            double src_y = -sin_a * x0 + cos_a * y0 + cy;
+
+            int ix = static_cast<int>(std::floor(src_x));
+            int iy = static_cast<int>(std::floor(src_y));
+
+            // Nearest-neighbor interpolation
+            if (ix >= 0 && ix < width && iy >= 0 && iy < height) {
+                rimage[y*width+x] = image[iy*width+x];
+            }
+        }
+    }
+
+    return rimage;
+}
+
 float DataLoader::InMandlebrot(double x, double y, size_t it) {
     std::complex<double> c(x, y);
         std::complex<double> z = 0;
@@ -266,6 +312,7 @@ void DataLoader::ComputeFourier(float* x, size_t series) {
         x[2+(i*4)+3] = std::cos(std::pow(yv, i+2));
     }
 }
+
 std::string DataLoader::ExpandPath(const std::string& path) {
     if (path.empty() || path[0] != '~') {
         return path;

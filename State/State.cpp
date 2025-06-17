@@ -79,16 +79,8 @@ void State::Build(const nlohmann::json& meta) {
         dataset = DataLoader::LoadDataset(meta[DATASET], meta[DSARGS]);
     }
 
-    std::vector<Activation::Type> activations = Activation::ParseType(meta[ACTIVATIONS]);
-    std::vector<size_t> dimensions = NeuralNetwork::ParseCompact(meta[DIMENSIONS]);
-
-    LossMetric::Type metric = LossMetric::ParseType(meta[METRIC]);
-    LossMetric::Type loss = LossMetric::ParseType(meta[LOSS]);
-
-    Layer::WeightInitialization weight = NeuralNetwork::ParseWeight(meta[WEIGHTS]);
-
     // initialize model with provided options
-    model->Initialize(p_models+"/"+modelname+"/", modelname, dimensions, activations, loss, metric, weight);
+    model->Initialize(p_models+"/"+modelname+"/", modelname, meta);
 }
 void State::Start(size_t batchsize, size_t epochs, float learningrate, int validfreq, float validsplit) {
     nlohmann::json history = model->Fit(dataset, batchsize, epochs, learningrate, validfreq, validsplit, true);

@@ -30,23 +30,7 @@ void Layer::Initialize(LayerType type, size_t in, size_t n, size_t nn, Activatio
     bsize = 0;
     params = 0;
 
-    // set network size
-    switch (type) {
-        case LayerType::input:
-            break;
-        case LayerType::hidden: case LayerType::output:
-            wsize = in*n;
-            bsize = n;
-            params = wsize+bsize;
-
-            // size for weights and biases
-            layer_bytes += RoundTo(32, wsize*sizeof(float));
-            layer_bytes += RoundTo(32, bsize*sizeof(float));
-            break;
-        case LayerType::convolutional:
-            break;
-    }
-
+    AssignLayerSize();
     AssignFunctionPointers();
    
 }
@@ -57,11 +41,35 @@ void Layer::Initialize(nlohmann::json meta, size_t in, size_t nn) {
     
     type = ParseType(meta[LAYERTYPE]);
     nodes = meta[NODES];
-    activation.AssignPointers(Activation::ParseSingleType(meta[ACTV]));
-    lossmetric.AssignPointers(
-        LossMetric::ParseType(meta[LOSS]),
-        LossMetric::ParseType(meta[METRIC])
-    );
+
+    if (meta.contains(ACTV)) {
+        activation.AssignPointers(Activation::ParseSingleType(meta[ACTV]));
+    }
+
+    if (meta.contains(LOSS) && meta.contains(METRIC)) {
+        lossmetric.AssignPointers(
+            LossMetric::ParseType(meta[LOSS]),
+            LossMetric::ParseType(meta[METRIC])
+        );
+    }
+
+    if (meta.contains(DROPOUT)) {
+        m_d_rate = (float)meta[DROPOUT];
+    }
+
+    // initialize member data
+    std::random_device rd;
+    gen = std::mt19937(rd());
+    m_d_dropoutdist = std::bernoulli_distribution(1.0f-m_d_rate);
+
+    layer_bytes = 0;
+    wsize = 0;
+    bsize = 0;
+    params = 0;
+
+    AssignLayerSize();
+    AssignFunctionPointers();
+    
 }
 
 /// @brief Initializes batchsize and testsize

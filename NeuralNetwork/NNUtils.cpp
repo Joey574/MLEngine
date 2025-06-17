@@ -17,14 +17,18 @@ void NeuralNetwork::SaveBest(nlohmann::json& history, float score, size_t e) {
     // update best of all time score
     if ((!m_meta.contains(BESTEVSCORE)) || (m_layers.back().lossmetric.highestIsBest && score > m_meta[BESTEVSCORE]) || (!m_layers.back().lossmetric.highestIsBest && score < m_meta[BESTEVSCORE])) {
         m_meta[BESTEVSCORE] = score;
+        m_epoch_since_improvement = 0;
     } else {
-        return;
+        m_epoch_since_improvement++;
     }
 
-    // score has been updated, save model immediately
-    int fd = open((m_path+m_name+".model").c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    Save(fd);
-    close(fd);
+    // score has been updated, save the model
+    if (m_epoch_since_improvement == 0) {
+        int fd = open((m_path+m_name+".model").c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        Save(fd);
+        close(fd);
+    }
+    
 }
 
 Layer::WeightInitialization NeuralNetwork::ParseWeight(const std::string& w) {
@@ -124,11 +128,8 @@ int NeuralNetwork::Load(int fd, Layer::WeightInitialization trueweight) {
 }
 
 nlohmann::json NeuralNetwork::Metadata() {
-    if (!m_meta.contains(LOSS)) { m_meta[LOSS] = LossMetric::ParseName(m_layers.back().lossmetric.ltype); }
-    if (!m_meta.contains(METRIC)) { m_meta[METRIC] = LossMetric::ParseName(m_layers.back().lossmetric.mtype); }
+    if (!m_meta.contains(LAYERS)) { for (Layer& l : m_layers) { m_meta[LAYERS].push_back(l.metadata()); } }
     if (!m_meta.contains(WEIGHTS)) { m_meta[WEIGHTS] = WeightName(m_weightinit); }
-    if (!m_meta.contains(DIMENSIONS)) { m_meta[DIMENSIONS] = CompactDimensions(); }
-    if (!m_meta.contains(ACTIVATIONS)) { m_meta[ACTIVATIONS] = CompactActivations(); }
     if (!m_meta.contains(PARAMETERS)) { m_meta[PARAMETERS] = m_network_size; }
     if (!m_meta.contains(SEED)) { m_meta[SEED] = m_seed; }
 

@@ -1,0 +1,53 @@
+# name of the model, will be used as the folder to store the model in
+name: modelname
+
+# dataset to train on
+dataset: mnist
+
+# dataset_args:
+# - 200000 # example args for mandlebrot
+# - 500
+# - 64
+
+
+# weight initilization technique to use
+weight: he
+
+layers:
+  # input layers are special and don't require the number of nodes to be
+  # explicitly stated, that can vary based on dataset args and will be set
+  # at runtime, it does need to be stated however, as options like
+  # batch reg, etc, would be applicable to the input layer
+  - type: input
+
+  # a hidden layer has many different options for configuration, some of which are shown below
+  # most configs are optional, like dropout, and update
+  # type, nodes, and activation are required however
+  # most values come with a default, like l1 and l2 lambda, making setting there values not necessary, but
+  # can be a good assurance of sanity
+  - type: hidden
+    nodes: 256
+    dropout: 0.3
+    activation: leakyrelu
+    regularization: l1
+    l1_lambda: 0.0001
+
+  - type: hidden
+    nodes: 256
+    dropout: 0.3
+    activation: leakyrelu
+    regularization: l2
+    l2_lambda: 0.0002
+
+  - type: output
+    nodes: 10
+    activation: sigmoid
+
+# number of epochs to train for
+epochs: 1000
+
+# how often to test the model against the validation/test dataset in epochs
+valid_freq: 1
+
+# learning rate to use during model training
+learning_rate: 0.01

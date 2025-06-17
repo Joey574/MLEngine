@@ -1,13 +1,8 @@
 #pragma once
 
 // model stuff
-#define ACTIVATIONS "Activations"
 #define DATASET "Dataset"
 #define DSARGS "Dataset Args"
-#define DIMENSIONS "Dimensions"
-#define LOSS "Loss"
-#define METRIC "Metric"
-#define PARAMETERS "Parameters"
 #define SEED "Seed"
 #define WEIGHTS "Weights"
 #define BESTEVSCORE "Best Ever Score"
@@ -22,9 +17,15 @@
 #define FINISH "Finish"
 #define BESTSCORE "Best Score"
 #define BESTEPOCH "Best Epoch"
+#define AVGEPOCH "Average Epoch"
+#define FASTESTEPOCH "Fastest Epoch"
+#define SLOWESTEPOCH "Slowest Epoch"
 
 // layer stuff
 #define LAYERTYPE "Layer Type"
 #define NODES "Nodes"
 #define ACTV "Activation"
 #define DROPOUT "Dropout"
+#define LOSS "Loss"
+#define METRIC "Metric"
+#define PARAMETERS "Parameters"

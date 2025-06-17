@@ -21,7 +21,6 @@ void NeuralNetwork::Initialize(const std::string& path, const std::string& name,
 
     // initialize layer size
     m_layers.reserve(dims.size());
-
     m_network_size = 0;
 
     // construct layers
@@ -51,6 +50,35 @@ void NeuralNetwork::Initialize(const std::string& path, const std::string& name,
 
     // initialize weights
     InitializeWeights(weightInit, dims);
+}
+void NeuralNetwork::Initialize(const std::string& path, const std::string& name, nlohmann::json metadata) {
+    std::random_device rd;
+    m_weightinit = ParseWeight(metadata[WEIGHTS]);
+    m_path = path;
+    m_name = name;
+    m_seed = rd();
+
+    m_meta = metadata;
+
+    m_layers.reserve(m_meta[LAYERS].size());
+    m_network_size = 0;
+
+    // construct layers
+    for (size_t i = 0; i < m_meta[LAYERS].size(); i++) {
+        size_t in = i == 0 ? 0 : (size_t)m_meta[LAYERS][i-1][NODES];
+        size_t nn = i == m_meta[LAYERS].size()-1 ? 0 : (size_t)m_meta[LAYERS][i+1][NODES];
+
+        Layer layer;
+        layer.Initialize(m_meta[LAYERS][i], in, nn);
+        m_layers.push_back(layer);
+
+        m_network_size += layer.params;
+    }
+
+    // initialize network memory
+    m_network = (float*)aligned_alloc(32, m_network_size*sizeof(float));
+
+    // this is only called when we're loading a model, shouldn't need to init weights
 }
 
 void NeuralNetwork::InitializeWeights(Layer::WeightInitialization type, const std::vector<std::size_t>& layers) {

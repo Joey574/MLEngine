@@ -79,8 +79,8 @@ private:
     template <bool dropout> void BasicBackward(const float* __restrict truth, const float* __restrict input, size_t n);
 
     // update methods
-    template <bool l2> void BasicUpdate(float lr, size_t n);
-    template <bool l2> void MomentumUpdate(float lr, size_t n);
+    template <bool l1, bool l2> void BasicUpdate(float lr, size_t n);
+    template <bool l1, bool l2> void MomentumUpdate(float lr, size_t n);
 
 
     // forward prop utils
@@ -94,16 +94,18 @@ private:
 
     // upadte utils
     void ApplyBasicUpdate(const float* __restrict d, float* __restrict p, const __m256 _factor);
+    void ApplyL1Update(const float* __restrict d, float* __restrict p, const __m256 _factor, const __m256 _coef);
     void ApplyL2Update(const float* __restrict d, float* __restrict p, const __m256 _factor, const __m256 _coef);
     float ApplyBasicUpdate(const float d, const float p, const float factor);
+    float ApplyL1Update(const float d, const float p, const float factor, const float coef);
     float ApplyL2Update(const float d, const float p, const float factor, const float coef);
 
 
     // private initialization utils
+    void AssignLayerSize();
     void AssignHiddenBatchPtrs(char* batchdata, size_t bn);
     void AssignOutputBatchPtrs(char* batchdata, size_t bn);
     void AssignFunctionPointers();
-
 
     void SetHiddenBatchTestBytes(size_t bn, size_t tn);
     void SetOutputBatchTestBytes(size_t bn, size_t tn);
@@ -148,6 +150,7 @@ private:
     float* m_m_vb;
 
     // l1/l2 data
+    float m_l1_lambda = 0.0001f;
     float m_l2_lambda = 0.0001f;
 
     // general rng

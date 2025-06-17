@@ -3,8 +3,6 @@
 #include "../LossMetric/LossMetric.hpp"
 #include "../Layer/Layer.hpp"
 
-class TestNetwork;
-
 class NeuralNetwork {
     friend struct Layer;
     friend struct Activation;
@@ -28,6 +26,11 @@ public:
         LossMetric::Type loss,
         LossMetric::Type metric,
         Layer::WeightInitialization weightInit
+    );
+    void Initialize(
+        const std::string& path,
+        const std::string& name,
+        nlohmann::json metadata
     );
 
     nlohmann::json Fit(
@@ -71,6 +74,12 @@ private:
 
     float* m_test_data;
     size_t m_test_data_size;
+
+    size_t m_epoch_since_improvement;
+    size_t m_esi_threshold;
+    
+    bool m_lr_schedule;
+    bool m_add_layer_sat;
     
 
     template <bool training> void ForwardProp(
@@ -99,15 +108,12 @@ private:
     void InitializeLayerPointers(size_t bn, size_t tn);
 
     // logging utils
-    static void FitStart(nlohmann::json& history, size_t e, size_t bs, float lr);
-    static void FitEnd(nlohmann::json& history, std::chrono::system_clock::time_point starttime);
-    static void EpochStart(nlohmann::json& history);
-    static void EpochEnd(nlohmann::json& history, const std::string& res, double ns, size_t e);
+    void FitStart(nlohmann::json& history, size_t e, size_t bs, float lr);
+    void FitEnd(nlohmann::json& history, std::chrono::system_clock::time_point starttime);
+    void EpochStart(nlohmann::json& history);
+    void EpochEnd(nlohmann::json& history, const std::string& res, double ns, size_t e);
+    static std::string CleanTime(std::chrono::nanoseconds time);
     void SaveBest(nlohmann::json& history, float score, size_t e);
-
-    // math utils
-    static float Sum256(__m256 _x);
-    static __m256 Exp256(__m256 _x);
 };
 
 /* Memory Layout
