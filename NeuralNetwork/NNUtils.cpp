@@ -1,22 +1,22 @@
 #include "NeuralNetwork.hpp"
 
-void NeuralNetwork::SaveBest(nlohmann::json& history, float score, size_t e) {
+void NeuralNetwork::SaveBest(nlohmann::json& history, nlohmann::json& storedhistory, float score, size_t e) {
     // save best score this training run
-    if (!history.contains(BESTSCORE)) {
-        history[BESTSCORE] = score;
-        history[BESTEPOCH] = e;
+    if (!history.contains(J_BESTSCORE)) {
+        history[J_BESTSCORE] = score;
+        history[J_BESTEPOCH] = e;
     } else {
-        float best = history[BESTSCORE];
+        float best = history[J_BESTSCORE];
 
         if ((m_layers.back().lossmetric.highestIsBest && score > best) || (!m_layers.back().lossmetric.highestIsBest && score < best)) {
-			history[BESTSCORE] = score;
-			history[BESTEPOCH] = e;
+			history[J_BESTSCORE] = score;
+			history[J_BESTEPOCH] = e;
 		}
     }
 
     // update best of all time score
-    if ((!m_meta.contains(BESTEVSCORE)) || (m_layers.back().lossmetric.highestIsBest && score > m_meta[BESTEVSCORE]) || (!m_layers.back().lossmetric.highestIsBest && score < m_meta[BESTEVSCORE])) {
-        m_meta[BESTEVSCORE] = score;
+    if ((!storedhistory.contains(J_BESTEVSCORE)) || (m_layers.back().lossmetric.highestIsBest && score > storedhistory[J_BESTEVSCORE]) || (!m_layers.back().lossmetric.highestIsBest && score < storedhistory[J_BESTEVSCORE])) {
+        storedhistory[J_BESTEVSCORE] = score;
         m_epoch_since_improvement = 0;
     } else {
         m_epoch_since_improvement++;
@@ -28,7 +28,6 @@ void NeuralNetwork::SaveBest(nlohmann::json& history, float score, size_t e) {
         Save(fd);
         close(fd);
     }
-    
 }
 
 Layer::WeightInitialization NeuralNetwork::ParseWeight(const std::string& w) {
@@ -125,13 +124,4 @@ int NeuralNetwork::Load(int fd, Layer::WeightInitialization trueweight) {
 
     ssize_t n = read(fd, m_network, m_network_size*sizeof(float));
     return n != m_network_size*sizeof(float);
-}
-
-nlohmann::json NeuralNetwork::Metadata() {
-    if (!m_meta.contains(LAYERS)) { for (Layer& l : m_layers) { m_meta[LAYERS].push_back(l.metadata()); } }
-    if (!m_meta.contains(WEIGHTS)) { m_meta[WEIGHTS] = WeightName(m_weightinit); }
-    if (!m_meta.contains(PARAMETERS)) { m_meta[PARAMETERS] = m_network_size; }
-    if (!m_meta.contains(SEED)) { m_meta[SEED] = m_seed; }
-
-    return m_meta;
 }

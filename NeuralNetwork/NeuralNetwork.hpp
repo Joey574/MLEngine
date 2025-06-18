@@ -21,29 +21,11 @@ public:
     void Initialize(
         const std::string& path,
         const std::string& name,
-        const std::vector<size_t>& dims,
-        const std::vector<Activation::Type>& actvs,
-        LossMetric::Type loss,
-        LossMetric::Type metric,
-        Layer::WeightInitialization weightInit
-    );
-    void Initialize(
-        const std::string& path,
-        const std::string& name,
-        nlohmann::json metadata
+        YAML::Node& config,
+        bool setweights
     );
 
-    nlohmann::json Fit(
-        Dataset& dataset,
-        size_t batch_size,
-        size_t epochs,
-        float learning_rate,
-        int validation_freq,
-        float validation_split,
-        bool shuffle
-    );
-
-    nlohmann::json Metadata();
+    nlohmann::json Fit(Dataset& dataset, YAML::Node& config, nlohmann::json& history);
 
     int Load(int fd, Layer::WeightInitialization trueweight);
     int Save(int fd) const;
@@ -62,8 +44,6 @@ private:
     std::string m_name;
     uint64_t m_seed;
 
-    nlohmann::json m_meta;
-
     std::vector<Layer> m_layers;
 
     float* m_network;
@@ -76,10 +56,6 @@ private:
     size_t m_test_data_size;
 
     size_t m_epoch_since_improvement;
-    size_t m_esi_threshold;
-    
-    bool m_lr_schedule;
-    bool m_add_layer_sat;
     
 
     template <bool training> void ForwardProp(
@@ -97,13 +73,14 @@ private:
     std::string TestNetwork(
         Dataset& dataset,
         nlohmann::json& history,
+        nlohmann::json& storedhistory,
         size_t e
     ); 
 
 
     // initilization function
     void InitializeNetwork(size_t size);
-    void InitializeWeights(Layer::WeightInitialization type, const std::vector<std::size_t>& layers);
+    void InitializeWeights(Layer::WeightInitialization type);
     void InitializeLayerData(size_t bn, size_t tn);
     void InitializeLayerPointers(size_t bn, size_t tn);
 
@@ -113,7 +90,7 @@ private:
     void EpochStart(nlohmann::json& history);
     void EpochEnd(nlohmann::json& history, const std::string& res, double ns, size_t e);
     static std::string CleanTime(std::chrono::nanoseconds time);
-    void SaveBest(nlohmann::json& history, float score, size_t e);
+    void SaveBest(nlohmann::json& history, nlohmann::json& storedhistory, float score, size_t e);
 };
 
 /* Memory Layout

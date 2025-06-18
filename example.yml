@@ -10,7 +10,7 @@ dataset: mnist
 # rot per sample times and appended to the dataset
 dataset_args:
   rotation: 15
-  rot_per_sample: 10
+  rot_per_sample: 5
 
 # weight initilization technique to use
 weight: he
@@ -28,14 +28,14 @@ layers:
   # most values come with a default, like l1 and l2 lambda, making setting there values not necessary, but
   # can be a good assurance of sanity
   - type: hidden
-    nodes: 256
+    nodes: 128
     dropout: 0.3
     activation: leakyrelu
     regularization: l1
     l1_lambda: 0.0001
 
   - type: hidden
-    nodes: 256
+    nodes: 128
     dropout: 0.3
     activation: leakyrelu
     regularization: l2
@@ -54,7 +54,7 @@ epochs: 1000
 valid_freq: 1
 
 # learning rate to use during model training
-learning_rate: 0.01
+learning_rate: 0.05
 
 # batch size to use for training
 batch_size: 512

@@ -1,0 +1,29 @@
+name: bestmnist
+dataset: mnist
+
+dataset_args:
+  rotation: 20
+  rot_per_sample: 10
+
+weight: he
+
+layers:
+  - type: input
+
+  - type: hidden
+    nodes: 784
+    dropout: 0.3
+    activation: leakyrelu
+    regularization: l2
+    l2_lambda: 0.0001
+
+  - type: output
+    nodes: 10
+    activation: sigmoid
+    loss: onehot
+    metric: accuracy
+
+epochs: 1000
+valid_freq: 1
+learning_rate: 0.01
+batch_size: 1024

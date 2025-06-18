@@ -1,9 +1,14 @@
 #include "NeuralNetwork.hpp"
 
-nlohmann::json NeuralNetwork::Fit(Dataset& dataset, size_t batch_size, size_t epochs, float learning_rate, int validation_freq, float validation_split, bool shuffle) {
+nlohmann::json NeuralNetwork::Fit(Dataset& dataset, YAML::Node& config, nlohmann::json& storedhistory) {
 	auto fitstart = std::chrono::high_resolution_clock::now();
 
-	std::cout << m_meta.dump(4) << "\n";
+	std::cout << config << "\n\n";
+
+	size_t epochs = config[Y_EPOCHS].as<size_t>(0);
+	size_t batch_size = config[Y_EPOCHS].as<size_t>();
+	size_t valid_freq = config[Y_VALIDFREQ].as<size_t>();
+	float learning_rate = config[Y_LEARNINGRATE].as<float>();
 
 	nlohmann::json history;
 	FitStart(history, epochs, batch_size, learning_rate);
@@ -12,7 +17,7 @@ nlohmann::json NeuralNetwork::Fit(Dataset& dataset, size_t batch_size, size_t ep
 	InitializeLayerPointers(batch_size, dataset.testDataRows);
 
 	const size_t iterations = std::ceil((double)dataset.trainDataRows/(double)batch_size);
-
+	
 	for (size_t e = 0; e < epochs && KEEPRUNNING; e++) {
 		auto epochstart = std::chrono::high_resolution_clock::now();
 
@@ -32,8 +37,8 @@ nlohmann::json NeuralNetwork::Fit(Dataset& dataset, size_t batch_size, size_t ep
 		}
 
 		std::string res = "";
-		if ((e+1) % validation_freq == 0) {
-			res = TestNetwork(dataset, history, e);
+		if ((e+1) % valid_freq== 0) {
+			res = TestNetwork(dataset, history, storedhistory, e);
 		}
 
 		double epochns = (std::chrono::high_resolution_clock::now() - epochstart).count();
@@ -41,22 +46,23 @@ nlohmann::json NeuralNetwork::Fit(Dataset& dataset, size_t batch_size, size_t ep
 	}
 
 	// forced network test to make sure we get at least one save if model wasn't validated during training
-	TestNetwork(dataset, history, epochs);
+	TestNetwork(dataset, history, storedhistory, epochs);
 	
 	FitEnd(history, fitstart);
-	return history;
+	storedhistory[J_RUNS].push_back(history);
+	return storedhistory;
 }
 
-std::string NeuralNetwork::TestNetwork(Dataset& dataset, nlohmann::json& history, size_t e) {
+std::string NeuralNetwork::TestNetwork(Dataset& dataset, nlohmann::json& history, nlohmann::json& storedhistory, size_t e) {
 	ForwardProp<false>(dataset.testData.data(), dataset.testDataRows);
 	const float* predictions = m_layers.back().Output<false>();
 
 	float score = m_layers.back().lossmetric.metric(predictions, &dataset.testLabels[0], dataset.testDataRows, m_layers.back().nodes);
 
-	SaveBest(history, score, e);
+	SaveBest(history, storedhistory, score, e);
 	std::string curs = "Score: " + std::to_string(score);
-	std::string sesb = "Session Best: " + std::to_string((float)history[BESTSCORE]);
-	std::string eveb = "Best Ever: " + std::to_string((float)m_meta[BESTEVSCORE]);
+	std::string sesb = "Session Best: " + std::to_string((float)history[J_BESTSCORE]);
+	std::string eveb = "Best Ever: " + std::to_string((float)storedhistory[J_BESTEVSCORE]);
 
 	int size = snprintf(nullptr, 0, "%-25s %-30s %-30s", curs.data(), sesb.data(), eveb.data());
 

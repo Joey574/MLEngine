@@ -1,14 +1,15 @@
 #include "State.hpp"
 
 std::string State::ModelMetadata(const std::string& m) const {
-    if (!FileExists(p_models+"/"+m+"/state.meta")) {
-        return "{}";
+    if (!FileExists(p_models+"/"+m+"/config.yml")) {
+        return "[]";
     }
 
-    std::ifstream f(p_models+"/"+m+"/state.meta");
+    YAML::Emitter out;
+    YAML::Node con = YAML::LoadFile(p_models+"/"+m+"/config.yml");
+    out << con;
 
-    nlohmann::json meta = nlohmann::json::parse(f);
-    return meta.dump(4);
+    return std::string(out.c_str());
 }
 std::string State::ModelHistory(const std::string& m) const {
     if (!FileExists(p_models+"/"+m+"/history.meta")) {
@@ -37,9 +38,8 @@ std::string State::AvailableModels() const {
             models += f + ":\n";
 
             // collect basic metadata of the model
-            nlohmann::json metadata = nlohmann::json::parse(ModelMetadata(f));
-            models = models.append("\tDataset: ").append(metadata[DATASET]).append("\n");
-            models = models.append("\tParameters: ").append(std::to_string((int)metadata[PARAMETERS])).append("\n");
+            YAML::Node metadata = YAML::LoadFile(p_models+"/"+f+"/config.yml");
+            models = models.append("\tDataset: ").append(metadata[Y_DATASET].as<std::string>()).append("\n");
         }
     }
 
@@ -55,22 +55,18 @@ std::string State::ResetModel(const std::string& m) const {
     std::filesystem::remove((p_models+"/"+m+"/history.meta"));
     std::filesystem::remove((p_models+"/"+m+"/"+m+".model"));
 
-    std::ifstream fi(p_models+"/"+m+"/state.meta");
-    nlohmann::json meta = nlohmann::json::parse(fi);
-    fi.close();
-
-    meta.erase(BESTEVSCORE);
-
-    std::ofstream fo(p_models+"/"+m+"/state.meta", std::ios::trunc);
-    std::string dump = meta.dump(4)+"\n";
-    fo.write(dump.c_str(), dump.length());
-    fo.close();
-
     return "\"" + m + "\" has been reset";
 }
 
 bool State::ModelExists() {
     if (DirExists(p_models+"/"+modelname) && modelname != "") {
+        return true;
+    }
+
+    return false;
+}
+bool State::IsValid() {
+    if (config[Y_LAYERS] && config[Y_WEIGHT] && config[Y_MODELNAME] && config[Y_DATASET]) {
         return true;
     }
 

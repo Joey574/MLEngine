@@ -1,45 +1,23 @@
 #include "NeuralNetwork.hpp"
 
-void NeuralNetwork::Initialize(const std::string& path, const std::string& name, const std::vector<size_t>& dims, const std::vector<Activation::Type>& actvs, LossMetric::Type loss, LossMetric::Type metric, Layer::WeightInitialization weightInit) {
+void NeuralNetwork::Initialize(const std::string& path, const std::string& name, YAML::Node& config, bool setweights) {
     std::random_device rd;
-    m_weightinit = weightInit;
+    m_weightinit = ParseWeight(config[Y_WEIGHT].as<std::string>());
     m_path = path;
     m_name = name;
     m_seed = rd();
 
-    // grab initial metadata
-    std::ifstream f(path+"state.meta");
-    try {
-        m_meta = nlohmann::json::parse(f);
-    } catch (nlohmann::json::parse_error& e) {}
-    f.close();
-
-    if (dims.size() != actvs.size()+1) {
-        std::cerr << "activations must be one less in size than dimensions\n";
-        return;
-    }
-
-    // initialize layer size
-    m_layers.reserve(dims.size());
+    m_layers.reserve(config[Y_LAYERS].size());
     m_network_size = 0;
 
     // construct layers
-    for (size_t i = 0; i < dims.size(); i++) {
-
-        Layer::LayerType type = 
-            i == 0 ? Layer::LayerType::input : 
-            i == dims.size()-1 ? Layer::LayerType::output : 
-            Layer::LayerType::hidden;
-
-        size_t in = i == 0 ? 0 : dims[i-1];
-        size_t n = dims[i];
-        size_t nn = i == dims.size()-1 ? 0 : dims[i+1];
-
-        Activation actv = i == 0 ? Activation() : Activation(actvs[i-1]);
-        LossMetric lm = i < dims.size()-1 ? LossMetric() : LossMetric(loss, metric);
+    YAML::Node layers = config[Y_LAYERS];
+    for (size_t i = 0; i < layers.size(); i++) {
+        size_t in = i == 0 ? 0 : layers[i-1][Y_NODES].as<size_t>();
+        size_t nn = i == layers.size()-1 ? 0 : layers[i+1][Y_NODES].as<size_t>();
 
         Layer layer;
-        layer.Initialize(type, in, n, nn, actv, lm, 0.3f, false);        
+        layer.Initialize(m_layers, i, layers[i], in, nn);
         m_layers.push_back(layer);
 
         m_network_size += layer.params;
@@ -48,40 +26,12 @@ void NeuralNetwork::Initialize(const std::string& path, const std::string& name,
     // initialize network memory
     m_network = (float*)aligned_alloc(32, m_network_size*sizeof(float));
 
-    // initialize weights
-    InitializeWeights(weightInit, dims);
-}
-void NeuralNetwork::Initialize(const std::string& path, const std::string& name, nlohmann::json metadata) {
-    std::random_device rd;
-    m_weightinit = ParseWeight(metadata[WEIGHTS]);
-    m_path = path;
-    m_name = name;
-    m_seed = rd();
-
-    m_meta = metadata;
-
-    m_layers.reserve(m_meta[LAYERS].size());
-    m_network_size = 0;
-
-    // construct layers
-    for (size_t i = 0; i < m_meta[LAYERS].size(); i++) {
-        size_t in = i == 0 ? 0 : (size_t)m_meta[LAYERS][i-1][NODES];
-        size_t nn = i == m_meta[LAYERS].size()-1 ? 0 : (size_t)m_meta[LAYERS][i+1][NODES];
-
-        Layer layer;
-        layer.Initialize(m_meta[LAYERS][i], in, nn);
-        m_layers.push_back(layer);
-
-        m_network_size += layer.params;
+    if (setweights) {
+        InitializeWeights(ParseWeight(config[Y_WEIGHT].as<std::string>()));
     }
-
-    // initialize network memory
-    m_network = (float*)aligned_alloc(32, m_network_size*sizeof(float));
-
-    // this is only called when we're loading a model, shouldn't need to init weights
 }
 
-void NeuralNetwork::InitializeWeights(Layer::WeightInitialization type, const std::vector<std::size_t>& layers) {
+void NeuralNetwork::InitializeWeights(Layer::WeightInitialization type) {
     size_t dataidx = 0;
     memset(m_network, 0, m_network_size*sizeof(float));
     

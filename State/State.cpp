@@ -16,102 +16,77 @@ void State::SaveInit() {
         CreateDir(p_models+"/"+modelname);
     }
 
-    // create state.meta file if one doesn't exist
-    if (!FileExists(p_models+"/"+modelname+"/state.meta")) {
-        std::ofstream file(p_models+"/"+modelname+"/state.meta", std::ios::trunc);
+    // save yaml config if one doesn't exist
+    if (!FileExists(p_models+"/"+modelname+"/config.yml")) {
+        std::ofstream file(p_models+"/"+modelname+"/config.yml", std::ios::trunc);
 
-        nlohmann::json metadata = model->Metadata();
-        metadata[DATASET] = dataset.name;
-    
-        std::string dump = metadata.dump(4).append("\n");
-        file.write(dump.c_str(), dump.size());
+        // deep copy config
+        std::stringstream ss;
+        ss << config;
+        YAML::Node basic = YAML::Load(ss.str());
+
+        // remove data that isn't relevent to the config
+        basic.remove(Y_EPOCHS);
+        basic.remove(Y_BATCHSIZE);
+        basic.remove(Y_LEARNINGRATE);
+        basic.remove(Y_VALIDFREQ);
+
+        file << basic << "\n";
         file.close();
     }
 }
 
 void State::Load() {
-    // load state.meta file
-    std::ifstream f(p_models+"/"+modelname+"/state.meta");
-    nlohmann::json metadata = nlohmann::json::parse(f);
-    f.close();
-
     // build with no weights, just setting dimensions, activations etc
-    Build(metadata);
+    Build(false);
 
     // attempt to load save from file
     std::string file = p_models+"/"+modelname+"/"+modelname+".model";
     if (FileExists(file)) {
         std::cout << "Loading parameters from file (" << file.substr(file.find_last_of('/')+1) << ")\n";
         int fd = open(file.c_str(), O_RDONLY, 0644);
-        int err = model->Load(fd, NeuralNetwork::ParseWeight(metadata[WEIGHTS]));
+        int err = model->Load(fd, NeuralNetwork::ParseWeight(config[Y_WEIGHT].as<std::string>()));
         close(fd);
 
         if (err) {
             // failed to laod, build model again
             std::cerr << "Failed to load parameters, rebuilding model\n";
-            Build(metadata);
+            Build(true);
         }        
     } else {
         std::cout << "No save found, rebuilding model\n";
-        Build(metadata);
+        Build(true);
     }
 }
-
-void State::Build(const std::vector<std::string>& pdims, const std::vector<std::string>& pactvs, const std::string& pmetric, const std::string& ploss, const std::string& pweight, const std::string& data, const std::vector<std::string>& dsargs) {
+void State::Build(bool setweights) {
     if (dataset.type == Datasets::NONE) {
-        dataset = DataLoader::LoadDataset(data, dsargs);
-    }
-    
-    std::vector<Activation::Type> activations = Activation::ParseType(pactvs);
-    std::vector<size_t> dimensions = NeuralNetwork::ParseCompact(pdims);
-    dimensions.insert(dimensions.begin(), dataset.trainDataCols);
-
-    LossMetric::Type metric = LossMetric::ParseType(pmetric);
-    LossMetric::Type loss = LossMetric::ParseType(ploss);
-
-    Layer::WeightInitialization weight = NeuralNetwork::ParseWeight(pweight);
-
-    // initialize model with provided options
-    model->Initialize(p_models+"/"+modelname+"/", modelname, dimensions, activations, loss, metric, weight);
-}
-void State::Build(const nlohmann::json& meta) {
-    if (dataset.type == Datasets::NONE) {
-        dataset = DataLoader::LoadDataset(meta[DATASET], meta[DSARGS]);
+        dataset = DataLoader::LoadDataset(config);
+        config[Y_LAYERS][0][Y_NODES] = dataset.trainDataCols;
     }
 
     // initialize model with provided options
-    model->Initialize(p_models+"/"+modelname+"/", modelname, meta);
+    model->Initialize(p_models+"/"+modelname+"/", modelname, config, setweights);
 }
-void State::Start(size_t batchsize, size_t epochs, float learningrate, int validfreq, float validsplit) {
-    nlohmann::json history = model->Fit(dataset, batchsize, epochs, learningrate, validfreq, validsplit, true);
+void State::Start() {
 
-    // model has finished training, parse existing history data, if any, and append new training history
+    //parse existing history data, if any
     std::ifstream ifile(p_models+"/"+modelname+"/history.meta");
     nlohmann::json storedhistory;
 
     // try to parse out existing history data
     try {
         storedhistory = nlohmann::json::parse(ifile);
-    } catch (nlohmann::json::parse_error& e) {
-        storedhistory = nlohmann::json::array();
-    }
+    } catch (nlohmann::json::parse_error& e) {}
     ifile.close();
 
+    // train model and get new history
+    nlohmann::json history = model->Fit(dataset, config, storedhistory);
+
     // append new history
-    storedhistory.push_back(history);
-    std::string dump = storedhistory.dump(4) + "\n";
+    std::string dump = history.dump(4) + "\n";
 
     // store new history data in file
     std::ofstream ofileh(p_models+"/"+modelname+"/history.meta", std::ios::trunc);
     ofileh.write(dump.c_str(), dump.size());
     ofileh.close();
-
-    // update state file
-    std::ofstream ofiles(p_models+"/"+modelname+"/state.meta", std::ios::trunc);
-    nlohmann::json meta = model->Metadata();
-    meta[DATASET] = dataset.name;
-    meta[DSARGS] = dataset.args;
-    dump = meta.dump(4) + "\n";
-    ofiles.write(dump.c_str(), dump.size());
-    ofiles.close();
 }

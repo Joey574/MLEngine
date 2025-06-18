@@ -3,54 +3,54 @@
 void NeuralNetwork::FitStart(nlohmann::json& history, size_t e, size_t bs, float lr) {
     auto now = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
     auto local = std::chrono::zoned_time{std::chrono::current_zone(), now};
-    history[START] = std::format("{:%F %T}", local);
+    history[J_START] = std::format("{:%F %T}", local);
 
     m_epoch_since_improvement = 0;
 
     // since program can be interupted, epochs is a running total of epochs completed
-    history[EPOCHS] = 0;
-    history[BATCHSIZE] = bs;
-    history[LEARNRATE] = lr;
+    history[J_EPOCHS] = 0;
+    history[J_BATCHSIZE] = bs;
+    history[J_LEARNRATE] = lr;
 }
 void NeuralNetwork::FitEnd(nlohmann::json& history, std::chrono::system_clock::time_point starttime) {
     auto traintime = std::chrono::high_resolution_clock::now() - starttime;
 
-    history[TRAINTIME] = CleanTime(traintime);
+    history[J_TRAINTIME] = CleanTime(traintime);
 
     // store time training completed
     auto now = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
     auto local = std::chrono::zoned_time{std::chrono::current_zone(), now};
-    history[FINISH] = std::format("{:%F %T}", local);
+    history[J_FINISH] = std::format("{:%F %T}", local);
 
     // average out sum of train time
-    history[AVGEPOCH] = CleanTime(std::chrono::nanoseconds(static_cast<long long>(traintime.count()/(float)history[EPOCHS])));
+    history[J_AVGEPOCH] = CleanTime(std::chrono::nanoseconds(static_cast<long long>(traintime.count()/(float)history[J_EPOCHS])));
 
     // clean format of fastest and slowest epoch
-    history[SLOWESTEPOCH] = CleanTime(std::chrono::nanoseconds(static_cast<long long>(history[SLOWESTEPOCH])));
-    history[FASTESTEPOCH] = CleanTime(std::chrono::nanoseconds(static_cast<long long>(history[FASTESTEPOCH])));
+    history[J_SLOWESTEPOCH] = CleanTime(std::chrono::nanoseconds(static_cast<long long>(history[J_SLOWESTEPOCH])));
+    history[J_FASTESTEPOCH] = CleanTime(std::chrono::nanoseconds(static_cast<long long>(history[J_FASTESTEPOCH])));
 }
 
 void NeuralNetwork::EpochStart(nlohmann::json& history) {
     
 }
 void NeuralNetwork::EpochEnd(nlohmann::json& history, const std::string& res, double ns, size_t e) {
-    history[EPOCHS] = (int)history[EPOCHS] + 1;
+    history[J_EPOCHS] = (int)history[J_EPOCHS] + 1;
 
     // fastest epoch
-    if (!history.contains(FASTESTEPOCH)) {
-        history[FASTESTEPOCH] = ns; 
+    if (!history.contains(J_FASTESTEPOCH)) {
+        history[J_FASTESTEPOCH] = ns; 
     } else {
-        if (ns < history[FASTESTEPOCH]) {
-            history[FASTESTEPOCH] = ns;
+        if (ns < history[J_FASTESTEPOCH]) {
+            history[J_FASTESTEPOCH] = ns;
         }
     }
 
     // slowest epoch
-    if (!history.contains(SLOWESTEPOCH)) {
-        history[SLOWESTEPOCH] = ns; 
+    if (!history.contains(J_SLOWESTEPOCH)) {
+        history[J_SLOWESTEPOCH] = ns; 
     } else {
-        if (ns > history[SLOWESTEPOCH]) {
-            history[SLOWESTEPOCH] = ns;
+        if (ns > history[J_SLOWESTEPOCH]) {
+            history[J_SLOWESTEPOCH] = ns;
         }
     }
 

@@ -5,12 +5,14 @@
 /// @param dataset 
 /// @param args 
 /// @return
-Dataset DataLoader::LoadDataset(const std::string& dataset, const std::vector<std::string>& dsargs) {
+Dataset DataLoader::LoadDataset(YAML::Node& config) {
+    std::string dataset = config[Y_DATASET].as<std::string>();
+    YAML::Node dsargs = config[Y_DATASETARGS];
 
     if (dataset == "mnist") {
-        return LoadMNIST();
+        return LoadMNIST(dsargs);
     } else if (dataset == "fmnist") {
-        return LoadFMNIST();
+        return LoadFMNIST(dsargs);
     } else if (dataset == "mandlebrot") {
         return LoadMandlebrot(dsargs);
     }
@@ -19,7 +21,7 @@ Dataset DataLoader::LoadDataset(const std::string& dataset, const std::vector<st
     return Dataset{};
 }
 
-Dataset DataLoader::LoadMNIST() {
+Dataset DataLoader::LoadMNIST(YAML::Node& args) {
     Dataset mnist(Datasets::MNIST, "mnist");
     mnist.hasTestData = true;
 
@@ -124,38 +126,44 @@ Dataset DataLoader::LoadMNIST() {
     testd.close();
     testl.close();
 
+    if (args[Y_ROTATION]) {
+        float rot = args[Y_ROTATION].as<float>();
+        float rot2 = rot*2;
+        size_t samples = args[Y_ROT_PER_SAMPLE].as<size_t>(0);
 
-    // generate randomly rotated images of test dataset
-    for (size_t i = 0; i < mnist.trainDataRows; i++) {
-        for (size_t j = 0; j < 8; j++) {
-            float rfloat = (float)rand() / (float)RAND_MAX;
-            float deg = (rfloat * 30.f)-15.0f;
+        // generate randomly rotated images of test dataset
+        for (size_t i = 0; i < mnist.trainDataRows; i++) {
+            for (size_t j = 0; j < samples; j++) {
+                float rfloat = (float)rand() / (float)RAND_MAX;
+                float deg = (rfloat * rot2)-rot;
 
-            std::vector<float> image = RotateImage(&mnist.trainData[i*mnist.trainDataCols], width, height, deg);
+                std::vector<float> image = RotateImage(&mnist.trainData[i*mnist.trainDataCols], width, height, deg);
 
-            mnist.trainData.insert(mnist.trainData.end(), image.begin(), image.end());
-            mnist.trainLabels.push_back(mnist.trainLabels[i]);
+                mnist.trainData.insert(mnist.trainData.end(), image.begin(), image.end());
+                mnist.trainLabels.push_back(mnist.trainLabels[i]);
+            }
         }
-    }
 
-    mnist.trainDataRows *= 8;
-    mnist.trainLabelRows *= 8;
+        mnist.trainDataRows *= samples;
+        mnist.trainLabelRows *= samples;
+    }
 
     return mnist;
 }
-Dataset DataLoader::LoadFMNIST() {
+Dataset DataLoader::LoadFMNIST(YAML::Node& args) {
     Dataset fmnist(Datasets::FMNIST, "fmnist");
 
     return fmnist;
 }
-Dataset DataLoader::LoadMandlebrot(const std::vector<std::string>& args) {
+Dataset DataLoader::LoadMandlebrot(YAML::Node& args) {
     Dataset mandlebrot(Datasets::MANDLEBROT, "mandlebrot");
     mandlebrot.hasTestData = true;
     mandlebrot.args = args;
 
-    size_t n = atoi(args[0].c_str());
-    size_t depth = atoi(args[1].c_str());
-    size_t fourier = atoi(args[2].c_str());
+    // TODO: Load from args
+    size_t n = -1;
+    size_t depth = -1;
+    size_t fourier = -1;
 
     const size_t test_elements = 10000 > (n*0.1) ? 10000 : n*0.1;
 

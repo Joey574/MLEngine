@@ -1,66 +1,44 @@
 #include "Layer.hpp"
 
-/// @brief Initializes basic layer data, sets layer size, does not touch batchsize or testsize
-void Layer::Initialize(LayerType type, size_t in, size_t n, size_t nn, Activation actv, LossMetric lm, float dropout, bool momentum) {
-    this->type = type;
-
-    if (type == LayerType::hidden) {
-        m_d_rate = dropout;
-        m_d_dropout = dropout > 0.0f;
-    } else {
-        m_d_rate = 0.0f;
-        m_d_dropout = false;
-    }
-
-    this-> m_m_momentum = momentum;
-    
-    inodes = in;
-    nodes = n;
-    nenodes = nn;
-
-    activation = actv;
-    lossmetric = lm;
-
-    std::random_device rd;
-    gen = std::mt19937(rd());
-    m_d_dropoutdist = std::bernoulli_distribution(1.0f-m_d_rate);
-
-    layer_bytes = 0;
-    wsize = 0;
-    bsize = 0;
-    params = 0;
-
-    AssignLayerSize();
-    AssignFunctionPointers();
-   
-}
-void Layer::Initialize(nlohmann::json meta, size_t in, size_t nn) {
-    m_meta = meta;
+void Layer::Initialize(std::vector<Layer>& layers, size_t idx, YAML::Node config, size_t in, size_t nn) {
     this->inodes = in;
     this->nenodes = nn;
-    
-    type = ParseType(meta[LAYERTYPE]);
-    nodes = meta[NODES];
 
-    if (meta.contains(ACTV)) {
-        activation.AssignPointers(Activation::ParseSingleType(meta[ACTV]));
+    type = ParseType(config[Y_LAYERTYPE].as<std::string>());
+    nodes = config[Y_NODES].as<size_t>();
+
+    if (config[Y_ACTIVATION]) {
+        activation.AssignPointers(Activation::ParseSingleType(config[Y_ACTIVATION].as<std::string>()));
     }
 
-    if (meta.contains(LOSS) && meta.contains(METRIC)) {
+    if (config[Y_LOSS] && config[Y_METRIC]) {
         lossmetric.AssignPointers(
-            LossMetric::ParseType(meta[LOSS]),
-            LossMetric::ParseType(meta[METRIC])
+            LossMetric::ParseType(config[Y_LOSS].as<std::string>()),
+            LossMetric::ParseType(config[Y_METRIC].as<std::string>())
         );
     }
 
-    if (meta.contains(DROPOUT)) {
-        m_d_rate = (float)meta[DROPOUT];
+    if (config[Y_DROPOUT]) {
+        m_d_rate = config[Y_DROPOUT].as<float>();
+        m_d_dropout = m_d_rate > 0.0f;
+        m_d_dropoutdist = std::bernoulli_distribution(1.0f-m_d_rate);
+    }
+
+    if (config[Y_REGULARIZATION]) {
+        std::string reg = config[Y_REGULARIZATION].as<std::string>();
+
+        if (reg == "l1") {
+            m_l1 = true;
+            m_l1_lambda = config[Y_L1_LAMBDA].as<float>(0.0001f);
+        } else if (reg == "l2") {
+            m_l2 = true;
+            m_l2_lambda = config[Y_L2_LAMBDA].as<float>(0.0001f);
+        }
     }
 
     // initialize member data
     std::random_device rd;
     gen = std::mt19937(rd());
-    m_d_dropoutdist = std::bernoulli_distribution(1.0f-m_d_rate);
 
     layer_bytes = 0;
     wsize = 0;
@@ -69,7 +47,6 @@ void Layer::Initialize(nlohmann::json meta, size_t in, size_t nn) {
 
     AssignLayerSize();
     AssignFunctionPointers();
-    
 }
 
 /// @brief Initializes batchsize and testsize

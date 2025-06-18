@@ -131,70 +131,44 @@ void Layer::SetOutputBatchTestBytes(size_t bn, size_t tn) {
 }
 
 void Layer::AssignFunctionPointers() {
-    switch (m_d_dropout) {
-        case true:
-            switch (m_m_momentum) {
-                case true:
-                    switch (type) {
-                        case LayerType::input:
-                            executeForwardTrain = &Layer::InputForward<true>;
-                            executeForwardInfer = &Layer::InputForward<false>;
-                            break;
-                        default:
-                            executeForwardTrain = &Layer::BasicForward<true, true>;
-                            executeForwardInfer = &Layer::BasicForward<false, true>;
-                            break;
-                    }
-                    executeBackward = &Layer::BasicBackward<true>;
-                    updateLayer = &Layer::MomentumUpdate<false, false>;
-                    break;
-                case false:
-                    switch (type) {
-                        case LayerType::input:
-                            executeForwardTrain = &Layer::InputForward<true>;
-                            executeForwardInfer = &Layer::InputForward<false>;
-                            break;
-                        default:
-                            executeForwardTrain = &Layer::BasicForward<true, true>;
-                            executeForwardInfer = &Layer::BasicForward<false, true>;
-                            break;
-                    }
-                    executeBackward = &Layer::BasicBackward<true>;
-                    updateLayer = &Layer::BasicUpdate<false, false>;
-                    break;
-            }
-            break;
-        case false:
-            switch (m_m_momentum) {
-                case true:
-                    switch (type) {
-                        case LayerType::input:
-                            executeForwardTrain = &Layer::InputForward<true>;
-                            executeForwardInfer = &Layer::InputForward<false>;
-                            break;
-                        default:
-                            executeForwardTrain = &Layer::BasicForward<true, false>;
-                            executeForwardInfer = &Layer::BasicForward<false, false>;
-                            break;
-                    }
-                    executeBackward = &Layer::BasicBackward<false>;
-                    updateLayer = &Layer::MomentumUpdate<false, false>;
-                    break;
-                case false:
-                    switch (type) {
-                        case LayerType::input:
-                            executeForwardTrain = &Layer::InputForward<true>;
-                            executeForwardInfer = &Layer::InputForward<false>;
-                            break;
-                        default:
-                            executeForwardTrain = &Layer::BasicForward<true, false>;
-                            executeForwardInfer = &Layer::BasicForward<false, false>;
-                            break;
-                    }
-                    executeBackward = &Layer::BasicBackward<false>;
-                    updateLayer = &Layer::BasicUpdate<false, false>;
-                    break;
-            }
-            break;
+
+    // forwards
+    if (type == LayerType::input) {
+        executeForwardTrain = &Layer::InputForward<true>;
+        executeForwardInfer = &Layer::InputForward<false>;
+    } else {
+        if (m_d_dropout) {
+            executeForwardTrain = &Layer::BasicForward<true, true>;
+            executeForwardInfer = &Layer::BasicForward<false, true>;
+        } else {
+            executeForwardTrain = &Layer::BasicForward<true, false>;
+            executeForwardInfer = &Layer::BasicForward<false, false>;
+        }
+    }
+
+    // backwards
+    if (m_d_dropout) {
+        executeBackward = &Layer::BasicBackward<true>;
+    } else {
+        executeBackward = &Layer::BasicBackward<false>;
+    }
+
+    // updates
+    if (m_m_momentum) {
+        if (m_l1) {
+            updateLayer = &Layer::MomentumUpdate<true, false>;
+        } else if (m_l2) {
+            updateLayer = &Layer::MomentumUpdate<false, true>;
+        } else {
+            updateLayer = &Layer::MomentumUpdate<false, false>;
+        }
+    } else {
+        if (m_l1) {
+            updateLayer = &Layer::BasicUpdate<true, false>;
+        } else if (m_l2) {
+            updateLayer = &Layer::BasicUpdate<false, true>;
+        } else {
+            updateLayer = &Layer::BasicUpdate<false, false>;
+        }
     }
 }

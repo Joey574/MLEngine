@@ -3,10 +3,10 @@
 class DataLoader {
 public:
 
-    static Dataset LoadDataset(const std::string& dataset, const std::vector<std::string>& dsargs);
-    static Dataset LoadMNIST();
-    static Dataset LoadFMNIST();
-    static Dataset LoadMandlebrot(const std::vector<std::string>& args);
+    static Dataset LoadDataset(YAML::Node& config);
+    static Dataset LoadMNIST(YAML::Node& config);
+    static Dataset LoadFMNIST(YAML::Node& config);
+    static Dataset LoadMandlebrot(YAML::Node& config);
 
 private:
     // mnist / fmnist utils

@@ -12,11 +12,13 @@ public:
         none, he, normalize, xavier
     };
 
+    Layer() { memset(this, 0, sizeof(Layer)); }
+
     static std::string ParseName(LayerType type);
     static LayerType ParseType(const std::string& type);
 
     void Initialize(LayerType type, size_t in, size_t n, size_t nn, Activation actv, LossMetric lm, float dropout, bool momentum);
-    void Initialize(nlohmann::json meta, size_t in, size_t nn);
+    void Initialize(std::vector<Layer>& layers, size_t idx, YAML::Node config, size_t in, size_t nn);
     void InitializeSizes(size_t bn, size_t tn);
     void InitializePointers(char* data, char* batchdata, char* testdata, size_t bn, size_t tn);
     void InitializeSpecialPointers(float* nextweight);
@@ -44,8 +46,6 @@ public:
     );
 
     
-    nlohmann::json metadata();
-
     LayerType type;
 
     size_t nodes;
@@ -150,8 +150,10 @@ private:
     float* m_m_vb;
 
     // l1/l2 data
-    float m_l1_lambda = 0.0001f;
-    float m_l2_lambda = 0.0001f;
+    bool m_l1;
+    float m_l1_lambda;
+    bool m_l2;
+    float m_l2_lambda;
 
     // general rng
     std::mt19937 gen;

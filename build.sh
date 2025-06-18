@@ -49,7 +49,7 @@ fi
 if [ "$p_flag" = true ]; then
 
     printf "Compiling pch (%s)\n" $build
-    ccache g++ -x c++-header $FLAGS -Wno-pragmas ./Dependencies/pch.h -lyaml-cpp -o ./Dependencies/pch.h.gch
+    ccache g++ -x c++-header $FLAGS -Wno-pragmas ./Dependencies/pch.h -o ./Dependencies/pch.h.gch
 
     file_size=$(stat -c %s "./Dependencies/pch.h.gch")
 else

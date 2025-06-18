@@ -116,22 +116,6 @@ int main(int argc, char* argv[]) {
 
     model_options->add_option("-c,--config", config_file, "config file path to load");
 
-    model_options->add_option("-m,--model", state.modelname, "loads model from disk (if model doesn't exist new model will be made)");
-    model_options->add_option("-d,--dataset", dataset, "trains on the given dataset");
-    model_options->add_option("-g,--dsargs", datasetargs, "args for generating the dataset if applicable")->delimiter(',');
-    model_options->add_option("-i,--dimensions", dims, "sets model dimensions")->delimiter(',');
-    model_options->add_option("-v,--activations", actvs, "activation functions to use")->delimiter(',');
-    model_options->add_option("-l,--loss", loss, "trains model with given loss algorithm");
-    model_options->add_option("-r,--metric", metric, "evaluates model with given metric");
-    model_options->add_option("-w,--weight", weight, "what weight initialization tech to use");
-
-    training_options->add_option("-e,--epochs", epochs, "number of epochs to train for")->default_val(1);
-    training_options->add_option("-t,--tf", train_for, "length of time to train for");
-    training_options->add_option("-a,--lr", learning_rate, "learning rate to use for training")->default_val(0.1);
-    training_options->add_option("-b,--bs", batch_size, "batch size to use for training")->default_val(512);
-    training_options->add_option("-f,--vfreq", validation_freq, "how often to validate the model in epochs")->default_val(-1);
-    training_options->add_option("-s,--vsplit", validation_split, "percentage (0-1) of dataset to use as validation set if one isn't provided")->default_val(0.0);
-
     flags->add_flag("--meta", listmeta, "list model metadata");
     flags->add_flag("--history", listhistory, "list model history");
     flags->add_flag("--models", listmodels, "lists available models");
@@ -144,16 +128,13 @@ int main(int argc, char* argv[]) {
         displayModels(state);
     }
 
-    YAML::Node config = YAML::LoadFile(config_file);
-    std::stringstream ss;
-    ss << config;
-    std::string yaml_config = ss.str();
-    std::cout << "config: " << yaml_config << "\n";
-
+    // load configuration
+    state.config = YAML::LoadFile(config_file);
+    state.modelname = state.config[Y_MODELNAME].as<std::string>();
 
     if (listmeta || listhistory || deletemodel || resetmodel) {
         if (!state.ModelExists()) {
-            std::cerr << "Model not found: " << state.modelname << "\n";
+            std::cerr << "Model not found: " << state.config[Y_MODELNAME].as<std::string>() << "\n";
             exit(1);
         }
 
@@ -163,19 +144,20 @@ int main(int argc, char* argv[]) {
         if (resetmodel) { resetModel(state); }  
     }
 
+
     if (state.ModelExists()) {
         std::cout << "Loading existing model\n";
         state.Load();
     } else {
 
         // build new model based on passed args
-        if (dataset == "" || weight == "" || dims.empty() || actvs.empty() || loss == "" || metric == "" || state.modelname == "") {
+        if (!state.IsValid()) {
             std::cout << app.help();
             exit(1);
         }
         
         std::cout << "Creating new model\n";
-        state.Build(dims, actvs, metric, loss, weight, dataset, datasetargs);
+        state.Build(true);
     }
 
     // initialize save location and prep meta data
@@ -183,5 +165,5 @@ int main(int argc, char* argv[]) {
 
     // model built, start training
     std::cout << "Training model...\n";
-    state.Start(batch_size, epochs, learning_rate, validation_freq, validation_split);
+    state.Start();
 }

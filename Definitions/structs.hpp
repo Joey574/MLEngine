@@ -20,7 +20,7 @@ struct Dataset {
 
     Datasets type;
     std::string name;
-    std::vector<std::string> args;
+    YAML::Node args;
     bool hasTestData;
 
     Dataset(Datasets type, std::string name) : type(type), name(name) {}

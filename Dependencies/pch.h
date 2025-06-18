@@ -1,5 +1,6 @@
 #include "json.hpp"
 #include "CLI11.hpp"
+#include <yaml-cpp/yaml.h>
 
 #include <chrono>
 #include <csignal>

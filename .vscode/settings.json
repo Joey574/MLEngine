@@ -72,6 +72,7 @@
         "set": "cpp",
         "csignal": "cpp",
         "complex": "cpp",
-        "*.tpp": "cpp"
+        "*.tpp": "cpp",
+        "list": "cpp"
     }
 }

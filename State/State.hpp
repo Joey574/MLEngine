@@ -7,6 +7,9 @@ public:
 
     std::string modelname;
 
+    YAML::Node config;
+    nlohmann::json history;
+
     State() {}
     
     void Init();
@@ -14,24 +17,8 @@ public:
 
     void Load();
 
-    void Build(
-        const std::vector<std::string>& pdims,
-        const std::vector<std::string>& pactvs,
-        const std::string& pmetric,
-        const std::string& ploss,
-        const std::string& pweight,
-        const std::string& data,
-        const std::vector<std::string>& dsargs
-    );
-    void Build(const nlohmann::json& meta);
-
-    void Start(
-        size_t batchsize, 
-        size_t epochs, 
-        float learningrate, 
-        int validfreq, 
-        float validsplit
-    );
+    void Build(bool setweights);
+    void Start();
 
     std::string ModelMetadata(const std::string& m) const;
     std::string ModelHistory(const std::string& m) const;
@@ -47,6 +34,7 @@ public:
     static bool FileExists(const std::string& path); 
 
     bool ModelExists();
+    bool IsValid();
         
 private:
 
