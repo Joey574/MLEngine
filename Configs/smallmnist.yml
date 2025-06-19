@@ -1,0 +1,36 @@
+name: smallmnist
+dataset: mnist
+
+dataset_args:
+  rotation: 15
+  rot_per_sample: 5
+
+weight: normalize
+
+layers:
+  - type: input
+
+  - type: hidden
+    nodes: 32
+    activation: leakyrelu
+    regularization: l2
+    l2_lambda: 0.00001
+
+  - type: hidden
+    nodes: 32
+    activation: leakyrelu
+    regularization: l2
+    l2_lambda: 0.00001
+
+
+  - type: output
+    nodes: 10
+    activation: sigmoid
+    loss: onehot
+    metric: accuracy
+    momentum: 0.1
+
+epochs: 50
+valid_freq: 1
+learning_rate: 0.01
+batch_size: 512

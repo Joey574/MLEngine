@@ -36,6 +36,11 @@ void Layer::Initialize(std::vector<Layer>& layers, size_t idx, YAML::Node config
         }
     }
 
+    if (config[Y_MOMENTUM]) {
+        m_m_momentum = true;
+        m_m_coefficient = config[Y_MOMENTUM].as<float>();
+    }
+
     // initialize member data
     std::random_device rd;
     gen = std::mt19937(rd());

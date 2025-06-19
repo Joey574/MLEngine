@@ -31,11 +31,7 @@ public:
     int Save(int fd) const;
 
     static Layer::WeightInitialization ParseWeight(const std::string& w);
-    static std::vector<size_t> ParseCompact(const std::vector<std::string>& dims);
-    
     static std::string WeightName(Layer::WeightInitialization w);
-    std::vector<std::string> CompactDimensions() const;
-    std::vector<std::string> CompactActivations() const;
 
 private:
 
