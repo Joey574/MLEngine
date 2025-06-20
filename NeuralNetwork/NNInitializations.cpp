@@ -2,29 +2,34 @@
 
 void NeuralNetwork::Initialize(const std::string& path, const std::string& name, YAML::Node& config, bool setweights) {
     std::random_device rd;
+    this->config = config;
     m_weightinit = ParseWeight(config[Y_WEIGHT].as<std::string>());
     m_path = path;
     m_name = name;
     m_seed = rd();
 
     m_layers.reserve(config[Y_LAYERS].size());
-    m_network_size = 0;
+    m_network_bytes = 0;
 
-    // construct layers
+    // define layers
     YAML::Node layers = config[Y_LAYERS];
     for (size_t i = 0; i < layers.size(); i++) {
         size_t in = i == 0 ? 0 : layers[i-1][Y_NODES].as<size_t>();
         size_t nn = i == layers.size()-1 ? 0 : layers[i+1][Y_NODES].as<size_t>();
 
         Layer layer;
-        layer.Initialize(m_layers, i, layers[i], in, nn);
+        layer.Define(m_layers, i, layers[i], in, nn);
         m_layers.push_back(layer);
+    }
 
-        m_network_size += layer.params;
+    // initialize layers
+    for (size_t i = 0; i < layers.size(); i++) {
+        m_layers[i].Initialize();
+        m_network_bytes += m_layers[i].layer_bytes;
     }
 
     // initialize network memory
-    m_network = (float*)aligned_alloc(32, m_network_size*sizeof(float));
+    m_network = (float*)aligned_alloc(32, m_network_bytes*sizeof(float));
 
     if (setweights) {
         InitializeWeights(ParseWeight(config[Y_WEIGHT].as<std::string>()));
@@ -33,7 +38,7 @@ void NeuralNetwork::Initialize(const std::string& path, const std::string& name,
 
 void NeuralNetwork::InitializeWeights(Layer::WeightInitialization type) {
     size_t dataidx = 0;
-    memset(m_network, 0, m_network_size*sizeof(float));
+    memset(m_network, 0, m_network_bytes);
     
     for (size_t i = 0; i < m_layers.size(); i++) {
         m_layers[i].InitializeWeights(&m_network[dataidx], type, m_seed+i);
@@ -41,24 +46,21 @@ void NeuralNetwork::InitializeWeights(Layer::WeightInitialization type) {
     }
 }
 void NeuralNetwork::InitializeLayerData(size_t bn, size_t tn) {
-    size_t batch_bytes = 0;
-    size_t test_bytes = 0;
+    m_batch_data_bytes = 0;
+    m_test_data_bytes = 0;
 
     for (Layer& layer : m_layers) {
         layer.InitializeSizes(bn, tn);
 
-        batch_bytes += layer.layer_batch_bytes;
-        test_bytes += layer.layer_test_bytes;
+        m_batch_data_bytes += layer.layer_batch_bytes;
+        m_test_data_bytes += layer.layer_test_bytes;
     }
 
-    m_batch_data_size = batch_bytes/sizeof(float);
-    m_test_data_size = test_bytes/sizeof(float);
+    m_batch_data = (float*)aligned_alloc(32, m_batch_data_bytes);
+    m_test_data = (float*)aligned_alloc(32, m_test_data_bytes);
 
-    m_batch_data = (float*)aligned_alloc(32, batch_bytes);
-    m_test_data = (float*)aligned_alloc(32, test_bytes);
-
-    memset(m_batch_data, 0, batch_bytes);
-    memset(m_test_data, 0, test_bytes);
+    memset(m_batch_data, 0, m_batch_data_bytes);
+    memset(m_test_data, 0, m_test_data_bytes);
 }
 void NeuralNetwork::InitializeLayerPointers(size_t bn, size_t tn) {
     size_t dataidx = 0;

@@ -46,6 +46,7 @@ layers:
     activation: sigmoid
     loss: onehot
     metric: accuracy
+    momentum: 0.2
 
 # number of epochs to train for
 epochs: 1000

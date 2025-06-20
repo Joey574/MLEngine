@@ -11,6 +11,9 @@
 // ds args
 #define Y_ROTATION "rotation"
 #define Y_ROT_PER_SAMPLE "rot_per_sample"
+#define Y_SAMPLES "samples"
+#define Y_MANDLEDEPTH "mandledepth"
+#define Y_FOURIERSERIES "fourier_series"
 
 // training data
 #define Y_EPOCHS "epochs"
@@ -27,6 +30,7 @@
 #define Y_LOSS "loss"
 #define Y_METRIC "metric"
 #define Y_MOMENTUM "momentum"
+#define Y_SKIPCONN "skipconn"
 
 #define Y_L1_LAMBDA "l1_lambda"
 #define Y_L2_LAMBDA "l2_lambda"

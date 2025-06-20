@@ -6,7 +6,7 @@ struct Layer {
 public:
 
     enum class LayerType {
-        none, input, hidden, output, convolutional
+        none, input, hidden, output, conv2D, conv3D
     };
     enum class WeightInitialization {
         none, he, normalize, xavier
@@ -17,8 +17,8 @@ public:
     static std::string ParseName(LayerType type);
     static LayerType ParseType(const std::string& type);
 
-    void Initialize(LayerType type, size_t in, size_t n, size_t nn, Activation actv, LossMetric lm, float dropout, bool momentum);
-    void Initialize(std::vector<Layer>& layers, size_t idx, YAML::Node config, size_t in, size_t nn);
+    void Define(std::vector<Layer>& layers, size_t idx, YAML::Node config, size_t in, size_t nn);
+    void Initialize();
     void InitializeSizes(size_t bn, size_t tn);
     void InitializePointers(char* data, char* batchdata, char* testdata, size_t bn, size_t tn);
     void InitializeSpecialPointers(float* nextweight);
@@ -45,8 +45,16 @@ public:
         size_t n
     );
 
+    std::string VisualizeNet();
+    std::string VisualizeBatch();
+    std::string VisualizeTest();
+
+    // meta data
+    std::vector<Layer>* m_layers;
+    size_t m_layer_idx;
     
     LayerType type;
+    
 
     size_t nodes;
     size_t inodes;
@@ -61,6 +69,37 @@ public:
 
     size_t params;
 
+protected:
+
+    // bools for various options
+    bool m_d_dropout;
+    bool m_s_skipconn;
+    bool m_m_momentum;
+    bool m_l1;
+    bool m_l2;
+
+    // dropout data
+    float m_d_rate;
+    uint8_t* m_d_dpmask;
+    std::bernoulli_distribution m_d_dropoutdist;
+
+    // convolutional data
+    size_t m_c_filters;
+    size_t m_c_stride;
+    size_t m_c_size;
+
+    // skipconn data
+    size_t m_s_idx;
+
+    // momentum data
+    float m_m_coefficient = 0.9f;
+    float* m_m_vw;
+    float* m_m_vb;
+
+    // l1/l2 data
+    float m_l1_lambda;
+    float m_l2_lambda;
+
 private:
 
     void (Layer::*executeForwardTrain)(float* , size_t);
@@ -72,8 +111,8 @@ private:
     template <WeightInitialization> void SetWeights(float* data, uint64_t seed);
 
     // forward prop methods
-    template <bool training, bool dropout> void BasicForward (float* __restrict input, size_t n);
-    template <bool training> void ConvolutionalForward(float* __restrict input, size_t n);
+    template <bool training, bool dropout, bool skipconn> void BasicForward (float* __restrict input, size_t n);
+    template <bool training> void Convolutional2DForward(float* __restrict input, size_t n);
 
     // backprop methods
     template <bool dropout> void BasicBackward(const float* __restrict truth, const float* __restrict input, size_t n);
@@ -103,20 +142,20 @@ private:
 
     // private initialization utils
     void AssignLayerSize();
-    void AssignHiddenBatchPtrs(char* batchdata, size_t bn);
-    void AssignOutputBatchPtrs(char* batchdata, size_t bn);
+    void AssignBasicBatchPtrs(char* batchdata, size_t bn);
     void AssignFunctionPointers();
 
-    void SetHiddenBatchTestBytes(size_t bn, size_t tn);
-    void SetOutputBatchTestBytes(size_t bn, size_t tn);
+    void SetBasicBatchTestBytes(size_t bn, size_t tn);
     size_t RoundTo(size_t alignment, size_t n);
-
+    static std::string CleanSize(size_t bytes);
 
     // network data
+    char* m_net;
     float* m_w;
     float* m_b;
 
     // batch data
+    char* m_batch;
     float* m_z;
     float* m_a;
     float* m_nw;
@@ -125,6 +164,7 @@ private:
     float* m_db;
 
     // test data
+    char* m_test;
     float* m_tz;
     float* m_ta;
 
@@ -132,34 +172,8 @@ private:
     size_t wsize;
     size_t bsize;
 
-    // dropout data
-    bool m_d_dropout;
-    float m_d_rate;
-    uint8_t* m_d_dpmask;
-    std::bernoulli_distribution m_d_dropoutdist;
-
-    // convolutional data
-    size_t m_c_filters;
-    size_t m_c_stride;
-    size_t m_c_size;
-
-    // momentum data
-    bool m_m_momentum;
-    float m_m_coefficient = 0.9f;
-    float* m_m_vw;
-    float* m_m_vb;
-
-    // l1/l2 data
-    bool m_l1;
-    float m_l1_lambda;
-    bool m_l2;
-    float m_l2_lambda;
-
     // general rng
     std::mt19937 gen;
-
-    // layer metadata
-    nlohmann::json m_meta;
 };
 
 #include "LayerTemplates.impl.hpp"

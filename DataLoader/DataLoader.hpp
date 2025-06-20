@@ -1,4 +1,5 @@
 #pragma once
+#include "../NeuralNetwork/NeuralNetwork.hpp"
 
 class DataLoader {
 public:
@@ -7,6 +8,8 @@ public:
     static Dataset LoadMNIST(YAML::Node& config);
     static Dataset LoadFMNIST(YAML::Node& config);
     static Dataset LoadMandlebrot(YAML::Node& config);
+
+    static void VisualizeMandlebrot(NeuralNetwork& model, const std::string& path, size_t width, size_t height);
 
 private:
     // mnist / fmnist utils

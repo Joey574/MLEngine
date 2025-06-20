@@ -55,12 +55,57 @@ std::string NeuralNetwork::WeightName(Layer::WeightInitialization w) {
 }
 
 int NeuralNetwork::Save(int fd) const {
-    ssize_t n = write(fd, m_network, m_network_size*sizeof(float));
-    return n != m_network_size*sizeof(float);    
+    ssize_t n = write(fd, m_network, m_network_bytes);
+    return n != m_network_bytes;    
 }
-int NeuralNetwork::Load(int fd, Layer::WeightInitialization trueweight) {
-    m_weightinit = trueweight;
+int NeuralNetwork::Load(int fd) {
 
-    ssize_t n = read(fd, m_network, m_network_size*sizeof(float));
-    return n != m_network_size*sizeof(float);
+    ssize_t n = read(fd, m_network, m_network_bytes);
+    return n != m_network_bytes;
+}
+
+std::string NeuralNetwork::Visualize() {
+    std::string net_size = CleanSize(m_network_bytes);
+    std::string batch_size = CleanSize(m_batch_data_bytes);
+    std::string test_size = CleanSize(m_test_data_bytes);
+
+
+    size_t start = 0;
+    std::string res = "Network Size: " + net_size + "\n";
+    for (Layer& layer : m_layers) {
+        std::string layer_start = CleanSize(start);
+        std::string layer_end = CleanSize(start+layer.layer_bytes);
+        std::string layer_size = CleanSize(layer.layer_bytes);
+
+        res += "\tLayer "+std::to_string(layer.m_layer_idx)+" ("+Layer::ParseName(layer.type)+"): "+layer_start+" - "+layer_end+" ("+layer_size+")";
+        res += layer.VisualizeNet() + "\n\n";
+
+        start += layer.layer_bytes;
+    }
+
+    start = 0;
+    res += "\nBatch Size: " + batch_size + "\n";
+    for (Layer& layer: m_layers) {
+        std::string layer_start = CleanSize(start);
+        std::string layer_end = CleanSize(start+layer.layer_batch_bytes);
+        std::string layer_size = CleanSize(layer.layer_batch_bytes);
+
+        res += "\tLayer "+std::to_string(layer.m_layer_idx)+" ("+Layer::ParseName(layer.type)+"): "+layer_start+" - "+layer_end+" ("+layer_size+")\n";
+
+        start += layer.layer_batch_bytes;
+    }
+
+    start = 0;
+    res += "\nTest Size: " + test_size + "\n";
+    for (Layer& layer: m_layers) {
+        std::string layer_start = CleanSize(start);
+        std::string layer_end = CleanSize(start+layer.layer_test_bytes);
+        std::string layer_size = CleanSize(layer.layer_test_bytes);
+
+        res += "\tLayer "+std::to_string(layer.m_layer_idx)+" ("+Layer::ParseName(layer.type)+"): "+layer_start+" - "+layer_end+" ("+layer_size+")\n";
+
+        start += layer.layer_test_bytes;
+    }
+
+    return res;
 }

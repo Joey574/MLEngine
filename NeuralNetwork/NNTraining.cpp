@@ -1,12 +1,12 @@
 #include "NeuralNetwork.hpp"
 
-nlohmann::json NeuralNetwork::Fit(Dataset& dataset, YAML::Node& config, nlohmann::json& storedhistory) {
+nlohmann::json NeuralNetwork::Fit(Dataset& dataset, nlohmann::json& storedhistory) {
 	auto fitstart = std::chrono::high_resolution_clock::now();
 
 	std::cout << config << "\n\n";
 
 	size_t epochs = config[Y_EPOCHS].as<size_t>(0);
-	size_t batch_size = config[Y_EPOCHS].as<size_t>();
+	size_t batch_size = config[Y_BATCHSIZE].as<size_t>();
 	size_t valid_freq = config[Y_VALIDFREQ].as<size_t>();
 	float learning_rate = config[Y_LEARNINGRATE].as<float>();
 
@@ -37,7 +37,7 @@ nlohmann::json NeuralNetwork::Fit(Dataset& dataset, YAML::Node& config, nlohmann
 		}
 
 		std::string res = "";
-		if ((e+1) % valid_freq== 0) {
+		if ((e+1) % valid_freq == 0) {
 			res = TestNetwork(dataset, history, storedhistory, e);
 		}
 

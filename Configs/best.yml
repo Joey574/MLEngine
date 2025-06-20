@@ -2,8 +2,8 @@ name: bestmnist
 dataset: mnist
 
 dataset_args:
-  rotation: 20
-  rot_per_sample: 10
+  rotation: 15
+  rot_per_sample: 8
 
 weight: he
 
@@ -12,7 +12,7 @@ layers:
 
   - type: hidden
     nodes: 784
-    dropout: 0.3
+    dropout: 0.2
     activation: leakyrelu
 
   - type: output
@@ -20,8 +20,9 @@ layers:
     activation: sigmoid
     loss: onehot
     metric: accuracy
+    momentum: 0.1
 
 epochs: 1000
 valid_freq: 1
-learning_rate: 0.04
+learning_rate: 0.001
 batch_size: 512

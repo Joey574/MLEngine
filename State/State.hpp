@@ -20,10 +20,11 @@ public:
     void Build(bool setweights);
     void Start();
 
-    std::string ModelMetadata(const std::string& m) const;
-    std::string ModelHistory(const std::string& m) const;
-    std::string DeleteModel(const std::string& m) const;
-    std::string ResetModel(const std::string& m) const;
+    std::string ModelMetadata() const;
+    std::string ModelHistory() const;
+    std::string DeleteModel() const;
+    std::string ResetModel() const;
+    std::string VisualizeModel();
     
     std::string AvailableModels() const;
 

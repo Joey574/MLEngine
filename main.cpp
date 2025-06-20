@@ -6,11 +6,11 @@
 #include "State/State.hpp"
 
 void displayMeta(State& state) {
-    std::cout << state.ModelMetadata(state.modelname) << "\n";
+    std::cout << state.ModelMetadata() << "\n";
     exit(0);
 }
 void displayHistory(State& state) {
-    std::cout << state.ModelHistory(state.modelname) << "\n";
+    std::cout << state.ModelHistory() << "\n";
     exit(0);
 }
 void displayModels(State& state) {
@@ -18,11 +18,15 @@ void displayModels(State& state) {
     exit(0);
 }
 void deleteModel(State& state) {
-    std::cout << state.DeleteModel(state.modelname) << "\n";
+    std::cout << state.DeleteModel() << "\n";
     exit(0);
 }
 void resetModel(State& state) {
-    std::cout << state.ResetModel(state.modelname) << "\n";
+    std::cout << state.ResetModel() << "\n";
+    exit(0);
+}
+void visualizeModel(State& state) {
+    std::cout << state.VisualizeModel() << "\n";
     exit(0);
 }
 
@@ -83,29 +87,13 @@ int main(int argc, char* argv[]) {
 
     std::string config_file;
 
-    // dataset args
-    std::string dataset = "";
-    std::vector<std::string> datasetargs;
-    std::vector<std::string> dims;
-    std::vector<std::string> actvs;
-    std::string loss = "";
-    std::string metric = "";
-    std::string weight = "";
-
-    // training args
-    size_t epochs = 1;
-    std::string train_for = "";
-    float learning_rate = 0.1;
-    size_t batch_size = 500;
-    int validation_freq = -1;
-    float validation_split = 0.0f;
-
     // flags
     bool listhistory = false;
     bool listmeta = false;
     bool listmodels = false;
     bool deletemodel = false;
     bool resetmodel = false;
+    bool visualizemodel = false;
 
     CLI::App app{"MLEngine (0.0)\nTrain and save various neural networks"};
 
@@ -121,6 +109,7 @@ int main(int argc, char* argv[]) {
     flags->add_flag("--models", listmodels, "lists available models");
     flags->add_flag("--delete", deletemodel, "deletes a given model");
     flags->add_flag("--reset", resetmodel, "deletes model history and resets model weights");
+    flags->add_flag("--visualize", visualizemodel, "visualize memory layout of the network");
 
     CLI11_PARSE(app, argc, argv);
 
@@ -132,7 +121,7 @@ int main(int argc, char* argv[]) {
     state.config = YAML::LoadFile(config_file);
     state.modelname = state.config[Y_MODELNAME].as<std::string>();
 
-    if (listmeta || listhistory || deletemodel || resetmodel) {
+    if (listmeta || listhistory || deletemodel || resetmodel || visualizemodel) {
         if (!state.ModelExists()) {
             std::cerr << "Model not found: " << state.config[Y_MODELNAME].as<std::string>() << "\n";
             exit(1);
@@ -142,6 +131,7 @@ int main(int argc, char* argv[]) {
         if (listhistory) { displayHistory(state); }      
         if (deletemodel) { deleteModel(state); }
         if (resetmodel) { resetModel(state); }  
+        if (visualizemodel) { visualizeModel(state); }
     }
 
 
@@ -160,7 +150,7 @@ int main(int argc, char* argv[]) {
         state.Build(true);
     }
 
-    // initialize save location and prep meta data
+    // initialize save location and data
     state.SaveInit();
 
     // model built, start training

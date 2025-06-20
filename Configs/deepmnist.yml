@@ -1,4 +1,4 @@
-name: smallmnist
+name: deepmnist
 dataset: mnist
 
 dataset_args:
@@ -27,15 +27,6 @@ layers:
     nodes: 32
     activation: leakyrelu
 
-  - type: hidden
-    nodes: 32
-    activation: leakyrelu
-    skipconn: 0
-
-  - type: hidden
-    nodes: 32
-    activation: leakyrelu
-
   - type: output
     nodes: 10
     activation: sigmoid
@@ -44,5 +35,5 @@ layers:
 
 epochs: 1000
 valid_freq: 1
-learning_rate: 0.01
+learning_rate: 0.001
 batch_size: 512

@@ -160,10 +160,9 @@ Dataset DataLoader::LoadMandlebrot(YAML::Node& args) {
     mandlebrot.hasTestData = true;
     mandlebrot.args = args;
 
-    // TODO: Load from args
-    size_t n = -1;
-    size_t depth = -1;
-    size_t fourier = -1;
+    size_t n = args[Y_SAMPLES].as<size_t>(0);
+    size_t depth = args[Y_MANDLEDEPTH].as<size_t>(50);
+    size_t fourier = args[Y_FOURIERSERIES].as<size_t>(0);
 
     const size_t test_elements = 10000 > (n*0.1) ? 10000 : n*0.1;
 

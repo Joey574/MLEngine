@@ -83,3 +83,24 @@ std::string NeuralNetwork::CleanTime(std::chrono::nanoseconds time) {
 
     return ftime;
 }
+std::string NeuralNetwork::CleanSize(size_t bytes) {
+    long double dbytes = bytes;
+    const double gb = 1e9;
+    const double mb = 1e6;
+    const double kb = 1e3;
+
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2);
+
+    if (dbytes / gb > 1.00) {
+        oss << dbytes / gb << " gb";
+    } else if (dbytes / mb > 1.00) {
+        oss << dbytes / mb << " mb";
+    } else if (dbytes / kb > 1.00) {
+        oss << dbytes / kb << " kb";
+    } else {
+        oss << dbytes << " b";
+    }
+
+    return oss.str();
+}

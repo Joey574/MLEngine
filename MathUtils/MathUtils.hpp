@@ -15,7 +15,7 @@ public:
     template <bool> static void DotProdActv(Activation::Type type, const float* __restrict a, const float* __restrict b, float* __restrict c, float* __restrict d, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
     template <bool> static void DotProdTBDerv(Activation::Type type, const float* __restrict a, const float* __restrict b, float* __restrict c, const float* __restrict d, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
 
-    static float DotProdConv(const float* __restrict a, float* __restrict b, size_t a_r, size_t a_c, size_t bsize, size_t roffset, size_t coffset);
+    static void Convolution2D(float* __restrict w, float* __restrict x, float* __restrict z);
 
     // math utils
     inline static float Sum256(__m256 _x) {

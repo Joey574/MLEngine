@@ -1,0 +1,33 @@
+name: smallmandle
+dataset: mandlebrot
+
+dataset_args:
+  samples: 100000
+  mandledepth: 500
+  fourier_series: 32
+
+weight: he
+
+layers:
+  - type: input
+
+  - type: hidden
+    nodes: 512
+    dropout: 0.2
+    activation: leakyrelu
+
+  - type: hidden
+    nodes: 512
+    dropout: 0.2
+    activation: leakyrelu
+
+  - type: output
+    nodes: 1
+    activation: sigmoid
+    loss: mse
+    metric: mae
+
+epochs: 1000
+valid_freq: 1
+learning_rate: 0.001
+batch_size: 512

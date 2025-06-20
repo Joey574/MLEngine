@@ -13,7 +13,7 @@ void Layer::InputForward(float* __restrict input, size_t n) {
     assert((uintptr_t)m_ta%32==0);
 }
 
-template <bool training, bool dropout>
+template <bool training, bool dropout, bool skipconn>
 void Layer::BasicForward(float* __restrict input, size_t n) {
     assert((uintptr_t)input%32==0);
 
@@ -32,6 +32,16 @@ void Layer::BasicForward(float* __restrict input, size_t n) {
         a = m_ta;
     }
 
+    // copy into input buffer skipconn layers output
+    if constexpr (skipconn) {
+        size_t base_size = (*m_layers)[m_layer_idx-1].nodes*n;
+        size_t input_size = (*m_layers)[m_s_idx].nodes*n;
+
+        //std::cout << "base: " << base_size << " | input: " << input_size << " | n: " << n << "\n"; 
+
+        std::memcpy(&input[base_size], (*m_layers)[m_s_idx].Output<training>(), input_size*sizeof(float));
+    }
+
     // copy bias values into total
     for (size_t i = 0; i < n; i++) {
         std::memcpy(&z[i*bsize], b, bsize*sizeof(float));
@@ -45,7 +55,7 @@ void Layer::BasicForward(float* __restrict input, size_t n) {
 }
 
 template <bool training>
-void Layer::ConvolutionalForward(float* __restrict input, size_t n) {
+void Layer::Convolutional2DForward(float* __restrict input, size_t n) {
     const float* __restrict b = m_b;
 
     float* __restrict z;
@@ -66,34 +76,19 @@ void Layer::ConvolutionalForward(float* __restrict input, size_t n) {
     }
 
     // at this point we need to do our convolutional dot prod, the sliding, all that fun stuff
-    // TODO: the best way it probably going to be making a conv dot prod that can dot prod with a view of a larger matrix
+    // TODO: the best way it probably going to be making a conv dot prod that can dot prod within a view of a larger matrix
 
-    // TODO: actually start taking into account input dimensions, must be able to take in n dimensional data
+    // TODO: actually start taking into account input dimensions, must be able to take in n dimensional data (scratch it, make 2d and 3d versions for now)
     size_t width = -1;
     size_t height = -1;
 
-    const size_t halfsize = (m_c_size+1)/2;
-
     for (size_t f = 0; f < m_c_filters; f++) {
-        const float* __restrict w = &m_w[f*bsize*bsize];
+        const float* __restrict w = &m_w[f*m_c_size*m_c_size];
 
-        for (size_t in = 0; in < n; in++) {
-            const float* __restrict x = &input[inodes*in];
-        }
+        for (size_t i = 0; i < n; i++) {
+            float* __restrict sample = &input[inodes*i];
 
-        for (size_t r = halfsize; r < height-halfsize; r += m_c_stride) {
-            for (size_t c = halfsize; c < width-halfsize; c += m_c_stride) {
-                //z[0] += MathUtils::DotProdConv()
-            }
-        }
-
-    }
-
-    #pragma omp parallel for collapse(2) schedule(static)
-    for (size_t x = halfsize; x < width-halfsize; x += m_c_stride) {
-        for (size_t y = halfsize; y < height-halfsize; y += m_c_stride) {
-            // call special convolutional dotprod here, effectively returns 1 value
-            //z[0] += MathUtils::DotProdConv(input, w, );
+            //MathUtils::Convolution2D(w, sample, );
         }
     }
 }

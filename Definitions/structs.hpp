@@ -1,5 +1,8 @@
 #pragma once
-#include "enums.hpp"
+
+enum Datasets {
+    NONE, MNIST, FMNIST, MANDLEBROT
+};
 
 struct Dataset {
     size_t trainDataRows;

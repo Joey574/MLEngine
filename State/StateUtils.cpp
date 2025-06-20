@@ -1,22 +1,21 @@
 #include "State.hpp"
 
-std::string State::ModelMetadata(const std::string& m) const {
-    if (!FileExists(p_models+"/"+m+"/config.yml")) {
+std::string State::ModelMetadata() const {
+    if (!FileExists(p_models+"/"+modelname+"/config.yml")) {
         return "[]";
     }
 
     YAML::Emitter out;
-    YAML::Node con = YAML::LoadFile(p_models+"/"+m+"/config.yml");
-    out << con;
+    out << config;
 
     return std::string(out.c_str());
 }
-std::string State::ModelHistory(const std::string& m) const {
-    if (!FileExists(p_models+"/"+m+"/history.meta")) {
+std::string State::ModelHistory() const {
+    if (!FileExists(p_models+"/"+modelname+"/history.meta")) {
         return "[]";
     }
 
-    std::ifstream f(p_models+"/"+m+"/history.meta");
+    std::ifstream f(p_models+"/"+modelname+"/history.meta");
 
     nlohmann::json history = nlohmann::json::parse(f);
     return history.dump(4);
@@ -45,17 +44,26 @@ std::string State::AvailableModels() const {
 
     return models;
 }
-std::string State::DeleteModel(const std::string& m) const {
-    const std::filesystem::path dir = p_models+"/"+m;
+std::string State::DeleteModel() const {
+    const std::filesystem::path dir = p_models+"/"+modelname;
 
     std::filesystem::remove_all(dir);
-    return "\"" + m + "\" has been deleted";
+    return "\"" + modelname + "\" has been deleted";
 }
-std::string State::ResetModel(const std::string& m) const {
-    std::filesystem::remove((p_models+"/"+m+"/history.meta"));
-    std::filesystem::remove((p_models+"/"+m+"/"+m+".model"));
+std::string State::ResetModel() const {
+    std::filesystem::remove((p_models+"/"+modelname+"/history.meta"));
+    std::filesystem::remove((p_models+"/"+modelname+"/"+modelname+".model"));
 
-    return "\"" + m + "\" has been reset";
+    return "\"" + modelname + "\" has been reset";
+}
+std::string State::VisualizeModel() {
+    Build(false);
+    
+    // initialize model data and pointers
+    model->InitializeLayerData(config[Y_BATCHSIZE].as<size_t>(), dataset.testDataRows);
+    model->InitializeLayerPointers(config[Y_BATCHSIZE].as<size_t>(), dataset.testDataRows);
+
+    return model->Visualize();
 }
 
 bool State::ModelExists() {

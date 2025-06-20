@@ -45,7 +45,7 @@ void State::Load() {
     if (FileExists(file)) {
         std::cout << "Loading parameters from file (" << file.substr(file.find_last_of('/')+1) << ")\n";
         int fd = open(file.c_str(), O_RDONLY, 0644);
-        int err = model->Load(fd, NeuralNetwork::ParseWeight(config[Y_WEIGHT].as<std::string>()));
+        int err = model->Load(fd);
         close(fd);
 
         if (err) {
@@ -69,7 +69,7 @@ void State::Build(bool setweights) {
 }
 void State::Start() {
 
-    //parse existing history data, if any
+    // parse existing history data, if any
     std::ifstream ifile(p_models+"/"+modelname+"/history.meta");
     nlohmann::json storedhistory;
 
@@ -80,13 +80,10 @@ void State::Start() {
     ifile.close();
 
     // train model and get new history
-    nlohmann::json history = model->Fit(dataset, config, storedhistory);
-
-    // append new history
-    std::string dump = history.dump(4) + "\n";
+    nlohmann::json history = model->Fit(dataset, storedhistory);
 
     // store new history data in file
     std::ofstream ofileh(p_models+"/"+modelname+"/history.meta", std::ios::trunc);
-    ofileh.write(dump.c_str(), dump.size());
+    ofileh << history.dump(4) << "\n";
     ofileh.close();
 }
