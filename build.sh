@@ -2,14 +2,12 @@ start_time=$(date +%s.%N)
 
 p_flag=false
 d_flag=false
-t_flag=false
 
 # search for relevent flags
-while getopts ":pdt" opt; do
+while getopts ":pd" opt; do
     case $opt in
         p) p_flag=true ;;
         d) d_flag=true ;;
-        t) t_flag=true ;;
         \?) echo "Invalid option: -$OPTARG" >&2 ;;
     esac
 done

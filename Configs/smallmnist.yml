@@ -3,7 +3,7 @@ dataset: mnist
 
 dataset_args:
   rotation: 15
-  rot_per_sample: 5
+  rot_variants: 5
 
 weight: normalize
 

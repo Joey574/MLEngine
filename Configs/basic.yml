@@ -1,7 +1,6 @@
 name: basicmnist
 dataset: mnist
 
-weight: he
 
 layers:
   - type: input
@@ -19,6 +18,7 @@ layers:
     momentum: 0.9
 
 
+weight: he
 epochs: 100
 valid_freq: 1
 learning_rate: 0.005

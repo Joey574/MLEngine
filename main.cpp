@@ -5,6 +5,8 @@
 #include "NeuralNetwork/NeuralNetwork.hpp"
 #include "State/State.hpp"
 
+#include "Tensor/Tensor.hpp"
+
 void displayMeta(State& state) {
     std::cout << state.ModelMetadata() << "\n";
     exit(0);
