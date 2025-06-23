@@ -7,8 +7,8 @@ layers:
   - type: input
 
   - type: hidden
-    nodes: 784
-    dropout: 0.3
+    nodes: 256
+    momentum: 0.9
     activation: leakyrelu
 
   - type: output
@@ -16,8 +16,10 @@ layers:
     activation: sigmoid
     loss: onehot
     metric: accuracy
+    momentum: 0.9
 
-epochs: 1000
+
+epochs: 100
 valid_freq: 1
-learning_rate: 0.05
+learning_rate: 0.005
 batch_size: 512

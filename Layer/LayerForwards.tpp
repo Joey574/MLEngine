@@ -32,22 +32,23 @@ void Layer::BasicForward(float* __restrict input, size_t n) {
         a = m_ta;
     }
 
-    // copy into input buffer skipconn layers output
-    if constexpr (skipconn) {
-        size_t base_size = (*m_layers)[m_layer_idx-1].nodes*n;
-        size_t input_size = (*m_layers)[m_s_idx].nodes*n;
-
-        //std::cout << "base: " << base_size << " | input: " << input_size << " | n: " << n << "\n"; 
-
-        std::memcpy(&input[base_size], (*m_layers)[m_s_idx].Output<training>(), input_size*sizeof(float));
-    }
-
     // copy bias values into total
     for (size_t i = 0; i < n; i++) {
         std::memcpy(&z[i*bsize], b, bsize*sizeof(float));
     }
 
-    MathUtils::DotProdActv<false>(activation.type, input, w, z, a, n, inodes, inodes, nodes);
+    if constexpr (skipconn) {
+        float* __restrict input_skip = (*m_layers)[m_s_idx].Output<training>();
+        const float* __restrict weight_skip = &m_w[m_s_base*nodes];
+
+        MathUtils::DotProd<false>(input, w, z, n, m_s_base, m_s_base, nodes);
+        MathUtils::DotProd<false>(input_skip, weight_skip, z, n, m_s_skip, m_s_skip, nodes);
+        activation.activation(z, a, n*nodes);
+
+    } else {
+        MathUtils::DotProdActv<false>(activation.type, input, w, z, a, n, inodes, inodes, nodes);
+    }
+
 
     if constexpr (dropout && training) {
         ApplyDropoutFP(n);

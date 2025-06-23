@@ -47,18 +47,17 @@ void Layer::Define(std::vector<Layer>& layers, size_t idx, YAML::Node config, si
     if (config[Y_SKIPCONN]) {
         m_s_skipconn = true;
         m_s_idx = config[Y_SKIPCONN].as<size_t>();
-        inodes += (*m_layers)[m_s_idx].nodes;
+        
+        m_s_base = inodes;
+        m_s_skip = (*m_layers)[m_s_idx].nodes;
+
+        inodes = m_s_base + m_s_skip;
     }
 }
 void Layer::Initialize() {
     // initialize member data
     std::random_device rd;
     gen = std::mt19937(rd());
-
-    layer_bytes = 0;
-    wsize = 0;
-    bsize = 0;
-    params = 0;
 
     AssignLayerSize();
     AssignFunctionPointers();
@@ -71,12 +70,11 @@ void Layer::InitializeSizes(size_t bn, size_t tn) {
 
     switch (type) {
         case LayerType::input:
-            // space for activation
-            layer_batch_bytes += RoundTo(32, nodes*bn*sizeof(float));
+            m_a_bytes = RoundTo(32, nodes*bn*sizeof(float));
+            m_ta_bytes = RoundTo(32, nodes*tn*sizeof(float));
 
-            // space for test activation
-            layer_test_bytes += RoundTo(32, nodes*tn*sizeof(float));
-            
+            layer_batch_bytes = m_a_bytes;
+            layer_test_bytes = m_ta_bytes;            
             break;
         case LayerType::output: case LayerType::hidden: 
             SetBasicBatchTestBytes(bn, tn);
@@ -122,7 +120,7 @@ void Layer::InitializePointers(char* data, char* batchdata, char* testdata, size
     offset = 0;
     switch (type) {
         case LayerType::input:
-            m_a = m_z = (float*)batchdata;
+            m_a = (float*)batchdata;
             break;
         case LayerType::hidden: case LayerType::output:
             AssignBasicBatchPtrs(batchdata, bn);
@@ -133,17 +131,10 @@ void Layer::InitializePointers(char* data, char* batchdata, char* testdata, size
     offset = 0;
     switch (type) {
         case LayerType::input:
-            m_ta = m_tz = (float*)testdata;
+            m_ta = (float*)testdata;
             break;
         case LayerType::hidden: case LayerType::output:
             size_t output_size = nodes*tn*sizeof(float);
-
-            if (m_layer_idx != m_layers->size()-1 && (*m_layers)[m_layer_idx+1].m_s_skipconn) {
-                size_t skip_idx = (*m_layers)[m_layer_idx+1].m_s_idx;
-                size_t layer_out = (*m_layers)[skip_idx].nodes;
-
-                output_size += layer_out*tn*sizeof(float);
-            }
 
             m_tz = (float*)(testdata+offset);
             offset += RoundTo(32, output_size);

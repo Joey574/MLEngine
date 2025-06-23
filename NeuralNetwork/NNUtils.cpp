@@ -90,7 +90,8 @@ std::string NeuralNetwork::Visualize() {
         std::string layer_end = CleanSize(start+layer.layer_batch_bytes);
         std::string layer_size = CleanSize(layer.layer_batch_bytes);
 
-        res += "\tLayer "+std::to_string(layer.m_layer_idx)+" ("+Layer::ParseName(layer.type)+"): "+layer_start+" - "+layer_end+" ("+layer_size+")\n";
+        res += "\tLayer "+std::to_string(layer.m_layer_idx)+" ("+Layer::ParseName(layer.type)+"): "+layer_start+" - "+layer_end+" ("+layer_size+")";
+        res += layer.VisualizeBatch() + "\n\n";
 
         start += layer.layer_batch_bytes;
     }
@@ -102,7 +103,8 @@ std::string NeuralNetwork::Visualize() {
         std::string layer_end = CleanSize(start+layer.layer_test_bytes);
         std::string layer_size = CleanSize(layer.layer_test_bytes);
 
-        res += "\tLayer "+std::to_string(layer.m_layer_idx)+" ("+Layer::ParseName(layer.type)+"): "+layer_start+" - "+layer_end+" ("+layer_size+")\n";
+        res += "\tLayer "+std::to_string(layer.m_layer_idx)+" ("+Layer::ParseName(layer.type)+"): "+layer_start+" - "+layer_end+" ("+layer_size+")";
+        res += layer.VisualizeTest() + "\n\n";
 
         start += layer.layer_test_bytes;
     }

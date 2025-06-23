@@ -1,6 +1,11 @@
 #include "Layer.hpp"
 
 void Layer::AssignLayerSize() {
+    layer_bytes = 0;
+    wsize = 0;
+    bsize = 0;
+    params = 0;
+
     // set network size
     switch (type) {
         case LayerType::input:
@@ -11,8 +16,10 @@ void Layer::AssignLayerSize() {
             params = wsize+bsize;
 
             // size for weights and biases
-            layer_bytes += RoundTo(32, wsize*sizeof(float));
-            layer_bytes += RoundTo(32, bsize*sizeof(float));
+            m_w_bytes = RoundTo(32, wsize*sizeof(float));
+            m_b_bytes = RoundTo(32, bsize*sizeof(float));
+
+            layer_bytes += m_w_bytes + m_b_bytes;
             break;
         case LayerType::conv2D: case LayerType::conv3D:
             break;
@@ -21,80 +28,64 @@ void Layer::AssignLayerSize() {
 
 void Layer::AssignBasicBatchPtrs(char* batchdata, size_t bn) {
     size_t offset = 0;
-    size_t output_size = nodes*bn*sizeof(float);
-
-    if (m_layer_idx != (*m_layers).size()-1 && (*m_layers)[m_layer_idx+1].m_s_skipconn) {
-        size_t skip_idx = (*m_layers)[m_layer_idx+1].m_s_idx;
-        size_t layer_out = (*m_layers)[skip_idx].nodes;
-
-        output_size += layer_out*bn*sizeof(float);
-    }
 
     m_z = (float*)(batchdata+offset);
-    offset += RoundTo(32, output_size);
+    offset += m_z_bytes;
 
     m_a = (float*)(batchdata+offset);
-    offset += RoundTo(32, output_size);
+    offset += m_a_bytes;
 
     m_dt = (float*)(batchdata+offset);
-    offset += RoundTo(32, nodes*bn*sizeof(float));
+    offset += m_dt_bytes;
 
     m_dw = (float*)(batchdata+offset);
-    offset += RoundTo(32, wsize*sizeof(float));
+    offset += m_dw_bytes;
 
     m_db = (float*)(batchdata+offset);
-    offset += RoundTo(32, bsize*sizeof(float));
+    offset += m_db_bytes;
 
     if (m_d_dropout) {
         m_d_dpmask = (uint8_t*)(batchdata+offset);
-        offset += RoundTo(32, nodes*bn);
+        offset += m_d_dpmask_bytes;
     }
 
     if (m_m_momentum) {
         m_m_vw = (float*)(batchdata+offset);
-        offset += RoundTo(32, wsize*sizeof(float));
+        offset += m_m_vw_bytes;
 
         m_m_vb = (float*)(batchdata+offset);
-        offset += RoundTo(32, bsize*sizeof(float));
+        offset += m_m_vb_bytes;
     }
 }
 
 void Layer::SetBasicBatchTestBytes(size_t bn, size_t tn) {
-    size_t batch_output_bytes = 0;
-    size_t test_output_bytes = 0;
+ 
+    m_z_bytes = RoundTo(32, nodes*bn*sizeof(float));
+    m_a_bytes = RoundTo(32, nodes*bn*sizeof(float));
 
-    // space for total, activation, and dt
-    batch_output_bytes += nodes*bn*sizeof(float);
-    layer_batch_bytes += RoundTo(32, nodes*bn*sizeof(float));
+    m_tz_bytes = RoundTo(32, nodes*tn*sizeof(float));
+    m_ta_bytes = RoundTo(32, nodes*tn*sizeof(float));
 
-    // space for weights and biases
-    test_output_bytes += nodes*tn*sizeof(float);
-
-    // space for total and activation test stuff
-    layer_test_bytes += RoundTo(32, nodes*tn*sizeof(float));
-    layer_test_bytes += RoundTo(32, nodes*tn*sizeof(float));
+    m_dt_bytes = RoundTo(32, nodes*bn*sizeof(float));
+    m_dw_bytes = m_w_bytes;
+    m_db_bytes = m_b_bytes;
 
     if (m_d_dropout) {
         // bit packed
-        layer_batch_bytes += RoundTo(32, (nodes+(bn-1))*bn/8);
+        m_d_dpmask_bytes = RoundTo(32, (nodes+(bn-1))*bn/8);
     }
 
     if (m_m_momentum) {
-        layer_batch_bytes += RoundTo(32, wsize*sizeof(float));
-        layer_batch_bytes += RoundTo(32, bsize*sizeof(float));
+        m_m_vw_bytes = m_w_bytes;
+        m_m_vb_bytes = m_b_bytes;
     }
 
-    if (m_layer_idx != (*m_layers).size()-1 && (*m_layers)[m_layer_idx+1].m_s_skipconn) {
-        size_t skip_idx = (*m_layers)[m_layer_idx+1].m_s_idx;
-        size_t layer_out = (*m_layers)[skip_idx].nodes;
+    // size in all the things
+    layer_batch_bytes = m_z_bytes + m_a_bytes + m_dt_bytes + m_dw_bytes + m_db_bytes + 
+        m_d_dpmask_bytes + m_m_vw_bytes + m_m_vb_bytes;
 
-        // size relevant skipconn output into self output buffer
-        batch_output_bytes += layer_out*bn*sizeof(float);
-        test_output_bytes += layer_out*tn*sizeof(float);
-    }
-
-    layer_batch_bytes += 2*RoundTo(32, batch_output_bytes);
-    layer_test_bytes += 2*RoundTo(32, test_output_bytes);
+    // size for total and activation
+    layer_test_bytes = m_tz_bytes + m_ta_bytes;
 
     // ensure total bytes are all aligned to 32
     assert(layer_batch_bytes%32==0);
@@ -129,9 +120,17 @@ void Layer::AssignFunctionPointers() {
 
     // backwards
     if (m_d_dropout) {
-        executeBackward = &Layer::BasicBackward<true>;
+        if (m_s_skipconn) {
+            executeBackward = &Layer::BasicBackward<true, true>;
+        } else {
+            executeBackward = &Layer::BasicBackward<true, false>;
+        }
     } else {
-        executeBackward = &Layer::BasicBackward<false>;
+        if (m_s_skipconn) {
+            executeBackward = &Layer::BasicBackward<false, true>;
+        } else {
+            executeBackward = &Layer::BasicBackward<false, false>;
+        }
     }
 
     // updates

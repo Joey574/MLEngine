@@ -2,7 +2,7 @@
 #include "Layer.hpp"
 
 
-template <bool dropout> 
+template <bool dropout, bool skipconn> 
 void Layer::BasicBackward(const float* __restrict truth, const float* __restrict input, size_t n) {
     if (type == LayerType::input) { return; }
 
@@ -12,5 +12,9 @@ void Layer::BasicBackward(const float* __restrict truth, const float* __restrict
         ApplyDropoutBP(n);
     }
 
-    ComputeDN(input, n);
+    if constexpr (skipconn) {
+        ComputeSkipDN(input, n);
+    } else {
+        ComputeDN(input, n);
+    }
 }

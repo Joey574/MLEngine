@@ -48,6 +48,7 @@ public:
     std::string VisualizeNet();
     std::string VisualizeBatch();
     std::string VisualizeTest();
+    static std::string StartEndTotal(size_t offset, size_t start, size_t end);
 
     // meta data
     std::vector<Layer>* m_layers;
@@ -82,6 +83,7 @@ protected:
     float m_d_rate;
     uint8_t* m_d_dpmask;
     std::bernoulli_distribution m_d_dropoutdist;
+    size_t m_d_dpmask_bytes;
 
     // convolutional data
     size_t m_c_filters;
@@ -90,11 +92,15 @@ protected:
 
     // skipconn data
     size_t m_s_idx;
+    size_t m_s_base;
+    size_t m_s_skip;
 
     // momentum data
     float m_m_coefficient = 0.9f;
     float* m_m_vw;
     float* m_m_vb;
+    size_t m_m_vw_bytes;
+    size_t m_m_vb_bytes;
 
     // l1/l2 data
     float m_l1_lambda;
@@ -115,7 +121,7 @@ private:
     template <bool training> void Convolutional2DForward(float* __restrict input, size_t n);
 
     // backprop methods
-    template <bool dropout> void BasicBackward(const float* __restrict truth, const float* __restrict input, size_t n);
+    template <bool dropout, bool skipconn> void BasicBackward(const float* __restrict truth, const float* __restrict input, size_t n);
 
     // update methods
     template <bool l1, bool l2> void BasicUpdate(float lr, size_t n);
@@ -128,7 +134,9 @@ private:
 
     // backprop utils
     void ComputeDT(const float* __restrict truth, size_t n);
+    void ComputeDTOutput(const float* __restrict truth, size_t n);
     void ComputeDN(const float* __restrict input, size_t n);
+    void ComputeSkipDN(const float* __restrict input, size_t n);
     void ApplyDropoutBP(size_t n);
 
     // upadte utils
@@ -153,6 +161,8 @@ private:
     char* m_net;
     float* m_w;
     float* m_b;
+    size_t m_w_bytes;
+    size_t m_b_bytes;
 
     // batch data
     char* m_batch;
@@ -162,11 +172,18 @@ private:
     float* m_dt;
     float* m_dw;
     float* m_db;
+    size_t m_z_bytes;
+    size_t m_a_bytes;
+    size_t m_dt_bytes;
+    size_t m_dw_bytes;
+    size_t m_db_bytes;
 
     // test data
     char* m_test;
     float* m_tz;
     float* m_ta;
+    size_t m_tz_bytes;
+    size_t m_ta_bytes;
 
     // weight and bias size
     size_t wsize;

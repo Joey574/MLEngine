@@ -17,6 +17,47 @@ layers:
   - type: hidden
     nodes: 32
     activation: leakyrelu
+    skipconn: 0
+
+  - type: hidden
+    nodes: 32
+    activation: leakyrelu
+
+  - type: hidden
+    nodes: 32
+    activation: leakyrelu
+    skipconn: 0
+
+  - type: hidden
+    nodes: 32
+    activation: leakyrelu
+
+  - type: hidden
+    nodes: 32
+    activation: leakyrelu
+    skipconn: 0
+
+  - type: hidden
+    nodes: 32
+    activation: leakyrelu
+
+  - type: hidden
+    nodes: 32
+    activation: leakyrelu
+    skipconn: 0
+
+  - type: hidden
+    nodes: 32
+    activation: leakyrelu
+
+  - type: hidden
+    nodes: 32
+    activation: leakyrelu
+    skipconn: 0
+
+  - type: hidden
+    nodes: 32
+    activation: leakyrelu
 
   - type: hidden
     nodes: 32
@@ -33,7 +74,7 @@ layers:
     loss: onehot
     metric: accuracy
 
-epochs: 1000
+epochs: 100
 valid_freq: 1
-learning_rate: 0.001
+learning_rate: 0.005
 batch_size: 512
