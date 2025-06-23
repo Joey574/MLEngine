@@ -108,7 +108,7 @@ dropout: 0.2
 ```
 <br>
 
-**regularization** *(string):* defines what regularization technique to use during weight/bias update *(l1, l2)*
+**regularization** *(string):* defines what regularization technique to use during weight/bias update, if not defined, a basic update rule is used *(l1, l2)*
 ```
 regularization: l2
 ```
