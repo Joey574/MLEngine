@@ -297,5 +297,5 @@ layers:
 
 epochs: 1000
 valid_freq: 1
-learning_rate: 0.001
+learning_rate: 0.000001
 batch_size: 512

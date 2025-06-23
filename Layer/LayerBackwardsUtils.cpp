@@ -4,22 +4,12 @@
 void Layer::ComputeDT(const float* __restrict truth, size_t n) {
     const float* __restrict z = m_z;
     const float* __restrict a = m_a;
-
-    const float* __restrict nw = m_nw;
-    
     float* __restrict dt = m_dt;
 
-    // compute dt
-    switch (type) {
-        case LayerType::hidden:
-            MathUtils::DotProdTB<true>(truth, nw, dt, n, nenodes, nodes, nenodes);
-            (activation.derivative)(z, dt, n*nodes);
-            break;
-        case LayerType::output:
-            // compute loss
-            (*lossmetric.loss)(a, truth, dt, n, nodes);
-            break;
-    }
+    const float* __restrict nw = m_nw;
+
+    MathUtils::DotProdTB<true>(truth, nw, dt, n, nenodes, nodes, nenodes);
+    (activation.derivative)(z, dt, n*nodes);
 }
 void Layer::ComputeDTOutput(const float* __restrict truth, size_t n) {
     const float* __restrict a = m_a;
@@ -88,7 +78,6 @@ void Layer::ComputeSkipDN(const float* __restrict input, size_t n) {
             db[j] += dt[i*nodes+j];
         }
     }
-
 }
 
 void Layer::ApplyDropoutBP(size_t n) {

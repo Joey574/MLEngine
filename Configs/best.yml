@@ -3,7 +3,7 @@ dataset: mnist
 
 dataset_args:
   rotation: 15
-  rot_per_sample: 10
+  rot_variants: 10
 
 weight: he
 
@@ -23,5 +23,5 @@ layers:
 
 epochs: 1000
 valid_freq: 1
-learning_rate: 0.001
+learning_rate: 0.0005
 batch_size: 512

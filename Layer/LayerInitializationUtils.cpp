@@ -119,19 +119,50 @@ void Layer::AssignFunctionPointers() {
     }
 
     // backwards
-    if (m_d_dropout) {
-        if (m_s_skipconn) {
-            executeBackward = &Layer::BasicBackward<true, true>;
+    if (type == LayerType::input) {
+        if (m_d_dropout) {
+            if (m_s_skipconn) {
+                executeBackward = &Layer::BasicBackward<LayerType::input, true, true>;
+            } else {
+                executeBackward = &Layer::BasicBackward<LayerType::input, true, false>;
+            }
         } else {
-            executeBackward = &Layer::BasicBackward<true, false>;
+            if (m_s_skipconn) {
+                executeBackward = &Layer::BasicBackward<LayerType::input, false, true>;
+            } else {
+                executeBackward = &Layer::BasicBackward<LayerType::input, false, false>;
+            }
         }
-    } else {
-        if (m_s_skipconn) {
-            executeBackward = &Layer::BasicBackward<false, true>;
+    } else if (type == LayerType::hidden) {
+        if (m_d_dropout) {
+            if (m_s_skipconn) {
+                executeBackward = &Layer::BasicBackward<LayerType::hidden, true, true>;
+            } else {
+                executeBackward = &Layer::BasicBackward<LayerType::hidden, true, false>;
+            }
         } else {
-            executeBackward = &Layer::BasicBackward<false, false>;
+            if (m_s_skipconn) {
+                executeBackward = &Layer::BasicBackward<LayerType::hidden, false, true>;
+            } else {
+                executeBackward = &Layer::BasicBackward<LayerType::hidden, false, false>;
+            }
+        }
+    } else if (type == LayerType::output) {
+        if (m_d_dropout) {
+            if (m_s_skipconn) {
+                executeBackward = &Layer::BasicBackward<LayerType::output, true, true>;
+            } else {
+                executeBackward = &Layer::BasicBackward<LayerType::output, true, false>;
+            }
+        } else {
+            if (m_s_skipconn) {
+                executeBackward = &Layer::BasicBackward<LayerType::output, false, true>;
+            } else {
+                executeBackward = &Layer::BasicBackward<LayerType::output, false, false>;
+            }
         }
     }
+    
 
     // updates
     if (m_m_momentum) {

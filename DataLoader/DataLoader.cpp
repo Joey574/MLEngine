@@ -129,7 +129,7 @@ Dataset DataLoader::LoadMNIST(YAML::Node& args) {
     if (args[Y_ROTATION]) {
         float rot = args[Y_ROTATION].as<float>();
         float rot2 = rot*2;
-        size_t samples = args[Y_ROT_PER_SAMPLE].as<size_t>(0);
+        size_t samples = args[Y_ROT_VARIANTS].as<size_t>(0);
 
         // generate randomly rotated images of test dataset
         for (size_t i = 0; i < mnist.trainDataRows; i++) {

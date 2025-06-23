@@ -10,7 +10,7 @@
 
 // ds args
 #define Y_ROTATION "rotation"
-#define Y_ROT_PER_SAMPLE "rot_per_sample"
+#define Y_ROT_VARIANTS "rot_variants"
 #define Y_SAMPLES "samples"
 #define Y_MANDLEDEPTH "mandledepth"
 #define Y_FOURIERSERIES "fourier_series"

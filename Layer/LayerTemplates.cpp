@@ -18,10 +18,18 @@ template void Layer::BasicForward<false, false, false>(float*, size_t);
 template void Layer::Convolutional2DForward<true >(float*, size_t);
 template void Layer::Convolutional2DForward<false>(float*, size_t);
 
-template void Layer::BasicBackward<true , true >(const float*, const float*, size_t);
-template void Layer::BasicBackward<false, true >(const float*, const float*, size_t);
-template void Layer::BasicBackward<true , false>(const float*, const float*, size_t);
-template void Layer::BasicBackward<false, false>(const float*, const float*, size_t);
+template void Layer::BasicBackward<Layer::LayerType::input , true , true >(const float*, const float*, size_t);
+template void Layer::BasicBackward<Layer::LayerType::input , false, true >(const float*, const float*, size_t);
+template void Layer::BasicBackward<Layer::LayerType::input , true , false>(const float*, const float*, size_t);
+template void Layer::BasicBackward<Layer::LayerType::input , false, false>(const float*, const float*, size_t);
+template void Layer::BasicBackward<Layer::LayerType::hidden, true , true >(const float*, const float*, size_t);
+template void Layer::BasicBackward<Layer::LayerType::hidden, false, true >(const float*, const float*, size_t);
+template void Layer::BasicBackward<Layer::LayerType::hidden, true , false>(const float*, const float*, size_t);
+template void Layer::BasicBackward<Layer::LayerType::hidden, false, false>(const float*, const float*, size_t);
+template void Layer::BasicBackward<Layer::LayerType::output, true , true >(const float*, const float*, size_t);
+template void Layer::BasicBackward<Layer::LayerType::output, false, true >(const float*, const float*, size_t);
+template void Layer::BasicBackward<Layer::LayerType::output, true , false>(const float*, const float*, size_t);
+template void Layer::BasicBackward<Layer::LayerType::output, false, false>(const float*, const float*, size_t);
 
 template void Layer::BasicUpdate<true , true >(float, size_t);
 template void Layer::BasicUpdate<true , false>(float, size_t);

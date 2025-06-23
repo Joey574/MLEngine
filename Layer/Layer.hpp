@@ -96,7 +96,7 @@ protected:
     size_t m_s_skip;
 
     // momentum data
-    float m_m_coefficient = 0.9f;
+    float m_m_coefficient;
     float* m_m_vw;
     float* m_m_vb;
     size_t m_m_vw_bytes;
@@ -121,7 +121,7 @@ private:
     template <bool training> void Convolutional2DForward(float* __restrict input, size_t n);
 
     // backprop methods
-    template <bool dropout, bool skipconn> void BasicBackward(const float* __restrict truth, const float* __restrict input, size_t n);
+    template <LayerType ltype, bool dropout, bool skipconn> void BasicBackward(const float* __restrict truth, const float* __restrict input, size_t n);
 
     // update methods
     template <bool l1, bool l2> void BasicUpdate(float lr, size_t n);
