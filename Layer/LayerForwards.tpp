@@ -1,5 +1,4 @@
 #include "Layer.hpp"
-#include "../MathUtils/MathUtils.hpp"
 
 template <bool training> 
 void Layer::InputForward(float* __restrict input, size_t n) {
@@ -41,12 +40,13 @@ void Layer::BasicForward(float* __restrict input, size_t n) {
         float* __restrict input_skip = (*m_layers)[m_s_idx].Output<training>();
         const float* __restrict weight_skip = &m_w[m_s_base*nodes];
 
-        MathUtils::DotProd<false>(input, w, z, n, m_s_base, m_s_base, nodes);
-        MathUtils::DotProd<false>(input_skip, weight_skip, z, n, m_s_skip, m_s_skip, nodes);
+        MathUtils::DotProdAcum(input, w, z, n, m_s_base, m_s_base, nodes);
+        MathUtils::DotProdAcum(input_skip, weight_skip, z, n, m_s_skip, m_s_skip, nodes);
         activation.activation(z, a, n*nodes);
 
     } else {
-        MathUtils::DotProdActv<false>(activation.type, input, w, z, a, n, inodes, inodes, nodes);
+        MathUtils::DotProdAcum(input, w, z, n, inodes, inodes, nodes);
+        activation.activation(z, a, n*nodes);
     }
 
 

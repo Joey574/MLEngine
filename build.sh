@@ -1,3 +1,5 @@
+# TODO need to fix build to compile with different flags based on the arch. we're compiling for, right now, we just assume avx2
+
 start_time=$(date +%s.%N)
 
 p_flag=false

@@ -4,8 +4,7 @@
 
 #include "NeuralNetwork/NeuralNetwork.hpp"
 #include "State/State.hpp"
-
-#include "Tensor/Tensor.hpp"
+#include "MathUtils/MathUtils.hpp"
 
 void displayMeta(State& state) {
     std::cout << state.ModelMetadata() << "\n";
@@ -83,6 +82,9 @@ int main(int argc, char* argv[]) {
     KEEPRUNNING = true;
     signal(SIGINT, handleInterupt);
     signal(SIGSEGV, segv);
+
+    // initializes variations of the dot prod function for different cpus
+    MathUtils::Initialize();
 
     State state;
     state.Init();

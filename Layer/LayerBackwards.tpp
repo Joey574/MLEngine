@@ -1,7 +1,6 @@
 #pragma once
 #include "Layer.hpp"
 
-
 template <Layer::LayerType ltype, bool dropout, bool skipconn> 
 void Layer::BasicBackward(const float* __restrict truth, const float* __restrict input, size_t n) {
     if constexpr (ltype == LayerType::input) { return; }

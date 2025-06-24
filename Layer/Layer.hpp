@@ -1,6 +1,7 @@
 #pragma once
 #include "../Activation/Activation.hpp"
 #include "../LossMetric/LossMetric.hpp"
+#include "../MathUtils/MathUtils.hpp"
 
 struct Layer {
 public:

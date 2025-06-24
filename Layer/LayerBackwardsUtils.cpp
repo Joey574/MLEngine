@@ -1,5 +1,4 @@
 #include "Layer.hpp"
-#include "../MathUtils/MathUtils.hpp"
 
 void Layer::ComputeDT(const float* __restrict truth, size_t n) {
     const float* __restrict z = m_z;
@@ -8,7 +7,7 @@ void Layer::ComputeDT(const float* __restrict truth, size_t n) {
 
     const float* __restrict nw = m_nw;
 
-    MathUtils::DotProdTB<true>(truth, nw, dt, n, nenodes, nodes, nenodes);
+    MathUtils::DotProdTBClear(truth, nw, dt, n, nenodes, nodes, nenodes);
     (activation.derivative)(z, dt, n*nodes);
 }
 void Layer::ComputeDTOutput(const float* __restrict truth, size_t n) {
@@ -25,7 +24,7 @@ void Layer::ComputeDN(const float* __restrict input, size_t n) {
     float* __restrict db = m_db;
 
     // compute dw
-    MathUtils::DotProdTA<true>(input, dt, dw, n, inodes, n, nodes);
+    MathUtils::DotProdTAClear(input, dt, dw, n, inodes, n, nodes);
 
     // prep db by copying in first values, clearing existing ones
     std::memcpy(db, dt, nodes*sizeof(float));
@@ -56,8 +55,8 @@ void Layer::ComputeSkipDN(const float* __restrict input, size_t n) {
     const float* __restrict input_skip = (*m_layers)[m_s_idx].Output<true>();
 
     // compute dw
-    MathUtils::DotProdTA<true>(input, dt, dw, n, m_s_base, n, nodes);
-    MathUtils::DotProdTA<true>(input_skip, dt, dw_skip, n, m_s_skip, n, nodes);
+    MathUtils::DotProdTAClear(input, dt, dw, n, m_s_base, n, nodes);
+    MathUtils::DotProdTAClear(input_skip, dt, dw_skip, n, m_s_skip, n, nodes);
 
     // prep db by copying in first values, clearing existing ones
     std::memcpy(db, dt, nodes*sizeof(float));
