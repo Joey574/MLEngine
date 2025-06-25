@@ -74,7 +74,7 @@ bool State::ModelExists() {
     return false;
 }
 bool State::IsValid() {
-    if (config[Y_LAYERS] && config[Y_WEIGHT] && config[Y_MODELNAME] && config[Y_DATASET]) {
+    if (config[Y_LAYERS] && config[Y_WEIGHT] && config[Y_MODELNAME] && config[Y_DATASET] && modelname != "") {
         return true;
     }
 

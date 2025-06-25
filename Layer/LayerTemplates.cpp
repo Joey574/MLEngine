@@ -3,13 +3,13 @@
 #include "LayerBackwards.tpp"
 #include "LayerUpdate.tpp"
 
-template void Layer::InputForward<true>(float*, size_t);
+template void Layer::InputForward<true >(float*, size_t);
 template void Layer::InputForward<false>(float*, size_t);
 
-template void Layer::BasicForward<true , true , true>(float*, size_t);
-template void Layer::BasicForward<false, true , true>(float*, size_t);
-template void Layer::BasicForward<true , false, true>(float*, size_t);
-template void Layer::BasicForward<false, false, true>(float*, size_t);
+template void Layer::BasicForward<true , true , true >(float*, size_t);
+template void Layer::BasicForward<false, true , true >(float*, size_t);
+template void Layer::BasicForward<true , false, true >(float*, size_t);
+template void Layer::BasicForward<false, false, true >(float*, size_t);
 template void Layer::BasicForward<true , true , false>(float*, size_t);
 template void Layer::BasicForward<false, true , false>(float*, size_t);
 template void Layer::BasicForward<true , false, false>(float*, size_t);

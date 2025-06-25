@@ -18,8 +18,8 @@ cd CMakeBuild
 # configure
 cmake .. -DCMAKE_BUILD_TYPE="$build_type" -G Ninja
 
-# compile program
-echo "Compiling program ($build_type)"
+# build program
+echo "Building program ($build_type)"
 cmake --build . -j
 
 # output

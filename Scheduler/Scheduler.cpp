@@ -6,6 +6,7 @@ void Scheduler::Initialize(YAML::Node& config) {
         m_LRSchedule = (LRSchedule)lr_config[Y_SCH_SCHTYPE].as<int>();
     }
 
+    AssignPtr();
 }
 
 void Scheduler::AssignPtr() {

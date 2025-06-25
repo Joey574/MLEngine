@@ -8,7 +8,7 @@ void Layer::ComputeDT(const float* __restrict truth, size_t n) {
     const float* __restrict nw = m_nw;
 
     MathUtils::DotProdTBClear(truth, nw, dt, n, nenodes, nodes, nenodes);
-    (activation.derivative)(z, dt, n*nodes);
+    (activation.derivative)(z, dt, n, nodes);
 }
 void Layer::ComputeDTOutput(const float* __restrict truth, size_t n) {
     const float* __restrict a = m_a;

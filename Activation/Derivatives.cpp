@@ -1,12 +1,13 @@
 #include "Activation.hpp"
 #include "../MathUtils/MathUtils.hpp"
 
-void Activation::LinearDerivative(const float* __restrict x, float* __restrict y, size_t n) {
+void Activation::LinearDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
     return;
 }
-void Activation::SigmoidDerivative(const float* __restrict x, float* __restrict y, size_t n) {
+void Activation::SigmoidDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
     const __m256 _zero = _mm256_setzero_ps();
     const __m256 _one = _mm256_set1_ps(1.0f);
+    const size_t n = r*c;
 
     #pragma omp parallel for
     for (size_t i = 0; i <= ((ssize_t)n)-8; i+= 8) {
@@ -32,21 +33,26 @@ void Activation::SigmoidDerivative(const float* __restrict x, float* __restrict 
         y[i] *= s * (1.0f - s);
     }
 }
-void Activation::ReLUDerivative(const float* __restrict x, float* __restrict y, size_t n) {
+void Activation::ReLUDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
+    const size_t n = r*c;
+ 
     #pragma omp parallel for simd
     for (size_t i = 0; i < n; i++) {
         y[i] = x[i] > 0.0f ? y[i] : 0.0f;
     }
 }
-void Activation::LeakyReLUDerivative(const float* __restrict x, float* __restrict y, size_t n) {
+void Activation::LeakyReLUDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
+    const size_t n = r*c;
+
     #pragma omp parallel for simd
     for (size_t i = 0; i < n; i++) {
         y[i] = x[i] > 0.0f ? y[i] : (y[i] * 0.1f);
     }
 }
-void Activation::ELUDerivative(const float* __restrict x, float* __restrict y, size_t n) {
+void Activation::ELUDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
     const __m256 _zero = _mm256_setzero_ps();
     const __m256 _one = _mm256_set1_ps(1.0f);
+    const size_t n = r*c;
 
     #pragma omp parallel for
     for (ssize_t i = 0; i <= ((ssize_t)n)-8; i+= 8) {

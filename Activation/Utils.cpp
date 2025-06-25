@@ -1,27 +1,6 @@
 #include "Activation.hpp"
 
-std::vector<Activation::Type> Activation::ParseType(const std::vector<std::string>& actvs) {
-    std::vector<Type> activations;
-
-    for (size_t i = 0; i < actvs.size(); i++) {
-        // get number of layers
-        size_t n = 1;
-        std::string token = actvs[i];
-        if (actvs[i].find('X') != std::string::npos) {
-            n = std::stoi(actvs[i].substr(actvs[i].find('X')+1));
-            token = actvs[i].substr(0, actvs[i].find('X'));
-        }
-
-        // add n number of token
-        Type t = Activation::ParseSingleType(token);
-        for (size_t i = 0; i < n; i++) {
-            activations.push_back(t);
-        }
-    }
-
-    return activations;
-}
-Activation::Type Activation::ParseSingleType(const std::string& actv) {
+Activation::Type Activation::ParseType(const std::string& actv) {
     if (actv == "linear") {
         return Activation::Type::linear;
     } else if (actv == "sigmoid") {

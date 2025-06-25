@@ -10,12 +10,11 @@ public:
     Activation(Type a) { AssignPointers(a); }
 
     Type type;
-    void (*activation)(const float*, float*, size_t);
-    void (*derivative)(const float*, float*, size_t);
+    void (*activation)(const float*, float*, size_t, size_t);
+    void (*derivative)(const float*, float*, size_t, size_t);
 
     // parsing functions
-    static std::vector<Type> ParseType(const std::vector<std::string>& actvs);
-    static Type ParseSingleType(const std::string& actv);
+    static Type ParseType(const std::string& actv);
     static std::string ParseName(Type type);
 
     // single mm256 activations
@@ -25,56 +24,21 @@ public:
     static __m256 LeakyReLU(const __m256 _x);
     static __m256 ELU(const __m256 _x);
 
-    // single float activations
-    inline static float Linear(const float x) {
-        return x;
-    }
-    inline static float Sigmoid(const float x) {
-        return 1.0f / (1.0f + std::exp(-x));
-    }
-    inline static float ReLU(const float x) {
-        return x > 0.0f ? x : 0.0f;;
-    }
-    inline static float LeakyReLU(const float x) {
-        return x > 0.0f ? x : (x*0.1f);
-    }
-    inline static float ELU(const float x) {
-        return x > 0.0f ? x : (std::exp(x)-1.0f);
-    }
-
-    // single float derivatives
-    inline static float LinearDerivative(const float x, const float y) {
-        return y;
-    }
-    inline static float SigmoidDerivative(const float x, const float y) {
-        float s = 1.0f / (1.0f + std::exp(-x));
-        return y * s * (1.0f-s);
-    }
-    inline static float ReLUDerivative(const float x, const float y) {
-        return x > 0.0f ? y : 0.0f;
-    }
-    inline static float LeakyReLUDerivative(const float x, const float y) {
-        return x > 0.0f ? y : (y * 0.1f);
-    }
-    inline static float ELUDerivative(const float x, const float y) {
-        return x > 0.0f ? y : (y * std::exp(x));
-    }
-
     void AssignPointers(Type a);
 
 private:
     // activation functions
-    static void Linear(const float* __restrict x, float* __restrict y, size_t n);
-    static void Sigmoid(const float* __restrict x, float* __restrict y, size_t n);
-    static void ReLU(const float* __restrict x, float* __restrict y, size_t n);
-    static void LeakyReLU(const float* __restrict x, float* __restrict y, size_t n);
-    static void ELU(const float* __restrict x, float* __restrict y, size_t n);
-    static void Softmax(const float* __restrict x, float* __restrict y, size_t n);
+    static void Linear(const float* __restrict x, float* __restrict y, size_t r, size_t c);
+    static void Sigmoid(const float* __restrict x, float* __restrict y, size_t r, size_t c);
+    static void ReLU(const float* __restrict x, float* __restrict y, size_t r, size_t c);
+    static void LeakyReLU(const float* __restrict x, float* __restrict y, size_t r, size_t c);
+    static void ELU(const float* __restrict x, float* __restrict y, size_t r, size_t c);
+    static void Softmax(const float* __restrict x, float* __restrict y, size_t r, size_t c);
 
     // derivatives functions
-    static void LinearDerivative(const float* __restrict x, float* __restrict y, size_t n);
-    static void SigmoidDerivative(const float* __restrict x, float* __restrict y, size_t n);
-    static void ReLUDerivative(const float* __restrict x, float* __restrict y, size_t n);
-    static void LeakyReLUDerivative(const float* __restrict x, float* __restrict y, size_t n);
-    static void ELUDerivative(const float* __restrict x, float* __restrict y, size_t n);
+    static void LinearDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c);
+    static void SigmoidDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c);
+    static void ReLUDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c);
+    static void LeakyReLUDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c);
+    static void ELUDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c);
 };

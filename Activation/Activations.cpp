@@ -2,12 +2,13 @@
 #include "../MathUtils/MathUtils.hpp"
 
 
-void Activation::Linear(const float* __restrict x, float* __restrict y, size_t n) {
+void Activation::Linear(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
     return;
 }
-void Activation::Sigmoid(const float* __restrict x, float* __restrict y, size_t n) {
+void Activation::Sigmoid(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
     const __m256 _one = _mm256_set1_ps(1.0f);
     const __m256 _zero = _mm256_setzero_ps();
+    const size_t n = r*c;
 
     #pragma omp parallel for
     for (ssize_t i = 0; i <= ((ssize_t)n)-8; i+= 8) {
@@ -19,8 +20,9 @@ void Activation::Sigmoid(const float* __restrict x, float* __restrict y, size_t 
         y[i] = 1.0f / (1.0f + std::exp(-x[i]));
     }
 }
-void Activation::ReLU(const float* __restrict x, float* __restrict y, size_t n) {
+void Activation::ReLU(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
     const __m256 _zero = _mm256_setzero_ps();
+    const size_t n = r*c;
 
     #pragma omp parallel for
     for (ssize_t i = 0; i <= ((ssize_t)n)-8; i+= 8) {
@@ -32,9 +34,10 @@ void Activation::ReLU(const float* __restrict x, float* __restrict y, size_t n) 
         y[i] = x[i] > 0.0f ? x[i] : 0.0f;
     }
 }
-void Activation::LeakyReLU(const float* __restrict x, float* __restrict y, size_t n) {
+void Activation::LeakyReLU(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
     const __m256 _cof = _mm256_set1_ps(0.1f);
     const __m256 _zero = _mm256_setzero_ps();
+    const size_t n = r*c;
 
     #pragma omp parallel for
     for (ssize_t i = 0; i <= ((ssize_t)n)-8; i+= 8) {
@@ -46,9 +49,10 @@ void Activation::LeakyReLU(const float* __restrict x, float* __restrict y, size_
         y[i] = x[i] > 0.0f ? x[i] : (x[i] * 0.1f);
     }
 }
-void Activation::ELU(const float* __restrict x, float* __restrict y, size_t n) {
+void Activation::ELU(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
     const __m256 _one = _mm256_set1_ps(1.0f);
     const __m256 _zero = _mm256_setzero_ps();
+    const size_t n = r*c;
 
     #pragma omp parallel for
     for (ssize_t i = 0; i <= ((ssize_t)n)-8; i+= 8) {
@@ -60,7 +64,7 @@ void Activation::ELU(const float* __restrict x, float* __restrict y, size_t n) {
         y[i] = x[i] > 0.0f ? x[i] : (std::exp(x[i]) - 1.0f);
     }
 }
-void Activation::Softmax(const float* __restrict x, float* __restrict y, size_t n) {
+void Activation::Softmax(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
     
 }
 

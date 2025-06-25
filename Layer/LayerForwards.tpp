@@ -42,11 +42,11 @@ void Layer::BasicForward(float* __restrict input, size_t n) {
 
         MathUtils::DotProdAcum(input, w, z, n, m_s_base, m_s_base, nodes);
         MathUtils::DotProdAcum(input_skip, weight_skip, z, n, m_s_skip, m_s_skip, nodes);
-        activation.activation(z, a, n*nodes);
+        activation.activation(z, a, n, nodes);
 
     } else {
         MathUtils::DotProdAcum(input, w, z, n, inodes, inodes, nodes);
-        activation.activation(z, a, n*nodes);
+        activation.activation(z, a, n, nodes);
     }
 
 

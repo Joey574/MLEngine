@@ -11,7 +11,7 @@ void Layer::Define(std::vector<Layer>& layers, size_t idx, YAML::Node config, si
     nodes = config[Y_NODES].as<size_t>();
 
     if (config[Y_ACTIVATION]) {
-        activation.AssignPointers(Activation::ParseSingleType(config[Y_ACTIVATION].as<std::string>()));
+        activation.AssignPointers(Activation::ParseType(config[Y_ACTIVATION].as<std::string>()));
     }
 
     if (config[Y_LOSS] && config[Y_METRIC]) {

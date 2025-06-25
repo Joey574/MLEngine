@@ -102,19 +102,14 @@ int main(int argc, char* argv[]) {
 
     CLI::App app{"MLEngine (0.0)\nTrain and save various neural networks"};
 
-    app.get_formatter()->right_column_width(200);
-    auto model_options = app.add_option_group("Model Options", "How the model is built");
-    auto training_options = app.add_option_group("Training Options", "How the model will be trained");
-    auto flags = app.add_option_group("Flags", "displays information, does not train model");
+    app.add_option("-c,--config", config_file, "path to model's YAML config file");
 
-    model_options->add_option("-c,--config", config_file, "config file path to load");
-
-    flags->add_flag("--meta", listmeta, "list model metadata");
-    flags->add_flag("--history", listhistory, "list model history");
-    flags->add_flag("--models", listmodels, "lists available models");
-    flags->add_flag("--delete", deletemodel, "deletes a given model");
-    flags->add_flag("--reset", resetmodel, "deletes model history and resets model weights");
-    flags->add_flag("--visualize", visualizemodel, "visualize memory layout of the network");
+    app.add_flag("--meta", listmeta, "list model metadata");
+    app.add_flag("--history", listhistory, "list model history");
+    app.add_flag("--models", listmodels, "lists available models");
+    app.add_flag("--delete", deletemodel, "deletes a given model");
+    app.add_flag("--reset", resetmodel, "deletes model history and resets model weights");
+    app.add_flag("--visualize", visualizemodel, "visualize memory layout of the network");
 
     CLI11_PARSE(app, argc, argv);
 
