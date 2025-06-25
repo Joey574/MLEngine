@@ -127,6 +127,7 @@ int main(int argc, char* argv[]) {
             exit(1);
         }
 
+        
         if (listmeta) { displayMeta(state); }
         if (listhistory) { displayHistory(state); }      
         if (deletemodel) { deleteModel(state); }
