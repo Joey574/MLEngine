@@ -1,6 +1,7 @@
 #include "MathUtils.hpp"
 
-template <bool clear> void MathUtils::DotProd_AVX2(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c) {
+template <bool clear> __attribute__((target("avx2,fma")))
+void MathUtils::DotProd_AVX2(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c) {
 	assert(__builtin_cpu_supports("avx2"));
 
 	#pragma omp parallel for schedule(static)
@@ -49,7 +50,8 @@ template <bool clear> void MathUtils::DotProd_AVX2(const float* __restrict a, co
     }
 }
 
-template <bool clear> void MathUtils::DotProdTA_AVX2(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c) {
+template <bool clear> __attribute__((target("avx2,fma"))) 
+void MathUtils::DotProdTA_AVX2(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c) {
 	assert(__builtin_cpu_supports("avx2"));
 
 	#pragma omp parallel for schedule(static)
@@ -98,7 +100,8 @@ template <bool clear> void MathUtils::DotProdTA_AVX2(const float* __restrict a, 
     }
 }
 
-template <bool clear> void MathUtils::DotProdTB_AVX2(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c) {
+template <bool clear> __attribute__((target("avx2,fma"))) 
+void MathUtils::DotProdTB_AVX2(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c) {
 	assert(__builtin_cpu_supports("avx2"));
 
 	#pragma omp parallel for schedule(static)

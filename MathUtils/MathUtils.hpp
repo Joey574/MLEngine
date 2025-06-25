@@ -2,7 +2,7 @@
 
 struct MathUtils {
 public:
-    using DotProdFunc = void (*)(const float* __restrict, const float* __restrict, float* __restrict, size_t, size_t, size_t, size_t);
+    using DotProdFunc = void (*)(const float*, const float*, float*, size_t, size_t, size_t, size_t);
 
     static DotProdFunc DotProdAcum;
     static DotProdFunc DotProdClear;
@@ -13,7 +13,9 @@ public:
 
 
     static void Initialize() {
-        if (__builtin_cpu_supports("avx512dq")) {
+        if (
+            __builtin_cpu_supports("avx512f")
+        ) {
             DotProdAcum = &DotProd_AVX512<false>;
             DotProdTAAcum = &DotProdTA_AVX512<false>;
             DotProdTBAcum = &DotProdTB_AVX512<false>;
@@ -21,7 +23,10 @@ public:
             DotProdClear = &DotProd_AVX512<true>;
             DotProdTAClear = &DotProdTA_AVX512<true>;
             DotProdTBClear = &DotProdTB_AVX512<true>;
-        } else if (__builtin_cpu_supports("avx2")) {
+        } else if (
+            __builtin_cpu_supports("avx2") &&
+            __builtin_cpu_supports("fma")
+        ) {
             DotProdAcum = &DotProd_AVX2<false>;
             DotProdTAAcum = &DotProdTA_AVX2<false>;
             DotProdTBAcum = &DotProdTB_AVX2<false>;
@@ -48,16 +53,16 @@ public:
 
 private:
 
-    template <bool clear> static void DotProd_Scalar(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
-    template <bool clear> static void DotProd_AVX2(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
-    template <bool clear> static void DotProd_AVX512(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
+    template <bool clear> static void DotProd_Scalar(const float* a, const float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
+    template <bool clear> static void DotProd_AVX2(const float* a, const float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
+    template <bool clear> static void DotProd_AVX512(const float* a, const float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
 
-    template <bool clear> static void DotProdTA_Scalar(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
-    template <bool clear> static void DotProdTA_AVX2(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
-    template <bool clear> static void DotProdTA_AVX512(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
+    template <bool clear> static void DotProdTA_Scalar(const float* a, const float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
+    template <bool clear> static void DotProdTA_AVX2(const float* a, const float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
+    template <bool clear> static void DotProdTA_AVX512(const float* a, const float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
 
-    template <bool clear> static void DotProdTB_Scalar(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
-    template <bool clear> static void DotProdTB_AVX2(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
-    template <bool clear> static void DotProdTB_AVX512(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
+    template <bool clear> static void DotProdTB_Scalar(const float* a, const float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
+    template <bool clear> static void DotProdTB_AVX2(const float* a, const float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
+    template <bool clear> static void DotProdTB_AVX512(const float* a, const float* b, float* c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
 
 };

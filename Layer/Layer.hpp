@@ -31,13 +31,13 @@ public:
     float* Weights() { return m_w; }
 
     template <bool training> void forward(
-        float* __restrict x,
+        float* x,
         size_t n
     );
 
     void backward(
-        const float* __restrict truth,
-        const float* __restrict input,
+        const float* truth,
+        const float* input,
         size_t n
     );
     
@@ -116,11 +116,11 @@ private:
 
 
     // forward prop methods
-    template <bool training, bool dropout, bool skipconn> void BasicForward (float* __restrict input, size_t n);
-    template <bool training> void Convolutional2DForward(float* __restrict input, size_t n);
+    template <bool training, bool dropout, bool skipconn> void BasicForward (float* input, size_t n);
+    template <bool training> void Convolutional2DForward(float* input, size_t n);
 
     // backprop methods
-    template <LayerType ltype, bool dropout, bool skipconn> void BasicBackward(const float* __restrict truth, const float* __restrict input, size_t n);
+    template <LayerType ltype, bool dropout, bool skipconn> void BasicBackward(const float* truth, const float* input, size_t n);
 
     // update methods
     template <bool l1, bool l2> void BasicUpdate(float lr, size_t n);
@@ -128,20 +128,20 @@ private:
 
 
     // forward prop utils
-    template<bool training> void InputForward(float* __restrict input, size_t n);
+    template<bool training> void InputForward(float* input, size_t n);
     void ApplyDropoutFP(size_t n);
 
     // backprop utils
-    void ComputeDT(const float* __restrict truth, size_t n);
-    void ComputeDTOutput(const float* __restrict truth, size_t n);
-    void ComputeDN(const float* __restrict input, size_t n);
-    void ComputeSkipDN(const float* __restrict input, size_t n);
+    void ComputeDT(const float* truth, size_t n);
+    void ComputeDTOutput(const float* truth, size_t n);
+    void ComputeDN(const float* input, size_t n);
+    void ComputeSkipDN(const float* input, size_t n);
     void ApplyDropoutBP(size_t n);
 
     // upadte utils
-    void ApplyBasicUpdate(const float* __restrict d, float* __restrict p, const __m256 _factor);
-    void ApplyL1Update(const float* __restrict d, float* __restrict p, const __m256 _factor, const __m256 _coef);
-    void ApplyL2Update(const float* __restrict d, float* __restrict p, const __m256 _factor, const __m256 _coef);
+    void ApplyBasicUpdate(const float* d, float* p, const __m256 _factor);
+    void ApplyL1Update(const float* d, float* p, const __m256 _factor, const __m256 _coef);
+    void ApplyL2Update(const float* d, float* p, const __m256 _factor, const __m256 _coef);
     float ApplyBasicUpdate(const float d, const float p, const float factor);
     float ApplyL1Update(const float d, const float p, const float factor, const float coef);
     float ApplyL2Update(const float d, const float p, const float factor, const float coef);
