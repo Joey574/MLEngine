@@ -14,7 +14,10 @@ public:
 private:
     // mnist / fmnist utils
     static int ReadBigInt(std::ifstream* f);
+
     static std::vector<float> RotateImage(const float* image, size_t width, size_t height, float deg);
+    static std::vector<float> ScaleImage(const float* image, size_t width, size_t height, float scale);
+
 
     // mandlebrot utils
     static float InMandlebrot(double x, double y, size_t it);

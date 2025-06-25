@@ -126,13 +126,15 @@ Dataset DataLoader::LoadMNIST(YAML::Node& args) {
     testd.close();
     testl.close();
 
+    size_t base_samples = mnist.trainDataRows;
+
     if (args[Y_ROTATION]) {
         float rot = args[Y_ROTATION].as<float>();
         float rot2 = rot*2;
         size_t samples = args[Y_ROT_VARIANTS].as<size_t>(0);
 
         // generate randomly rotated images of test dataset
-        for (size_t i = 0; i < mnist.trainDataRows; i++) {
+        for (size_t i = 0; i < base_samples; i++) {
             for (size_t j = 0; j < samples; j++) {
                 float rfloat = (float)rand() / (float)RAND_MAX;
                 float deg = (rfloat * rot2)-rot;
@@ -141,11 +143,30 @@ Dataset DataLoader::LoadMNIST(YAML::Node& args) {
 
                 mnist.trainData.insert(mnist.trainData.end(), image.begin(), image.end());
                 mnist.trainLabels.push_back(mnist.trainLabels[i]);
+                mnist.trainDataRows++;
+                mnist.trainLabelRows++;
             }
         }
+    }
 
-        mnist.trainDataRows *= samples;
-        mnist.trainLabelRows *= samples;
+    if (args[Y_SCALE]) {
+        float scale = args[Y_SCALE].as<float>();
+        float scale2 = scale*2;
+        size_t samples = args[Y_SCALE_VARIANTS].as<size_t>(0);
+
+        for (size_t i = 0; i < base_samples; i++) {
+            for (size_t j = 0; j < samples; j++) {
+                float rscale = (float)rand() / (float)RAND_MAX;
+                float sc = 1.0f+(rscale*scale2)-scale;
+
+                std::vector<float> image = ScaleImage(&mnist.trainData[i*mnist.trainDataCols], width, height, sc);
+
+                mnist.trainData.insert(mnist.trainData.end(), image.begin(), image.end());
+                mnist.trainLabels.push_back(mnist.trainLabels[i]);
+                mnist.trainDataRows++;
+                mnist.trainLabelRows++;
+            }
+        }
     }
 
     return mnist;
@@ -292,6 +313,42 @@ std::vector<float> DataLoader::RotateImage(const float* image, size_t width, siz
     }
 
     return rimage;
+}
+std::vector<float> DataLoader::ScaleImage(const float* image, size_t width, size_t height, float scale) {
+    std::vector<float> scaled(width * height, 0.0f);
+
+    const float nw = width*scale;
+    const float nh = height*scale;
+
+    const float dx = (width-nw)/2.0f;
+    const float dy = (height-nh)/2.0f;
+
+    for (size_t y = 0; y < height; y++) {
+        for (size_t x = 0; x < width; x++) {
+            float srcx = std::min(std::max((x-dx)/scale, 0.0f), width - 1.001f);
+            float srcy = std::min(std::max((y-dy)/scale, 0.0f), height - 1.001f);
+
+            // bilinear interpolation
+            int x0 = std::floor(srcx);
+            int y0 = std::floor(srcy);
+            int x1 = x0+1;
+            int y1 = y0+1;
+
+            float wx = srcx-x0;
+            float wy = srcy-y0;
+
+            float v00 = (x0 >= 0 && x0 < width && y0 >= 0 && y0 < height) ? image[y0*width+x0] : 0.0f;
+            float v01 = (x1 >= 0 && x1 < width && y0 >= 0 && y0 < height) ? image[y0*width+x1] : 0.0f;
+            float v10 = (x0 >= 0 && x0 < width && y1 >= 0 && y1 < height) ? image[y1*width+x0] : 0.0f;
+            float v11 = (x1 >= 0 && x1 < width && y1 >= 0 && y1 < height) ? image[y1*width+x1] : 0.0f;
+
+            float value = (1-wy)*((1-wx)*v00+wx*v01) + wy*((1-wx)*v10+wx*v11);
+
+            scaled[y*width+x] = value;
+        }
+    }
+
+    return scaled;
 }
 
 float DataLoader::InMandlebrot(double x, double y, size_t it) {

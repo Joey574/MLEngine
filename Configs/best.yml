@@ -4,6 +4,8 @@ dataset: mnist
 dataset_args:
   rotation: 15
   rot_variants: 10
+  scale: 0.2
+  scale_variants: 5
 
 weight: he
 

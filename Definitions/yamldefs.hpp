@@ -11,6 +11,8 @@
 // ds args
 #define Y_ROTATION "rotation"
 #define Y_ROT_VARIANTS "rot_variants"
+#define Y_SCALE "scale"
+#define Y_SCALE_VARIANTS "scale_variants"
 #define Y_SAMPLES "samples"
 #define Y_MANDLEDEPTH "mandledepth"
 #define Y_FOURIERSERIES "fourier_series"
@@ -31,6 +33,9 @@
 #define Y_METRIC "metric"
 #define Y_MOMENTUM "momentum"
 #define Y_SKIPCONN "skipconn"
-
 #define Y_L1_LAMBDA "l1_lambda"
 #define Y_L2_LAMBDA "l2_lambda"
+
+// scheduler data
+#define Y_SCH_LRSCHEDULE "lr_scheduler"
+#define Y_SCH_SCHTYPE "type"

@@ -4,7 +4,7 @@ template <typename T>
 struct Tensor {
 
 public:
-    Tensor() : data(nullptr), m_data_size(0) {}
+    Tensor() { memset(this, 0, sizeof(Tensor)); }
 
     template<typename... Dims>
     Tensor(Dims... dims) : m_dimensions{(size_t)dims...}, m_data_size(((size_t)dims * ... * 1)), m_dimensionality(sizeof...(dims)) {
@@ -29,7 +29,7 @@ public:
 
         size_t idx = computeFlatIndex({(size_t)idxs...});
         return data[idx];
-    }    
+    }
     
 private:
     T* data;
@@ -42,5 +42,4 @@ private:
 };
 
 #include "tensor.impl.hpp"
-
 #undef TNSR

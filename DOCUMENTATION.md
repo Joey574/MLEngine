@@ -1,3 +1,5 @@
+**This document provides explanations and examples of all YAML arguments that can be passed to the program**
+
 ## Metadata
 **modelname** *(string):* defines modelname which is used for saving and loading over multiple runs
 ```
@@ -33,6 +35,17 @@ rotation: 10
 rot_variants: 5
 ```
 <br>
+
+**scale** *(float):* maximum scale (+-) centered around 1 to use when randomly generating scaled samples
+```
+scale: 0.2
+```
+<br>
+
+**scale_variants** *(int):* number of scaled samples to generate per original sample in the dataset
+```
+scale_variants: 3
+```
 
 #### Mandlebrot Args
 All following args must be passed in **dataset_args**
@@ -174,10 +187,14 @@ dataset: mnist
 # dataset args, we're defining additional ways we want to load mnist
 # in this case we're defining what techniques we want to use to expand the training data
 # rotation is the max value to rotate images by in either direction, which is randomly taken
-# rot per sample times and appended to the dataset
+# rot variant times and appended to the dataset
+# scale is like roatation, as it defines the range +- of 1.0 scale to modify images with
+# scale variants doing the same thing as rot variants
 dataset_args:
   rotation: 15
   rot_variants: 5
+  scale: 0.2
+  scale_variants: 2
 
 # weight initilization technique to use
 weight: he

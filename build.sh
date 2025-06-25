@@ -1,77 +1,31 @@
-# TODO need to fix build to compile with different flags based on the arch. we're compiling for, right now, we just assume avx2
-
 start_time=$(date +%s.%N)
 
-p_flag=false
-d_flag=false
+# values
+build_type="Release"
 
-# search for relevent flags
-while getopts ":pd" opt; do
-    case $opt in
-        p) p_flag=true ;;
-        d) d_flag=true ;;
-        \?) echo "Invalid option: -$OPTARG" >&2 ;;
-    esac
+# Parse flags
+while getopts ":d" opt; do
+  case $opt in
+    d) build_type="Debug" ;;
+    \?) echo "Invalid option: -$OPTARG" >&2; exit 1 ;;
+  esac
 done
 
-# all the flags
-flagsopt="\
-    -std=c++20 -march=native -mtune=native \
-    -flto=auto -fomit-frame-pointer -funroll-loops -fipa-pta -fdevirtualize-speculatively \
-    -O3 -Ofast \
-    -fopenmp \
-    -mavx2 -mfma -mprefer-vector-width=256 -fvect-cost-model=unlimited\
-    -DNDEBUG \
-    -falign-functions=32 -falign-loops=32 \
-    -ffast-math -fno-math-errno -fassociative-math -freciprocal-math -fno-signed-zeros -fno-trapping-math \
-    -fmodulo-sched -fmodulo-sched-allow-regmoves \
-    -fpredictive-commoning -fhoist-adjacent-loads \
-    -ftree-loop-distribution -ftree-loop-vectorize -ftree-slp-vectorize -ftree-vectorize \
-    -Wno-unused-result \
-    -frename-registers -fschedule-insns -fschedule-insns2 -fweb -fno-semantic-interposition \
-    -frandom-seed=123 -s \
-"
-flagsdeb="-std=c++20 -O0 -g -DDEBUG -rdynamic -fno-omit-frame-pointer -fno-lto -mavx2 -mfma -fopenmp"
+# build directory
+mkdir -p CMakeBuild
+cd CMakeBuild
 
-declare file_size
-declare FLAGS
-declare build
+# configure
+cmake .. -DCMAKE_BUILD_TYPE="$build_type" -G Ninja
 
-if [ "$d_flag" = true ]; then
-    build="DEBUG"
-    FLAGS="$flagsdeb"
-else
-    build="RELEASE"
-    FLAGS="$flagsopt"
-fi
+# compile program
+echo "Compiling program ($build_type)"
+cmake --build . -j
 
-# compile based on args passed
-if [ "$p_flag" = true ]; then
-
-    printf "Compiling pch (%s)\n" $build
-    ccache g++ -x c++-header $FLAGS -Wno-pragmas ./Dependencies/pch.h -o ./Dependencies/pch.h.gch
-
-    file_size=$(stat -c %s "./Dependencies/pch.h.gch")
-else
-    printf "Compiling program (%s)\n" $build
-
-    # compiling phase
-    for src in $(find . -name "*.cpp") ; do
-        ccache g++ -c $FLAGS "$src" -include ./Dependencies/pch.h -o "${src%.cpp}.o"
-    done
-
-    # link phase
-    ccache g++ -static-libgcc -static-libstdc++ -Wl,-Bdynamic -lgomp -Wl,-Bstatic -lstdc++ -lpthread -lm -ldl $FLAGS $(find . -name "*.o") -lyaml-cpp -o MLEngine
-
-    # cleanup object files
-    find . -name "*.o" -delete
-    
-    file_size=$(stat -c %s "MLEngine")
-fi
-
-# output information about build process
-size_human=$(numfmt --to=iec --suffix=B $file_size)
+# output
+file_size=$(stat -c %s "./MLEngine")
+size_human=$(numfmt --to=iec --suffix=B "$file_size")
 end_time=$(date +%s.%N)
 elapsed=$(echo "$end_time - $start_time" | bc)
 
-printf "Build completed in %.2f seconds (%s)\n" $elapsed $size_human
+printf "Build completed in %.2f seconds (%s)\n" "$elapsed" "$size_human"

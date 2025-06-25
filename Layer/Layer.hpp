@@ -114,8 +114,6 @@ private:
     void (Layer::*executeBackward)(const float*, const float*, size_t);
     void (Layer::*updateLayer)(float, size_t);
 
-    // template methods
-    template <WeightInitialization> void SetWeights(float* data, uint64_t seed);
 
     // forward prop methods
     template <bool training, bool dropout, bool skipconn> void BasicForward (float* __restrict input, size_t n);
@@ -193,5 +191,3 @@ private:
     // general rng
     std::mt19937 gen;
 };
-
-#include "LayerTemplates.impl.hpp"

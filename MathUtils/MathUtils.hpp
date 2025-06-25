@@ -6,10 +6,8 @@ public:
 
     static DotProdFunc DotProdAcum;
     static DotProdFunc DotProdClear;
-
     static DotProdFunc DotProdTAAcum;
     static DotProdFunc DotProdTAClear;
-
     static DotProdFunc DotProdTBAcum;
     static DotProdFunc DotProdTBClear;
 
@@ -31,14 +29,6 @@ public:
             DotProdClear = &DotProd_AVX2<true>;
             DotProdTAClear = &DotProdTA_AVX2<true>;
             DotProdTBClear = &DotProdTB_AVX2<true>;
-        } else if (__builtin_cpu_supports("avx")) {
-            DotProdAcum = &DotProd_AVX<false>;
-            DotProdTAAcum = &DotProdTA_AVX<false>;
-            DotProdTBAcum = &DotProdTB_AVX<false>;
-
-            DotProdClear = &DotProd_AVX<true>;
-            DotProdTAClear = &DotProdTA_AVX<true>;
-            DotProdTBClear = &DotProdTB_AVX<true>;            
         } else {
             DotProdAcum = &DotProd_Scalar<false>;
             DotProdTAAcum = &DotProdTA_Scalar<false>;
@@ -59,17 +49,14 @@ public:
 private:
 
     template <bool clear> static void DotProd_Scalar(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
-    template <bool clear> static void DotProd_AVX(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
     template <bool clear> static void DotProd_AVX2(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
     template <bool clear> static void DotProd_AVX512(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
 
     template <bool clear> static void DotProdTA_Scalar(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
-    template <bool clear> static void DotProdTA_AVX(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
     template <bool clear> static void DotProdTA_AVX2(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
     template <bool clear> static void DotProdTA_AVX512(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
 
     template <bool clear> static void DotProdTB_Scalar(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
-    template <bool clear> static void DotProdTB_AVX(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
     template <bool clear> static void DotProdTB_AVX2(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
     template <bool clear> static void DotProdTB_AVX512(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c);
 

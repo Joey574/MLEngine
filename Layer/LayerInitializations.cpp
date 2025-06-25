@@ -153,19 +153,46 @@ void Layer::InitializeSpecialPointers(float* nextweight) {
 
 /// @brief initializes the layers weights based on init type
 void Layer::InitializeWeights(float* data, WeightInitialization init, uint64_t seed) {
-    if (type == LayerType::input) { return; }
+    if (wsize == 0 && bsize == 0) { return; }
 
-    switch (init) {
-        case WeightInitialization::he:
-            SetWeights<WeightInitialization::he>(data, seed);
-            break;
-        case WeightInitialization::normalize:
-            SetWeights<WeightInitialization::normalize>(data, seed);
-            break;
-        case WeightInitialization::xavier:
-            SetWeights<WeightInitialization::xavier>(data, seed);
-            break;
-        default:
-            SetWeights<WeightInitialization::none>(data, seed);
+    float lowerRand;
+    float upperRand;
+    size_t idx = 0;
+
+    std::default_random_engine gen(seed);
+
+    // zero out biases
+    memset(&data[wsize], 0, bsize*sizeof(float));
+
+    if (init == WeightInitialization::he) {
+        
+        lowerRand = 0.0f;
+        upperRand = std::sqrt(2.0f/nodes);
+
+        std::normal_distribution<float> dist(lowerRand, upperRand);
+        for (size_t i = 0; i < wsize; i++) {
+            data[i] = dist(gen);
+        }
+    } else if (init == WeightInitialization::normalize) {
+        
+        lowerRand = -0.5f;
+        upperRand = 0.5f;
+
+        std::uniform_real_distribution<float> dist(lowerRand, upperRand);
+        for (size_t i = 0; i < wsize; i++) {
+            data[i] = dist(gen) * std::sqrt(1.0f/nodes);
+        }
+    } else if (init == WeightInitialization::xavier) {
+        
+        lowerRand = (-1.0f/std::sqrt(nodes));
+        upperRand = 1.0f/std::sqrt(nodes);
+
+        std::uniform_real_distribution<float> dist(lowerRand, upperRand);
+        for (size_t i = 0; i < wsize; i++) {
+            data[i] = dist(gen);
+        }
+    } else {
+        // no weight initialization has been set, zero the weights
+        memset(data, 0, wsize*sizeof(float));
     }
 }
