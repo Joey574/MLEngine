@@ -6,6 +6,16 @@ void Scheduler::Initialize(YAML::Node& config) {
         m_LRSchedule = (LRSchedule)lr_config[Y_SCH_SCHTYPE].as<int>();
     }
 
+}
 
-    
+void Scheduler::AssignPtr() {
+    if (m_LRSchedule == LRSchedule::step_decay) {
+        execute = &Scheduler::Execute<LRSchedule::step_decay>;
+    } else if (m_LRSchedule == LRSchedule::on_plateau) {
+        execute = &Scheduler::Execute<LRSchedule::on_plateau>;
+    } else if (m_LRSchedule == LRSchedule::inv_time_decay) {
+        execute = &Scheduler::Execute<LRSchedule::inv_time_decay>;
+    } else {
+        execute = &Scheduler::Execute<LRSchedule::none>;
+    }
 }

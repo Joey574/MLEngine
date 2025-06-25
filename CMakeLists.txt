@@ -11,54 +11,25 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 set(RELEASE_FLAGS
-  -march=native
-  -mtune=native
-  -flto=auto
-  -fomit-frame-pointer
-  -funroll-loops
-  -fipa-pta
+  -march=native -mtune=native
+  -flto=auto -fomit-frame-pointer -funroll-loops -fipa-pta
   -fdevirtualize-speculatively
-  -O3
-  -Ofast
-  -fopenmp
-  -mavx2
-  -mfma
-  -mprefer-vector-width=256
-  -fvect-cost-model=unlimited
-  -DNDEBUG
-  -falign-functions=32
-  -falign-loops=32
-  -ffast-math
-  -fno-math-errno
-  -fassociative-math
-  -freciprocal-math
-  -fno-signed-zeros
-  -fno-trapping-math
-  -fmodulo-sched
-  -fmodulo-sched-allow-regmoves
-  -fpredictive-commoning
-  -fhoist-adjacent-loads
-  -ftree-loop-distribution
-  -ftree-loop-vectorize
-  -ftree-slp-vectorize
-  -ftree-vectorize
-  -Wno-unused-result
-  -frename-registers
-  -fschedule-insns
-  -fschedule-insns2
-  -fweb
-  -fno-semantic-interposition
+  -O3 -Ofast -fopenmp -mavx2  -mfma -mprefer-vector-width=256
+  -fvect-cost-model=unlimited -DNDEBUG
+  -falign-functions=32 -falign-loops=32
+  -ffast-math -fno-math-errno -fassociative-math -freciprocal-math
+  -fno-signed-zeros -fno-trapping-math -fmodulo-sched
+  -fmodulo-sched-allow-regmoves -fpredictive-commoning
+  -fhoist-adjacent-loads -ftree-loop-distribution
+  -ftree-loop-vectorize -ftree-slp-vectorize -ftree-vectorize
+  -Wno-unused-result -frename-registers -fschedule-insns -fschedule-insns2
+  -fweb -fno-semantic-interposition
 )
 
 set(DEBUG_FLAGS 
-  -O0
-  -g
-  -DDEBUG
-  -rdynamic
+  -O0 -g -DDEBUG -rdynamic
   -fno-omit-frame-pointer
-  -fno-lto
-  -mavx2
-  -mfma
+  -fno-lto -mavx2 -mfma
   -fopenmp
 )
 
@@ -99,12 +70,10 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-lib
 
 # yaml package
 find_package(yaml-cpp REQUIRED)
-target_link_libraries(MLEngine PRIVATE yaml-cpp)
-
-# openmp package
 find_package(OpenMP REQUIRED)
-if(OpenMP_CXX_FOUND)
-  target_link_libraries(MLEngine PRIVATE OpenMP::OpenMP_CXX)
-endif()
+
+target_link_libraries(MLEngine PRIVATE OpenMP::OpenMP_CXX yaml-cpp)
+
+target_link_libraries(MLEngine PRIVATE yaml-cpp)
 
 target_precompile_headers(MLEngine PRIVATE Dependencies/pch.h)

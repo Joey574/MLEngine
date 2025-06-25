@@ -11,12 +11,13 @@ public:
 
 
     void Initialize(YAML::Node& config);
-
     void (Scheduler::*execute)(YAML::Node&);
+
 private:
 
     LRSchedule m_LRSchedule;
 
+    void AssignPtr();
     template <LRSchedule lr_sch> void Execute(YAML::Node& trainingData);
-    
+
 };
