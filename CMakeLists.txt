@@ -48,7 +48,6 @@ set(RELEASE_FLAGS
   -fschedule-insns2
   -fweb
   -fno-semantic-interposition
-  -frandom-seed=123
 )
 
 set(DEBUG_FLAGS 
