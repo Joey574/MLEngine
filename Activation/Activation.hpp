@@ -1,4 +1,5 @@
 #pragma once
+#include "../MathUtils/MathUtils.hpp"
 
 struct Activation {
 public:
@@ -16,13 +17,6 @@ public:
     // parsing functions
     static Type ParseType(const std::string& actv);
     static std::string ParseName(Type type);
-
-    // single mm256 activations
-    static __m256 Linear(const __m256 _x);
-    static __m256 Sigmoid(const __m256 _x);
-    static __m256 ReLU(const __m256 _x);
-    static __m256 LeakyReLU(const __m256 _x);
-    static __m256 ELU(const __m256 _x);
 
     void AssignPointers(Type a);
 
