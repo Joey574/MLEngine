@@ -84,9 +84,15 @@ int main(int argc, char* argv[]) {
     signal(SIGINT, handleInterupt);
     signal(SIGSEGV, segv);
 
-    // initializes variations of the dot prod function for different cpus
-    MathUtils::Initialize();
+    #if defined(__AVX2__) && defined(__FMA__)
+    std::cout << "AVX2 Enabled\n";
+    #elif defined (__AVX512F__)
+    std::cout << "AVX412 Enabled\n";
+    #else
+    std::cout << "Scalar Enabled\n";
+    #endif
 
+    
     State state;
     state.Init();
 

@@ -40,12 +40,12 @@ void Layer::BasicForward(float* __restrict input, size_t n) {
         float* __restrict input_skip = (*m_layers)[m_s_idx].Output<training>();
         const float* __restrict weight_skip = &m_w[m_s_base*nodes];
 
-        MathUtils::DotProdAcum(input, w, z, n, m_s_base, m_s_base, nodes);
-        MathUtils::DotProdAcum(input_skip, weight_skip, z, n, m_s_skip, m_s_skip, nodes);
+        MathUtils::DotProd<false>(input, w, z, n, m_s_base, m_s_base, nodes);
+        MathUtils::DotProd<false>(input_skip, weight_skip, z, n, m_s_skip, m_s_skip, nodes);
         activation.activation(z, a, n, nodes);
 
     } else {
-        MathUtils::DotProdAcum(input, w, z, n, inodes, inodes, nodes);
+        MathUtils::DotProd<false>(input, w, z, n, inodes, inodes, nodes);
         activation.activation(z, a, n, nodes);
     }
 
