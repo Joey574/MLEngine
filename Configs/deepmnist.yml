@@ -2,7 +2,7 @@ name: deepmnist
 dataset: mnist
 
 optimizer:
-  type: sgd
+  type: rmsprop
   learning_rate: 0.01
 
 dataset_args:
@@ -69,6 +69,6 @@ layers:
     loss: onehot
     metric: accuracy
 
-epochs: 100
+epochs: 1000
 valid_freq: 1
 batch_size: 512

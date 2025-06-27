@@ -43,6 +43,10 @@
 #define Y_OPT_REGLAMBDA "reg_lambda"
 #define Y_OPT_LEARNINGRATE "learning_rate"
 #define Y_OPT_MOMENTUM "momentum"
+#define Y_OPT_DECAY "decay"
+#define Y_OPT_EPSL "epsilon"
+#define Y_OPT_B1 "b1"
+#define Y_OPT_B2 "b2"
 
 // scheduler data
 #define Y_SCH_LRSCHEDULE "lr_scheduler"

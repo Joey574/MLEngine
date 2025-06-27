@@ -53,14 +53,28 @@ void Optimizer::Define(YAML::Node config) {
     m_update = ParseUpdType(upd);
 
     m_lr = config[Y_OPT_LEARNINGRATE].as<float>(0.1f);
-    m_m_coef = config[Y_OPT_MOMENTUM].as<float>(0);
-
 
     if (config[Y_OPT_REGULARIZATION]) {
         std::string reg = config[Y_OPT_REGULARIZATION].as<std::string>();
         
         m_reg_lambda = config[Y_OPT_REGLAMBDA].as<float>(0.0001f);
         m_reg = ParseRegType(reg);
+    }
+
+    switch (m_update) {
+        case Update::momentumsgd:
+            m_m_coef = config[Y_OPT_MOMENTUM].as<float>(0.9f);
+            break;
+        case Update::rmsprop:
+            m_r_decay = config[Y_OPT_DECAY].as<float>(0.9f);
+            m_r_epsl = config[Y_OPT_EPSL].as<float>(0.000001f);
+            break;
+        case Update::adam:
+            m_a_t = 1;
+            m_a_b1 = config[Y_OPT_B1].as<float>(0.9f);
+            m_a_b2 = config[Y_OPT_B2].as<float>(0.999f);
+            m_a_epsl = config[Y_OPT_EPSL].as<float>(0.000001f);
+            break;
     }
 
     AssignPtr();
@@ -80,6 +94,27 @@ void Optimizer::Initialize(float* dw, float* db, char* data, size_t wsize, size_
             m_m_vb = (float*)(data+offset);
             offset += RoundTo(32, bsize*sizeof(float));
             break;
+
+        case Update::rmsprop:
+            m_r_gw = (float*)(data+offset);
+            offset += RoundTo(32, wsize*sizeof(float));
+
+            m_r_gb = (float*)(data+offset);
+            offset += RoundTo(32, bsize*sizeof(float));
+            break;
+
+        case Update::adam:
+            m_a_wm = (float*)(data+offset);
+            offset += RoundTo(32, wsize*sizeof(float));
+
+            m_a_wv = (float*)(data+offset);
+            offset += RoundTo(32, wsize*sizeof(float));
+
+            m_a_bm = (float*)(data+offset);
+            offset += RoundTo(32, bsize*sizeof(float));
+
+            m_a_bv = (float*)(data+offset);
+            offset += RoundTo(32, bsize*sizeof(float));
     }
 }
 
@@ -100,6 +135,10 @@ void Optimizer::AssignPtr() {
         } else {
             update = static_cast<UpdateFn>(&Optimizer::MomentumSGD<Regularization::none>);
         }
+    } else if (m_update == Update::rmsprop) {
+        update = static_cast<UpdateFn>(&Optimizer::RMSProp);
+    } else if (m_update == Update::adam) {
+        update = static_cast<UpdateFn>(&Optimizer::Adam);
     }
 }
 
@@ -111,6 +150,19 @@ size_t Optimizer::Size(size_t wsize, size_t bsize) {
             break;
         case Update::momentumsgd:
             size += RoundTo(32, wsize*sizeof(float));
+            size += RoundTo(32, bsize*sizeof(float));
+            break;
+        
+        case Update::rmsprop:
+            size += RoundTo(32, wsize*sizeof(float));
+            size += RoundTo(32, bsize*sizeof(float));
+            break;
+
+        case Update::adam:
+            size += RoundTo(32, wsize*sizeof(float));
+            size += RoundTo(32, wsize*sizeof(float));
+
+            size += RoundTo(32, bsize*sizeof(float));
             size += RoundTo(32, bsize*sizeof(float));
             break;
     }
