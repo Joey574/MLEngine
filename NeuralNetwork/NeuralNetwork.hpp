@@ -30,8 +30,8 @@ public:
 
     nlohmann::json Fit(Dataset& dataset, nlohmann::json& history);
 
-    int Load(int fd);
-    int Save(int fd) const;
+    int Load(std::ifstream& file);
+    int Save(std::ofstream& file) const;
 
     static Layer::WeightInitialization ParseWeight(const std::string& w);
     static std::string WeightName(Layer::WeightInitialization w);
@@ -70,7 +70,6 @@ private:
     void BackProp(
         const float* __restrict x,
         const float* __restrict y,
-        float lr,
         size_t n
     );
 

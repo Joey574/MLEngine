@@ -36,6 +36,14 @@
 #define Y_L1_LAMBDA "l1_lambda"
 #define Y_L2_LAMBDA "l2_lambda"
 
+// optimizer data
+#define Y_OPT_OPTIMIZER "optimizer"
+#define Y_OPT_TYPE "type"
+#define Y_OPT_REGULARIZATION "regularization"
+#define Y_OPT_REGLAMBDA "reg_lambda"
+#define Y_OPT_LEARNINGRATE "learning_rate"
+#define Y_OPT_MOMENTUM "momentum"
+
 // scheduler data
 #define Y_SCH_LRSCHEDULE "lr_scheduler"
 #define Y_SCH_SCHTYPE "type"

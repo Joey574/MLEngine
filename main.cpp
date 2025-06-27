@@ -37,7 +37,7 @@ void handleInterupt(int signum) {
     KEEPRUNNING = false;
 }
 void segv(int signum) {
-        void *array[30];
+    void *array[30];
     int size = backtrace(array, 30);
     char **messages = backtrace_symbols(array, size);
 
@@ -83,15 +83,6 @@ int main(int argc, char* argv[]) {
     KEEPRUNNING = true;
     signal(SIGINT, handleInterupt);
     signal(SIGSEGV, segv);
-
-    #if defined(__AVX2__) && defined(__FMA__)
-    std::cout << "AVX2 Enabled\n";
-    #elif defined (__AVX512F__)
-    std::cout << "AVX412 Enabled\n";
-    #else
-    std::cout << "Scalar Enabled\n";
-    #endif
-
     
     State state;
     state.Init();
@@ -141,6 +132,13 @@ int main(int argc, char* argv[]) {
         if (visualizemodel) { visualizeModel(state); }
     }
 
+    #if defined(__AVX2__) && defined(__FMA__)
+        #pragma message("AVX2 Enabled\n")
+    #elif defined (__AVX512F__)
+        #pragma message("AVX512 Enabled\n")
+    #else
+        #pragma message("Scalar Enabled\n")
+    #endif
 
     if (state.ModelExists()) {
         std::cout << "Loading existing model\n";

@@ -22,24 +22,21 @@ std::string State::ModelHistory() const {
 }
 std::string State::AvailableModels() const {
     // walk model directory and collect models
-    DIR* dir;
-    dirent* ent;
     std::string models = "";
 
-    if ((dir = opendir(p_models.c_str())) != nullptr) {
-        while ((ent = readdir(dir)) != nullptr) {
-            std::string f(ent->d_name);
-
-            if (f == "." || f == "..") {
-                continue;
-            }
-            
-            models += f + ":\n";
-
-            // collect basic metadata of the model
-            YAML::Node metadata = YAML::LoadFile(p_models+"/"+f+"/config.yml");
-            models = models.append("\tDataset: ").append(metadata[Y_DATASET].as<std::string>()).append("\n");
+    for (const auto& entry : std::filesystem::directory_iterator(p_models)) {
+        if (!entry.is_directory()) {
+            continue;
         }
+
+        const std::string folder_name = entry.path().filename().string();
+        const std::string config_path = entry.path().string() + "/config.yml";
+
+        models += folder_name + ":\n";
+
+        // collect basic metadata of the model
+        YAML::Node metadata = YAML::LoadFile(config_path);
+        models += "\tDataset: " + metadata[Y_DATASET].as<std::string>() + "\n";
     }
 
     return models;

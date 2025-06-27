@@ -11,6 +11,8 @@ void NeuralNetwork::Initialize(const std::string& path, const std::string& name,
     m_layers.reserve(config[Y_LAYERS].size());
     m_network_bytes = 0;
 
+    YAML::Node optimizerConf = config[Y_OPT_OPTIMIZER];
+
     // define layers
     YAML::Node layers = config[Y_LAYERS];
     for (size_t i = 0; i < layers.size(); i++) {
@@ -18,7 +20,7 @@ void NeuralNetwork::Initialize(const std::string& path, const std::string& name,
         size_t nn = i == layers.size()-1 ? 0 : layers[i+1][Y_NODES].as<size_t>();
 
         Layer layer;
-        layer.Define(m_layers, i, layers[i], in, nn);
+        layer.Define(m_layers, i, layers[i], optimizerConf, in, nn);
         m_layers.push_back(layer);
     }
 

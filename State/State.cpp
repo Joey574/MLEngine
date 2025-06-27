@@ -28,7 +28,6 @@ void State::SaveInit() {
         // remove data that isn't relevent to the config
         basic.remove(Y_EPOCHS);
         basic.remove(Y_BATCHSIZE);
-        basic.remove(Y_LEARNINGRATE);
         basic.remove(Y_VALIDFREQ);
 
         file << basic << "\n";
@@ -44,9 +43,9 @@ void State::Load() {
     std::string file = p_models+"/"+modelname+"/"+modelname+".model";
     if (FileExists(file)) {
         std::cout << "Loading parameters from file (" << file.substr(file.find_last_of('/')+1) << ")\n";
-        int fd = open(file.c_str(), O_RDONLY, 0644);
-        int err = model->Load(fd);
-        close(fd);
+        std::ifstream ifile(file);
+        int err = model->Load(ifile);
+        ifile.close();
 
         if (err) {
             // failed to laod, build model again

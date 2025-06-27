@@ -14,7 +14,7 @@ set(RELEASE_FLAGS
   -march=native -mtune=native
   -flto=auto -fomit-frame-pointer -funroll-loops -fipa-pta
   -fdevirtualize-speculatively
-  -O3 -Ofast -fopenmp
+  -Ofast -fopenmp
   -fvect-cost-model=unlimited -DNDEBUG
   -falign-functions=32 -falign-loops=32
   -ffast-math -fno-math-errno -fassociative-math -freciprocal-math
@@ -27,10 +27,10 @@ set(RELEASE_FLAGS
 )
 
 set(DEBUG_FLAGS 
+  -march=native 
   -O0 -g -DDEBUG -rdynamic
   -fno-omit-frame-pointer
-  -fno-lto -mavx2 -mfma
-  -fopenmp
+  -fno-lto -fopenmp
 )
 
 # use ccache
@@ -65,14 +65,12 @@ else()
 endif()
 
 # static linking
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++ -lpthread -lm -ldl")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++")
+target_link_libraries(MLEngine PRIVATE pthread m dl)
 
 # yaml package
 find_package(yaml-cpp REQUIRED)
 find_package(OpenMP REQUIRED)
-
 target_link_libraries(MLEngine PRIVATE OpenMP::OpenMP_CXX yaml-cpp)
-
-target_link_libraries(MLEngine PRIVATE yaml-cpp)
 
 target_precompile_headers(MLEngine PRIVATE Dependencies/pch.h)

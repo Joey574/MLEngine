@@ -15,9 +15,9 @@ void Layer::backward(const float* __restrict truth, const float* __restrict inpu
     (this->*executeBackward)(truth, input, n);
 }
 
-void Layer::update(float lr, size_t n) {
-	// calls our to the right forward prop
-	(this->*updateLayer)(lr, n);
+void Layer::update(size_t n) {
+	// update layer via optimizer
+	(m_optimizer.*m_optimizer.update)(m_w, m_b, wsize, bsize, n);
 }
 
 

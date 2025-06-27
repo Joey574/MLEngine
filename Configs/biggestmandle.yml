@@ -1,6 +1,10 @@
 name: biggest
 dataset: mandlebrot
 
+optimizer:
+  type: sgd
+  learning_rate: 0.0000001
+
 dataset_args:
   samples: 200000
   mandledepth: 500
@@ -14,277 +18,227 @@ layers:
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
-    activation: leakyrelu
-    skipconn: 0
-
-  - type: hidden
-    nodes: 512
-    dropout: 0.2
-    activation: leakyrelu
-
-  - type: hidden
-    nodes: 512
-    dropout: 0.2
+    
     activation: leakyrelu
     skipconn: 0
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
     skipconn: 0
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
     skipconn: 0
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
     skipconn: 0
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
+    activation: leakyrelu
+    skipconn: 0
+
+  - type: hidden
+    nodes: 512
+    activation: leakyrelu
+
+  - type: hidden
+    nodes: 512
     activation: leakyrelu
     skipconn: 0
   
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
     skipconn: 0
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
     skipconn: 0
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
     skipconn: 0
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
     skipconn: 0
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
     skipconn: 0
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
     skipconn: 0
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
     skipconn: 0
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
     skipconn: 0
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
     skipconn: 0
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
     skipconn: 0
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
     skipconn: 0
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
     skipconn: 0
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
     skipconn: 0
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
     skipconn: 0
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
     skipconn: 0
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
     skipconn: 0
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
     skipconn: 0
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
     skipconn: 0
 
-
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
     activation: leakyrelu
     skipconn: 0
 
@@ -297,5 +251,4 @@ layers:
 
 epochs: 1000
 valid_freq: 1
-learning_rate: 0.000001
 batch_size: 512

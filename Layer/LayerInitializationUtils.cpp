@@ -49,13 +49,9 @@ void Layer::AssignBasicBatchPtrs(char* batchdata, size_t bn) {
         offset += m_d_dpmask_bytes;
     }
 
-    if (m_m_momentum) {
-        m_m_vw = (float*)(batchdata+offset);
-        offset += m_m_vw_bytes;
-
-        m_m_vb = (float*)(batchdata+offset);
-        offset += m_m_vb_bytes;
-    }
+    // size in optimizer params
+    m_optimizer.Initialize(m_dw, m_db, (batchdata+offset), wsize, bsize);
+    offset += m_o_bytes;
 }
 
 void Layer::SetBasicBatchTestBytes(size_t bn, size_t tn) {
@@ -75,14 +71,12 @@ void Layer::SetBasicBatchTestBytes(size_t bn, size_t tn) {
         m_d_dpmask_bytes = RoundTo(32, (nodes+(bn-1))*bn/8);
     }
 
-    if (m_m_momentum) {
-        m_m_vw_bytes = m_w_bytes;
-        m_m_vb_bytes = m_b_bytes;
-    }
+    // size for optimizer
+    m_o_bytes = m_optimizer.Size(wsize, bsize);
 
     // size in all the things
     layer_batch_bytes = m_z_bytes + m_a_bytes + m_dt_bytes + m_dw_bytes + m_db_bytes + 
-        m_d_dpmask_bytes + m_m_vw_bytes + m_m_vb_bytes;
+        m_d_dpmask_bytes + m_o_bytes;
 
     // size for total and activation
     layer_test_bytes = m_tz_bytes + m_ta_bytes;
@@ -160,26 +154,6 @@ void Layer::AssignFunctionPointers() {
             } else {
                 executeBackward = &Layer::BasicBackward<LayerType::output, false, false>;
             }
-        }
-    }
-    
-
-    // updates
-    if (m_m_momentum) {
-        if (m_l1) {
-            updateLayer = &Layer::MomentumUpdate<true, false>;
-        } else if (m_l2) {
-            updateLayer = &Layer::MomentumUpdate<false, true>;
-        } else {
-            updateLayer = &Layer::MomentumUpdate<false, false>;
-        }
-    } else {
-        if (m_l1) {
-            updateLayer = &Layer::BasicUpdate<true, false>;
-        } else if (m_l2) {
-            updateLayer = &Layer::BasicUpdate<false, true>;
-        } else {
-            updateLayer = &Layer::BasicUpdate<false, false>;
         }
     }
 }

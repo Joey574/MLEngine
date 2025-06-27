@@ -8,7 +8,8 @@ nlohmann::json NeuralNetwork::Fit(Dataset& dataset, nlohmann::json& storedhistor
 	size_t epochs = config[Y_EPOCHS].as<size_t>(0);
 	size_t batch_size = config[Y_BATCHSIZE].as<size_t>();
 	size_t valid_freq = config[Y_VALIDFREQ].as<size_t>();
-	float learning_rate = config[Y_LEARNINGRATE].as<float>();
+	float learning_rate = config[Y_OPT_OPTIMIZER][Y_OPT_LEARNINGRATE].as<float>(0.1f);
+
 
 	nlohmann::json history;
 	FitStart(history, epochs, batch_size, learning_rate);
@@ -33,7 +34,7 @@ nlohmann::json NeuralNetwork::Fit(Dataset& dataset, nlohmann::json& storedhistor
 			ssize_t effective_size = batch_size > remaining_elements ? remaining_elements : batch_size;
 
 			ForwardProp<true>(x, effective_size);
-			BackProp(x, y, learning_rate, effective_size);
+			BackProp(x, y, effective_size);
 		}
 
 		std::string res = "";
@@ -73,7 +74,6 @@ std::string NeuralNetwork::TestNetwork(Dataset& dataset, nlohmann::json& history
 
 template <bool training>
 void NeuralNetwork::ForwardProp(float* __restrict x, size_t n) {
-
     for (size_t i = 0; i < m_layers.size(); i++) {
 		// input will always just be previous layers output
 		float* __restrict input = i == 0 ? x : m_layers[i-1].Output<training>();
@@ -82,7 +82,7 @@ void NeuralNetwork::ForwardProp(float* __restrict x, size_t n) {
 		m_layers[i].forward<training>(input, n);
     }
 }
-void NeuralNetwork::BackProp(const float* __restrict x, const float* __restrict y, float lr, size_t n) {
+void NeuralNetwork::BackProp(const float* __restrict x, const float* __restrict y, size_t n) {
 
 	// compute gradient
 	for (ssize_t i = m_layers.size()-1; i >= 0; i--) {
@@ -95,6 +95,6 @@ void NeuralNetwork::BackProp(const float* __restrict x, const float* __restrict 
 
 	// update layers
 	for (size_t i = 0; i < m_layers.size(); i++) {
-		m_layers[i].update(lr, n);
+		m_layers[i].update(n);
 	}
 }

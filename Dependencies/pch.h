@@ -12,14 +12,11 @@
 #include <algorithm>
 #include <iostream>
 #include <filesystem>
-#include <unistd.h>
 #include <atomic>
 #include <thread>
-#include <fcntl.h>
 #include <fstream>
 #include <random>
 #include <format>
-#include <dirent.h>
 #include <cctype>
 #include <math.h>
 #include <complex>

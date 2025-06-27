@@ -1,6 +1,10 @@
 name: deepmnist
 dataset: mnist
 
+optimizer:
+  type: sgd
+  learning_rate: 0.01
+
 dataset_args:
   rotation: 15
   rot_variants: 5
@@ -59,15 +63,6 @@ layers:
     nodes: 32
     activation: leakyrelu
 
-  - type: hidden
-    nodes: 32
-    activation: leakyrelu
-    skipconn: 0
-
-  - type: hidden
-    nodes: 32
-    activation: leakyrelu
-
   - type: output
     nodes: 10
     activation: sigmoid
@@ -76,5 +71,4 @@ layers:
 
 epochs: 100
 valid_freq: 1
-learning_rate: 0.005
 batch_size: 512

@@ -1,13 +1,22 @@
-name: basicmnist
+name: bestmnist
 dataset: mnist
 
+dataset_args:
+  rotation: 15
+  rot_variants: 10
+
+optimization:
+  type: sgd
+  learning_rate: 0.0005
+
+weight: he
 
 layers:
   - type: input
 
   - type: hidden
-    nodes: 256
-    momentum: 0.9
+    dropout: 0.3
+    nodes: 1024
     activation: leakyrelu
 
   - type: output
@@ -15,11 +24,7 @@ layers:
     activation: sigmoid
     loss: onehot
     metric: accuracy
-    momentum: 0.9
 
-
-weight: he
-epochs: 100
+epochs: 1000
 valid_freq: 1
-learning_rate: 0.005
 batch_size: 512

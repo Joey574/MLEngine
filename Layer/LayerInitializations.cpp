@@ -1,6 +1,6 @@
 #include "Layer.hpp"
 
-void Layer::Define(std::vector<Layer>& layers, size_t idx, YAML::Node config, size_t in, size_t nn) {
+void Layer::Define(std::vector<Layer>& layers, size_t idx, YAML::Node config, YAML::Node optimizerConfig, size_t in, size_t nn) {
     this->inodes = in;
     this->nenodes = nn;
 
@@ -27,22 +27,7 @@ void Layer::Define(std::vector<Layer>& layers, size_t idx, YAML::Node config, si
         m_d_dropoutdist = std::bernoulli_distribution(1.0f-m_d_rate);
     }
 
-    if (config[Y_REGULARIZATION]) {
-        std::string reg = config[Y_REGULARIZATION].as<std::string>();
-
-        if (reg == "l1") {
-            m_l1 = true;
-            m_l1_lambda = config[Y_L1_LAMBDA].as<float>(0.0001f);
-        } else if (reg == "l2") {
-            m_l2 = true;
-            m_l2_lambda = config[Y_L2_LAMBDA].as<float>(0.0001f);
-        }
-    }
-
-    if (config[Y_MOMENTUM]) {
-        m_m_momentum = true;
-        m_m_coefficient = config[Y_MOMENTUM].as<float>();
-    }
+    m_optimizer.Define(optimizerConfig);
 
     if (config[Y_SKIPCONN]) {
         m_s_skipconn = true;
@@ -95,8 +80,6 @@ void Layer::InitializePointers(char* data, char* batchdata, char* testdata, size
     m_d_dpmask = nullptr;
     m_tz = nullptr;
     m_ta = nullptr;
-    m_m_vw = nullptr;
-    m_m_vb = nullptr;
 
     m_net = data;
     m_batch = batchdata;

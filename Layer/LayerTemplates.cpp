@@ -1,7 +1,6 @@
 #include "Layer.hpp"
 #include "LayerForwards.tpp"
 #include "LayerBackwards.tpp"
-#include "LayerUpdate.tpp"
 
 template void Layer::InputForward<true >(float*, size_t);
 template void Layer::InputForward<false>(float*, size_t);
@@ -30,14 +29,3 @@ template void Layer::BasicBackward<Layer::LayerType::output, true , true >(const
 template void Layer::BasicBackward<Layer::LayerType::output, false, true >(const float*, const float*, size_t);
 template void Layer::BasicBackward<Layer::LayerType::output, true , false>(const float*, const float*, size_t);
 template void Layer::BasicBackward<Layer::LayerType::output, false, false>(const float*, const float*, size_t);
-
-template void Layer::BasicUpdate<true , true >(float, size_t);
-template void Layer::BasicUpdate<true , false>(float, size_t);
-template void Layer::BasicUpdate<false, true >(float, size_t);
-template void Layer::BasicUpdate<false, false>(float, size_t);
-
-template void Layer::MomentumUpdate<true , true >(float, size_t);
-template void Layer::MomentumUpdate<true , false>(float, size_t);
-template void Layer::MomentumUpdate<false, true >(float, size_t);
-template void Layer::MomentumUpdate<false, false>(float, size_t);
-

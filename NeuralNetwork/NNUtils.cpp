@@ -24,9 +24,9 @@ void NeuralNetwork::SaveBest(nlohmann::json& history, nlohmann::json& storedhist
 
     // score has been updated, save the model
     if (m_epoch_since_improvement == 0) {
-        int fd = open((m_path+m_name+".model").c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
-        Save(fd);
-        close(fd);
+        std::ofstream file(m_path+m_name+".model");
+        Save(file);
+        file.close();
     }
 }
 
@@ -54,14 +54,13 @@ std::string NeuralNetwork::WeightName(Layer::WeightInitialization w) {
     }
 }
 
-int NeuralNetwork::Save(int fd) const {
-    ssize_t n = write(fd, m_network, m_network_bytes);
-    return n != m_network_bytes;    
+int NeuralNetwork::Save(std::ofstream& file) const {
+    file.write((char*)m_network, m_network_bytes);
+    return file.fail();   
 }
-int NeuralNetwork::Load(int fd) {
-
-    ssize_t n = read(fd, m_network, m_network_bytes);
-    return n != m_network_bytes;
+int NeuralNetwork::Load(std::ifstream& file) {
+    file.read((char*)m_network, m_network_bytes);
+    return file.fail();
 }
 
 std::string NeuralNetwork::Visualize() {

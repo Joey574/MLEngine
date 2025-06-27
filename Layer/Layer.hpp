@@ -2,6 +2,7 @@
 #include "../Activation/Activation.hpp"
 #include "../LossMetric/LossMetric.hpp"
 #include "../MathUtils/MathUtils.hpp"
+#include "../Optimizer/Optimizer.hpp"
 
 struct Layer {
 public:
@@ -18,7 +19,7 @@ public:
     static std::string ParseName(LayerType type);
     static LayerType ParseType(const std::string& type);
 
-    void Define(std::vector<Layer>& layers, size_t idx, YAML::Node config, size_t in, size_t nn);
+    void Define(std::vector<Layer>& layers, size_t idx, YAML::Node config, YAML::Node optimizerConfig, size_t in, size_t nn);
     void Initialize();
     void InitializeSizes(size_t bn, size_t tn);
     void InitializePointers(char* data, char* batchdata, char* testdata, size_t bn, size_t tn);
@@ -42,7 +43,6 @@ public:
     );
     
     void update(
-        float lr,
         size_t n
     );
 
@@ -76,9 +76,6 @@ protected:
     // bools for various options
     bool m_d_dropout;
     bool m_s_skipconn;
-    bool m_m_momentum;
-    bool m_l1;
-    bool m_l2;
 
     // dropout data
     float m_d_rate;
@@ -96,16 +93,9 @@ protected:
     size_t m_s_base;
     size_t m_s_skip;
 
-    // momentum data
-    float m_m_coefficient;
-    float* m_m_vw;
-    float* m_m_vb;
-    size_t m_m_vw_bytes;
-    size_t m_m_vb_bytes;
-
-    // l1/l2 data
-    float m_l1_lambda;
-    float m_l2_lambda;
+    // optimizer data
+    Optimizer m_optimizer;
+    size_t m_o_bytes;
 
 private:
 
@@ -122,11 +112,6 @@ private:
     // backprop methods
     template <LayerType ltype, bool dropout, bool skipconn> void BasicBackward(const float* truth, const float* input, size_t n);
 
-    // update methods
-    template <bool l1, bool l2> void BasicUpdate(float lr, size_t n);
-    template <bool l1, bool l2> void MomentumUpdate(float lr, size_t n);
-
-
     // forward prop utils
     template<bool training> void InputForward(float* input, size_t n);
     void ApplyDropoutFP(size_t n);
@@ -138,14 +123,6 @@ private:
     void ComputeSkipDN(const float* input, size_t n);
     void ApplyDropoutBP(size_t n);
 
-    // upadte utils
-    void ApplyBasicUpdate(const float* d, float* p, const __m256 _factor);
-    void ApplyL1Update(const float* d, float* p, const __m256 _factor, const __m256 _coef);
-    void ApplyL2Update(const float* d, float* p, const __m256 _factor, const __m256 _coef);
-    float ApplyBasicUpdate(const float d, const float p, const float factor);
-    float ApplyL1Update(const float d, const float p, const float factor, const float coef);
-    float ApplyL2Update(const float d, const float p, const float factor, const float coef);
-
 
     // private initialization utils
     void AssignLayerSize();
@@ -153,7 +130,7 @@ private:
     void AssignFunctionPointers();
 
     void SetBasicBatchTestBytes(size_t bn, size_t tn);
-    size_t RoundTo(size_t alignment, size_t n);
+    static size_t RoundTo(size_t alignment, size_t n);
     static std::string CleanSize(size_t bytes);
 
     // network data
