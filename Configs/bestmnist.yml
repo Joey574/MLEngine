@@ -6,8 +6,8 @@ dataset_args:
   rot_variants: 10
 
 optimization:
-  type: sgd
-  learning_rate: 0.0005
+  type: rmsprop
+  learning_rate: 0.001
 
 weight: he
 

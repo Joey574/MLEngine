@@ -132,12 +132,12 @@ int main(int argc, char* argv[]) {
         if (visualizemodel) { visualizeModel(state); }
     }
 
-    #if defined(__AVX2__) && defined(__FMA__)
-        #pragma message("AVX2 Enabled\n")
-    #elif defined (__AVX512F__)
-        #pragma message("AVX512 Enabled\n")
+    #if defined(__AVX512F__)
+        std::cout << "AVX512 Enabled\n";
+    #elif defined(__AVX2__) && defined(__FMA__)
+        std::cout << "AVX2 Enabled\n";
     #else
-        #pragma message("Scalar Enabled\n")
+        std::cout << "Scalar Enabled\n";
     #endif
 
     if (state.ModelExists()) {

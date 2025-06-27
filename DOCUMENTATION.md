@@ -121,29 +121,63 @@ dropout: 0.2
 ```
 <br>
 
-**regularization** *(string):* defines what regularization technique to use during weight/bias update, if not defined, a basic update rule is used *(l1, l2)*
-```
-regularization: l2
-```
-<br>
-
 **skipconn** *(int):* defines what layer's output to append to the layer's input, ie skipconn: 0 would append the 0th layers output to this layers input
 ```
 skipconn: 0
 ```
 <br>
 
-**l1_lambda** *(float):* defines the l1_lambda used if l1 regularization is defined
+## Optimizer
+**Optimizer** *(object):* defines what optimizer to use
 ```
-l1_lambda: 0.0001
+optimizer:
+  arg_1: 0
+  arg_2: 1
 ```
 <br>
 
-**l2_lambda** *(float):* defines the l2_lambda used if l2 regularization is defined
+#### Optimizer Args
+All following args must be passed in **optimizer**
+
+**learning_rate** *(float):* learning rate to use during training
 ```
-l2_lambda: 0.0001
+learning_rate: 0.1
 ```
 <br>
+
+**type** *(string):* type of optimizer to use *(sgd, momuntumsgd, rmsprop, adam)*
+```
+type: rmsprop
+```
+
+#### SGD Args
+All following args only used if **SGD** is defined
+
+**regularization** *(string):* defines what regularization tehcnique to use, if not defined, a basic update rule is used *(l1, l2)*
+```
+regularization: l2
+```
+<br>
+
+**reg_lambda** *(float):* defines the l1/l2 lambda value used if regularization is defined
+```
+reg_lambda: 0.0001
+```
+<br>
+
+#### MomentumSGD Args
+All following args only used if **MomentumSGD** is defined *(momentum can also use all args already described in SGD)*
+
+**momentum** *(float):* defines the momentum to use during training
+```
+momentum: 0.9
+```
+
+#### RMSProp Args
+
+#### Adam Args
+
+
 
 ## Training/Init
 **weight** *(string):* defines the weight initialization technique to use in model is being created not loaded *(he, xavier, normalize)*
@@ -161,12 +195,6 @@ epochs: 100
 **valid_freq** *(int):* how often to test the network against the validation set during training, in epochs, ie. 2 = test every 2 epochs
 ```
 valid_freq: 5
-```
-<br>
-
-**learning_rate** *(float):* learning rate to use during training
-```
-learning_rate: 0.1
 ```
 <br>
 
