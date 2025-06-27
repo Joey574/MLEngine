@@ -46,7 +46,6 @@ private:
     Layer::WeightInitialization m_weightinit;
     std::string m_path;
     std::string m_name;
-    uint64_t m_seed;
 
     std::vector<Layer> m_layers;
 

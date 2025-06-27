@@ -41,8 +41,7 @@ void Layer::Define(std::vector<Layer>& layers, size_t idx, YAML::Node config, YA
 }
 void Layer::Initialize() {
     // initialize member data
-    std::random_device rd;
-    gen = std::mt19937(rd());
+    gen = std::mt19937(SEED+m_layer_idx);
 
     AssignLayerSize();
     AssignFunctionPointers();
@@ -135,14 +134,12 @@ void Layer::InitializeSpecialPointers(float* nextweight) {
 }
 
 /// @brief initializes the layers weights based on init type
-void Layer::InitializeWeights(float* data, WeightInitialization init, uint64_t seed) {
+void Layer::InitializeWeights(float* data, WeightInitialization init) {
     if (wsize == 0 && bsize == 0) { return; }
 
     float lowerRand;
     float upperRand;
     size_t idx = 0;
-
-    std::default_random_engine gen(seed);
 
     // zero out biases
     memset(&data[wsize], 0, bsize*sizeof(float));

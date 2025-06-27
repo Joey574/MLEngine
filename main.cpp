@@ -118,6 +118,10 @@ int main(int argc, char* argv[]) {
     state.config = YAML::LoadFile(config_file);
     state.modelname = state.config[Y_MODELNAME].as<std::string>();
 
+    // set global seed
+    SEED = state.config[Y_SEED].as<uint64_t>(std::random_device{}());
+
+
     if (listmeta || listhistory || deletemodel || resetmodel || visualizemodel) {
         if (!state.ModelExists()) {
             std::cerr << "Model not found: " << state.config[Y_MODELNAME].as<std::string>() << "\n";

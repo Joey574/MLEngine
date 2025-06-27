@@ -1,15 +1,17 @@
 name: basicmnist
 dataset: mnist
 
+
 optimizer:
   type: adam
-  learning_rate: 0.05
+  learning_rate: 0.001
 
 layers:
   - type: input
 
   - type: hidden
     nodes: 256
+    dropout: 0.2
     activation: leakyrelu
 
   - type: output
@@ -18,8 +20,9 @@ layers:
     loss: onehot
     metric: accuracy
 
+seed: 42
 
 weight: he
-epochs: 1000
+epochs: 500
 valid_freq: 1
 batch_size: 512

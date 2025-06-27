@@ -1,12 +1,10 @@
 #include "NeuralNetwork.hpp"
 
 void NeuralNetwork::Initialize(const std::string& path, const std::string& name, YAML::Node& config, bool setweights) {
-    std::random_device rd;
     this->config = config;
     m_weightinit = ParseWeight(config[Y_WEIGHT].as<std::string>());
     m_path = path;
     m_name = name;
-    m_seed = rd();
 
     m_layers.reserve(config[Y_LAYERS].size());
     m_network_bytes = 0;
@@ -43,7 +41,7 @@ void NeuralNetwork::InitializeWeights(Layer::WeightInitialization type) {
     memset(m_network, 0, m_network_bytes);
     
     for (size_t i = 0; i < m_layers.size(); i++) {
-        m_layers[i].InitializeWeights(&m_network[dataidx], type, m_seed+i);
+        m_layers[i].InitializeWeights(&m_network[dataidx], type);
         dataidx += m_layers[i].params;
     }
 }

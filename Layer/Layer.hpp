@@ -25,7 +25,7 @@ public:
     void InitializePointers(char* data, char* batchdata, char* testdata, size_t bn, size_t tn);
     void InitializeSpecialPointers(float* nextweight);
 
-    void InitializeWeights(float* data, WeightInitialization init, uint64_t seed);
+    void InitializeWeights(float* data, WeightInitialization init);
 
     template<bool training>float* Output() { return training ? m_a : m_ta; }
     float* Truth() { return m_dt; }

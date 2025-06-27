@@ -21,7 +21,7 @@
 #define Y_EPOCHS "epochs"
 #define Y_BATCHSIZE "batch_size"
 #define Y_VALIDFREQ "valid_freq"
-#define Y_LEARNINGRATE "learning_rate"
+#define Y_SEED "seed"
 
 // layer data
 #define Y_LAYERTYPE "type"
