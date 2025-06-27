@@ -75,7 +75,7 @@ void Optimizer::RMSPropCompute(float* __restrict  p, float* __restrict  g, const
     // adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
     
-    #pragma omp parallel for
+    #pragma omp parallel for simd
 	for (size_t i = 0; i < size; i++) {
         g[i] = (decay*g[i])+(1.0f-decay)*d[i]*d[i];
         p[i] -= (factor / (std::sqrt(g[i]+epsl)))*d[i];

@@ -130,7 +130,7 @@ void Activation::ELUDerivative(const float* __restrict x, float* __restrict y, s
 void Activation::SigmoidDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
     const size_t n = r*c;
 
-    #pragma omp parallel for
+    #pragma omp parallel for simd
     for (size_t i = 0; i < n; i++) {
         float s = 1.0f / (1.0f + std::exp(-x[i]));
         y[i] *= s * (1.0f - s);
@@ -139,7 +139,7 @@ void Activation::SigmoidDerivative(const float* __restrict x, float* __restrict 
 void Activation::ELUDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
     const size_t n = r*c;
 
-    #pragma omp parallel for
+    #pragma omp parallel for simd
     for (size_t i = 0; i < n; i++) {
         y[i] = x[i] > 0.0f ? y[i] : (y[i] * std::exp(x[i]));
     }

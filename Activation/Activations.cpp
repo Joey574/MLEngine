@@ -165,7 +165,7 @@ void Activation::ELU(const float* __restrict x, float* __restrict y, size_t r, s
 void Activation::Sigmoid(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
     const size_t n = r*c;
 
-    #pragma omp parallel for
+    #pragma omp parallel for simd
     for (size_t i = 0; i < n; i++) {
         y[i] = 1.0f / (1.0f + std::exp(-x[i]));
     }
@@ -173,7 +173,7 @@ void Activation::Sigmoid(const float* __restrict x, float* __restrict y, size_t 
 void Activation::ReLU(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
     const size_t n = r*c;
 
-    #pragma omp parallel for
+    #pragma omp parallel for simd
     for (size_t i = 0; i < n; i++) {
         y[i] = x[i] > 0.0f ? x[i] : 0.0f;
     }
@@ -181,7 +181,7 @@ void Activation::ReLU(const float* __restrict x, float* __restrict y, size_t r, 
 void Activation::LeakyReLU(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
     const size_t n = r*c;
 
-    #pragma omp parallel for
+    #pragma omp parallel for simd
     for (size_t i = 0; i < n; i++) {
         y[i] = x[i] > 0.0f ? x[i] : (x[i] * 0.1f);
     }
@@ -189,7 +189,7 @@ void Activation::LeakyReLU(const float* __restrict x, float* __restrict y, size_
 void Activation::ELU(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
     const size_t n = r*c;
 
-    #pragma omp parallel for
+    #pragma omp parallel for simd
     for (size_t i = 0; i < n; i++) {
         y[i] = x[i] > 0.0f ? x[i] : (std::exp(x[i]) - 1.0f);
     }

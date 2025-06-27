@@ -153,7 +153,7 @@ void Optimizer::SGDCompute(float* __restrict p, const float* __restrict d, size_
     const float factor = lr / (float)n;
 
 	// update parameters
-	#pragma omp parallel for
+	#pragma omp parallel for simd
 	for (size_t i = 0; i < size; i++) {
         p[i] -= d[i]*factor;		
 	}
@@ -163,7 +163,7 @@ void Optimizer::SGDL1Compute(float* __restrict p, const float* __restrict d, siz
     // adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
 
-    #pragma omp parallel for
+    #pragma omp parallel for simd
     for (size_t i = 0; i < size; i++) {
         const float sign = (p[i] > 0.0f) - (p[i] < 0.0f);
         p[i] -= factor*(d[i]+(lambda*sign));	
@@ -175,7 +175,7 @@ void Optimizer::SGDL2Compute(float* __restrict p, const float* __restrict d, siz
     const float factor = lr / (float)n;
 
     // update parameters
-    #pragma omp parallel for
+    #pragma omp parallel for simd
     for (size_t i = 0; i < size; i++) {
         p[i] -= (factor*(d[i]+(lambda*p[i])));
     }

@@ -4,7 +4,7 @@
 template <bool clear> void MathUtils::DotProdTA(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c) {
 	assert(__builtin_cpu_supports("avx512f"));
     
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for
 	for (size_t i = 0; i < a_c; i++) {
 		const size_t cidx = i*b_c;
         size_t j = 0;
@@ -54,7 +54,7 @@ template <bool clear> void MathUtils::DotProdTA(const float* __restrict a, const
 	assert(__builtin_cpu_supports("avx2"));
     assert(__builtin_cpu_supports("fma"));
 
-	#pragma omp parallel for schedule(static)
+	#pragma omp parallel for
 	for (size_t i = 0; i < a_c; i++) {
 		const size_t cidx = i*b_c;
         size_t j = 0;
@@ -101,7 +101,7 @@ template <bool clear> void MathUtils::DotProdTA(const float* __restrict a, const
 }
 #else
 template <bool clear> void MathUtils::DotProdTA(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c) {
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for simd
 	for (size_t i = 0; i < a_c; i++) {
 		const size_t cidx = i*b_c;
         size_t j = 0;

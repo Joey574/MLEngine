@@ -119,7 +119,7 @@ float LossMetric::MseScore(const float* __restrict x, const float* __restrict y,
 float LossMetric::MaeScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
     float error = 0.0f;
 
-    #pragma omp parallel for
+    #pragma omp parallel for simd
     for (size_t i = 0; i < rows*cols; i++) {
         #pragma omp atomic update
         error += std::abs(x[i] - y[i]);
@@ -130,7 +130,7 @@ float LossMetric::MaeScore(const float* __restrict x, const float* __restrict y,
 float LossMetric::MseScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
     float error = 0.0f;
 
-    #pragma omp parallel for
+    #pragma omp parallel for simd
     for (size_t i = 0; i < rows*cols; i++) {
         #pragma omp atomic update
         error += (x[i]-y[i])*(x[i]-y[i]);

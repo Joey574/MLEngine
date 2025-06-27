@@ -90,14 +90,14 @@ void LossMetric::MseLoss(const float* __restrict x, const float* __restrict y, f
 }
 #else
 void LossMetric::MaeLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols) {
-    #pragma omp parallel for
+    #pragma omp parallel for simd
     for (size_t i = 0; i < rows*cols; i++) {
         c[i] = (x[i] - y[i]) > 0.0f ? 1.0f : -1.0f;
     }
 
 }
 void LossMetric::MseLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols) {
-    #pragma omp parallel for
+    #pragma omp parallel for simd
     for (size_t i = 0; i < rows*cols; i++) {
         c[i] = 2.0f * (x[i] - y[i]);
     }
