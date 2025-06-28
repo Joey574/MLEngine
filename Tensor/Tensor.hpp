@@ -7,9 +7,8 @@ public:
     Tensor() { memset(this, 0, sizeof(Tensor)); }
 
     template<typename... Dims>
-    Tensor(Dims... dims) : m_dimensions{(size_t)dims...}, m_data_size(((size_t)dims * ... * 1)), m_dimensionality(sizeof...(dims)) {
-        static_assert((std::is_convertible_v<Dims, size_t> && ...), "Must be convertable to size_t");
-        data = (T*)aligned_alloc(32, m_data_size*sizeof(T));
+    Tensor(Dims... dims, bool init=true) : m_dimensions{(size_t)dims...}, m_data_size(((size_t)dims * ... * 1)), m_dimensionality(sizeof...(dims)) {
+        if (init) { data = (T*)aligned_alloc(32, m_data_size*sizeof(T)); }
     }
 
     template<typename... Dims>
@@ -17,18 +16,20 @@ public:
 
     ~Tensor() { if (data) { free(data); } }
 
+    inline void takeover(T* data) { this->data=data; }
 
+    inline T* begin() { return data; }
+    
     inline size_t dimensionality() const { return m_dimensionality; }
     inline size_t size() const { return m_data_size; }
     inline const std::vector<size_t>& shape() const { return m_dimensions; }
 
+    template<typename... Dims>
+    static inline size_t sizefor(Dims... dims) { return ((size_t)dims * ... * sizeof(T)); }
+
     template<typename... Idxs>
     inline T& operator()(Idxs... idxs) {
-        static_assert(sizeof...(Idxs) > 0, "Must have at least one index");
-        assert(sizeof...(Idxs) == m_dimensionality);
-
-        size_t idx = computeFlatIndex({(size_t)idxs...});
-        return data[idx];
+        return data[computeFlatIndex({(size_t)idxs...})];
     }
     
 private:

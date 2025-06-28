@@ -3,6 +3,7 @@
 #include "../LossMetric/LossMetric.hpp"
 #include "../MathUtils/MathUtils.hpp"
 #include "../Optimizer/Optimizer.hpp"
+#include "../Tensor/Tensor.hpp"
 
 struct Layer {
 public:
