@@ -27,14 +27,10 @@
 #define Y_LAYERTYPE "type"
 #define Y_NODES "nodes"
 #define Y_DROPOUT "dropout"
-#define Y_REGULARIZATION "regularization"
 #define Y_ACTIVATION "activation"
 #define Y_LOSS "loss"
 #define Y_METRIC "metric"
-#define Y_MOMENTUM "momentum"
 #define Y_SKIPCONN "skipconn"
-#define Y_L1_LAMBDA "l1_lambda"
-#define Y_L2_LAMBDA "l2_lambda"
 
 // optimizer data
 #define Y_OPT_OPTIMIZER "optimizer"

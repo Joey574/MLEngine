@@ -3,12 +3,12 @@
 nlohmann::json NeuralNetwork::Fit(Dataset& dataset, nlohmann::json& storedhistory) {
 	auto fitstart = std::chrono::high_resolution_clock::now();
 
-	std::cout << config << "\n\n";
+	std::cout << "\n" << config << "\n\n";
 
-	size_t epochs = config[Y_EPOCHS].as<size_t>(0);
-	size_t batch_size = config[Y_BATCHSIZE].as<size_t>();
-	size_t valid_freq = config[Y_VALIDFREQ].as<size_t>();
-	float learning_rate = config[Y_OPT_OPTIMIZER][Y_OPT_LEARNINGRATE].as<float>(0.1f);
+	size_t epochs = config[Y_EPOCHS].as<size_t>(Y_EPOCH_DEFAULT);
+	size_t batch_size = config[Y_BATCHSIZE].as<size_t>(Y_BATCH_DEFAULT);
+	size_t valid_freq = config[Y_VALIDFREQ].as<size_t>(Y_VALID_DEFAULT);
+	float learning_rate = config[Y_OPT_OPTIMIZER][Y_OPT_LEARNINGRATE].as<float>(Y_LEARNRATE_DEFAULT);
 
 
 	nlohmann::json history;
@@ -23,7 +23,7 @@ nlohmann::json NeuralNetwork::Fit(Dataset& dataset, nlohmann::json& storedhistor
 		auto epochstart = std::chrono::high_resolution_clock::now();
 
 		// shuffle dataset each epoch
-		dataset.Shuffle();
+		dataset.Shuffle(e);
 
 		for (size_t i = 0; i < iterations; i++) {
 			float* __restrict x = &dataset.trainData[(i * batch_size) * dataset.trainDataCols];

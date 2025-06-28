@@ -29,9 +29,8 @@ struct Dataset {
     Dataset(Datasets type, std::string name) : type(type), name(name) {}
     Dataset() : type(Datasets::NONE) {}
 
-    void Shuffle() {
-        std::random_device rd;
-        std::mt19937 rng(rd());
+    void Shuffle(size_t e) {
+        std::mt19937 rng(SEED+22+e);
 
         // swap blocks in place
         for (size_t i = trainDataRows-1; i > 0; i--) {

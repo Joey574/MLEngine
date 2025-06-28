@@ -3,27 +3,25 @@
 MLEngine is a C++ command line tool for linux aimed to allow easy iteration on different neural network designs
 
 #### In the works
-* Adding/Removing layers through iterations
-* Allow YAML config file to be used for network config
 * CNN
 
 #### Future ideas
 * GPU compatability
-* better install
+* Adding/Removing layers through iterations
+* Custom language for the program
 
 ### Install
-
 To compile the project from source, simply download and extract the repo, then, in the project directory, run
 
 ```
 bash build.sh
 ```
 
-which will compile the program in release mode for you, currently does not add the program to a user's PATH, but I'll probably change that someday
+which will compile the program in release mode for you using CMake, considering the nature of the program compilation is source-distributed to allow for the maximum compiler optimizations available
 
 ### Description
 
-Written from scratch, MLEngine makes use of its own forward and back prop algorithms, currently does not support GPUs but that might change. Highly optimized and customizable, a user can define what dataset to train on, the name of the model, model dimensions, activations, weight initilization, loss, scoring, and various other options that are used during training.
+Written from scratch in C++, MLEngine is a Machine Learning framework that allows a user to implement all sorts of machine learning concepts, currently does not support GPUs but bound to change one day. Highly optimized and customizable, a user can define what dataset to train on, the name of the model, model dimensions, activations, weight initilization, loss, scoring, and various other options that are used during training.
 <br><br>
 Much of the mathematical code has been lifted from a [previous project](https://github.com/Joey574/MachineLearningCpp) of mine, specifically, the core is very similair to the *SingleBlockNeuralNetwork* version, though many orginizational changes have been made. That proejct was much more focused on just getting the math right, it allowed me to form an understanding of how neural networks worked but was by no means easy to use. This project aims to change that, primarily by making it a command line tool and allowing easy iterations of different neural network designs.
 
@@ -41,7 +39,7 @@ MLEngine uses a general top down framework to allow vast customizability and mod
 flowchart TD
     state["`**State:** Manages everything from the top down, specifically responsible for saving and loading configs`"]
 
-    nn["`**NeuralNetwork:** Manages the memory allocation of the network and is specifically responsible for dealing with sout, logging, and managing network state`"]
+    nn["`**NeuralNetwork:** Manages the memory allocation of the network and is specifically responsible for dealing with logging, and managing training state`"]
 
     layer["`**Layer:** Responsible for the exact mathematical implementations of forward and back prop, makes heavy use of templates to allow customization and improve performance`"]
 
@@ -51,13 +49,17 @@ flowchart TD
 
     lossmetric["`**LossMetric:** Implements various loss and scoring functions`"]
 
+    optimizer["`**Optimizer:** Implements things like sgd, rmsprop, and more, this guy is responsible for all things regarding parameter updates`"]
+
     mathutils["`**MathUtils:** More of its own thing, used by various classes/structs, implements various dot prods, and other specific math utils (shocking)`"]
 
     state-->nn
     state-->dataload
+
     nn-->layer
 
     layer-->actv
     layer-->lossmetric
+    layer-->optimizer
 ```
 

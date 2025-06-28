@@ -125,19 +125,21 @@ Dataset DataLoader::LoadMNIST(YAML::Node& args) {
 
     testd.close();
     testl.close();
+    
 
     size_t base_samples = mnist.trainDataRows;
-
+    
     if (args[Y_ROTATION]) {
+        std::mt19937 rd(SEED+50);
         float rot = args[Y_ROTATION].as<float>();
-        float rot2 = rot*2;
-        size_t samples = args[Y_ROT_VARIANTS].as<size_t>(0);
+
+        std::uniform_real_distribution<float> gen(-rot, rot);
+        size_t samples = args[Y_ROT_VARIANTS].as<size_t>(Y_ROT_VAR_DEFAULT);
 
         // generate randomly rotated images of test dataset
         for (size_t i = 0; i < base_samples; i++) {
             for (size_t j = 0; j < samples; j++) {
-                float rfloat = (float)rand() / (float)RAND_MAX;
-                float deg = (rfloat * rot2)-rot;
+                float deg = gen(rd);
 
                 std::vector<float> image = RotateImage(&mnist.trainData[i*mnist.trainDataCols], width, height, deg);
 
@@ -150,16 +152,17 @@ Dataset DataLoader::LoadMNIST(YAML::Node& args) {
     }
 
     if (args[Y_SCALE]) {
+        std::mt19937 rd(SEED+71);
         float scale = args[Y_SCALE].as<float>();
-        float scale2 = scale*2;
-        size_t samples = args[Y_SCALE_VARIANTS].as<size_t>(0);
+
+        std::uniform_real_distribution<float> gen(1.0f-scale, 1.0f+scale);
+        size_t samples = args[Y_SCALE_VARIANTS].as<size_t>(Y_SCALE_VAR_DEFAULT);
 
         for (size_t i = 0; i < base_samples; i++) {
             for (size_t j = 0; j < samples; j++) {
-                float rscale = (float)rand() / (float)RAND_MAX;
-                float sc = 1.0f+(rscale*scale2)-scale;
+                float scale = gen(rd);
 
-                std::vector<float> image = ScaleImage(&mnist.trainData[i*mnist.trainDataCols], width, height, sc);
+                std::vector<float> image = ScaleImage(&mnist.trainData[i*mnist.trainDataCols], width, height, scale);
 
                 mnist.trainData.insert(mnist.trainData.end(), image.begin(), image.end());
                 mnist.trainLabels.push_back(mnist.trainLabels[i]);
@@ -181,9 +184,9 @@ Dataset DataLoader::LoadMandlebrot(YAML::Node& args) {
     mandlebrot.hasTestData = true;
     mandlebrot.args = args;
 
-    size_t n = args[Y_SAMPLES].as<size_t>(0);
-    size_t depth = args[Y_MANDLEDEPTH].as<size_t>(50);
-    size_t fourier = args[Y_FOURIERSERIES].as<size_t>(0);
+    size_t n = args[Y_SAMPLES].as<size_t>(Y_SAMPLE_DEFAULT);
+    size_t depth = args[Y_MANDLEDEPTH].as<size_t>(Y_MANDLEDEPTH_DEFAULT);
+    size_t fourier = args[Y_FOURIERSERIES].as<size_t>(Y_FOURIER_DEFAULT);
 
     const size_t test_elements = 10000 > (n*0.1) ? 10000 : n*0.1;
 

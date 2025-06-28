@@ -68,7 +68,7 @@ endif()
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++")
 target_link_libraries(MLEngine PRIVATE pthread m dl)
 
-# yaml package
+# packages
 find_package(yaml-cpp REQUIRED)
 find_package(OpenMP REQUIRED)
 target_link_libraries(MLEngine PRIVATE OpenMP::OpenMP_CXX yaml-cpp)

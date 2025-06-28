@@ -49,31 +49,31 @@ Optimizer::Update Optimizer::ParseUpdType(const std::string& upd) {
 }
 
 void Optimizer::Define(YAML::Node config) {
-    std::string upd = config[Y_OPT_TYPE].as<std::string>("sgd");
+    std::string upd = config[Y_OPT_TYPE].as<std::string>(Y_OPTIMIZER_DEFAULT);
     m_update = ParseUpdType(upd);
 
-    m_lr = config[Y_OPT_LEARNINGRATE].as<float>(0.1f);
+    m_lr = config[Y_OPT_LEARNINGRATE].as<float>(Y_LEARNRATE_DEFAULT);
 
     if (config[Y_OPT_REGULARIZATION]) {
         std::string reg = config[Y_OPT_REGULARIZATION].as<std::string>();
         
-        m_reg_lambda = config[Y_OPT_REGLAMBDA].as<float>(0.0001f);
+        m_reg_lambda = config[Y_OPT_REGLAMBDA].as<float>(Y_REGLAMBDA_DEFAULT);
         m_reg = ParseRegType(reg);
     }
 
     switch (m_update) {
         case Update::momentumsgd:
-            m_m_coef = config[Y_OPT_MOMENTUM].as<float>(0.9f);
+            m_m_coef = config[Y_OPT_MOMENTUM].as<float>(Y_MOMENTUM_DEFAULT);
             break;
         case Update::rmsprop:
-            m_r_decay = config[Y_OPT_DECAY].as<float>(0.9f);
-            m_r_epsl = config[Y_OPT_EPSL].as<float>(0.000001f);
+            m_r_decay = config[Y_OPT_DECAY].as<float>(Y_DECAY_DEFAULT);
+            m_r_epsl = config[Y_OPT_EPSL].as<float>(Y_EPSL_DEFAULT);
             break;
         case Update::adam:
             m_a_t = 1;
-            m_a_b1 = config[Y_OPT_B1].as<float>(0.9f);
-            m_a_b2 = config[Y_OPT_B2].as<float>(0.999f);
-            m_a_epsl = config[Y_OPT_EPSL].as<float>(0.000001f);
+            m_a_b1 = config[Y_OPT_B1].as<float>(Y_B1_DEFAULT);
+            m_a_b2 = config[Y_OPT_B2].as<float>(Y_B2_DEFAULT);
+            m_a_epsl = config[Y_OPT_EPSL].as<float>(Y_EPSL_DEFAULT);
             break;
     }
 
