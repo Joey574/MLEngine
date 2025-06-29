@@ -3,15 +3,15 @@ dataset: mnist
 
 
 optimizer:
-  type: rmsprop
-  learning_rate: 0.1
+  type: sgd
+  learning_rate: 0.01
 
 layers:
   - type: input
 
   - type: hidden
-    dropout: 0.2
     nodes: 256
+    dropout: 0.2
     activation: leakyrelu
 
   - type: output
@@ -23,6 +23,6 @@ layers:
 seed: 42
 
 weight: he
-epochs: 10
+epochs: 100
 valid_freq: 1
 batch_size: 512

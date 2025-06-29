@@ -33,7 +33,7 @@ void Layer::ComputeDN(const float* __restrict input, size_t n) {
     for (size_t i = 1; i < n; i++) {
 
         size_t j = 0;
-        for (; j+8 <= nodes; j+= 8) {
+        for (; j <= (ssize_t)nodes-8; j+= 8) {
             const __m256 _a = _mm256_loadu_ps(&dt[i*nodes+j]);
             const __m256 _b = _mm256_loadu_ps(&db[j]);
             const __m256 _c = _mm256_add_ps(_a, _b);
@@ -41,7 +41,7 @@ void Layer::ComputeDN(const float* __restrict input, size_t n) {
             _mm256_storeu_ps(&db[j], _c);
         }
 
-        for (; j < nodes; j++) {
+        for (size_t j = nodes-(nodes%8); j < nodes; j++) {
             db[j] += dt[i*nodes+j];
         }
     }

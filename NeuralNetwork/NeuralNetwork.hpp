@@ -30,8 +30,8 @@ public:
 
     nlohmann::json Fit(Dataset& dataset, nlohmann::json& history);
 
-    int Load(std::ifstream& file);
     int Save(std::ofstream& file) const;
+    int Load(std::ifstream& file);
 
     static Layer::WeightInitialization ParseWeight(const std::string& w);
     static std::string WeightName(Layer::WeightInitialization w);
@@ -77,7 +77,11 @@ private:
         nlohmann::json& history,
         nlohmann::json& storedhistory,
         size_t e
-    ); 
+    );
+
+
+    void SaveOptimizers() const;
+    void LoadOptimizers();
 
 
     // initilization function

@@ -5,12 +5,21 @@ project(MLEngine LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# default release
+# default to release
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the build type (Release or Debug)" FORCE)
 endif()
 
-set(RELEASE_FLAGS
+# check platform
+if(WIN32)
+  message(STATUS "Configuring for Windows")
+elseif(UNIX)
+  message(STATUS "Configuring for Unix/Linux")
+else()
+  message(FATAL_ERROR "Unsupported platform")
+endif()
+
+set(GNU_RELEASE_FLAGS
   -march=native -mtune=native
   -flto=auto -fomit-frame-pointer -funroll-loops -fipa-pta
   -fdevirtualize-speculatively
@@ -23,19 +32,55 @@ set(RELEASE_FLAGS
   -fhoist-adjacent-loads -ftree-loop-distribution
   -ftree-loop-vectorize -ftree-slp-vectorize -ftree-vectorize
   -Wno-unused-result -frename-registers -fschedule-insns -fschedule-insns2
-  -fweb -fno-semantic-interposition
+  -fweb -fipa-cp-clone -floop-nest-optimize -ftree-partial-pre
+  -funsafe-loop-optimizations -freorder-blocks-and-partition
+  -fno-semantic-interposition -finline-functions -finline-functions-called-once
+  -fwhole-program -floop-interchange -floop-block -floop-strip-mine
+  -funswitch-loops -fira-loop-pressure -fsched-pressure
+  -ftree-loop-distribute-patterns -ftree-loop-im -fsplit-loops -fsplit-paths
 )
 
-set(DEBUG_FLAGS 
+set(GNU_DEBUG_FLAGS
   -march=native 
   -O0 -g -DDEBUG -rdynamic
   -fno-omit-frame-pointer
   -fno-lto -fopenmp
 )
 
+set(MSVC_RELEASE_FLAGS
+  /O2 /Ob2 /Ot /GL /Gy
+  /DNDEBUG /MT /fp:fast
+  /openmp:llvm
+)
+
+set(MSVC_DEBUG_FLAGS
+  /Od /Ob0 /Zi /RTC1
+  /MDd /DDEBUG 
+  /openmp:llvm
+)
+
+
 # use ccache
 find_program(CCACHE_PROGRAM ccache)
-set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
+if(CCACHE_PROGRAM)
+  set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
+endif()
+
+
+# set compiler flags based on compiler
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  message(STATUS "Compiling with GNU")
+
+  set(RELEASE_FLAGS ${GNU_RELEASE_FLAGS})
+  set(DEBUG_FLAGS ${GNU_DEBUG_FLAGS})
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  message(WARNING "Fallback to msvc, degraded performance expected (MinGW recommended)")
+
+  set(RELEASE_FLAGS ${MSVC_RELEASE_FLAGS})
+  set(DEBUG_FLAGS ${MSVC_DEBUG_FLAGS})
+else()
+  message(FATAL_ERROR "Unsupported compiler")
+endif()
 
 
 # collect all cpp files
@@ -52,6 +97,7 @@ file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS
   "Scheduler/*.cpp"
   "main.cpp"
 )
+
 
 # executable
 add_executable(MLEngine ${SOURCE_FILES})

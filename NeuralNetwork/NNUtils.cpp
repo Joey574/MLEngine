@@ -110,3 +110,26 @@ std::string NeuralNetwork::Visualize() {
 
     return res;
 }
+
+void NeuralNetwork::SaveOptimizers() const {
+    // iterate layers and save optimizer state
+	std::ofstream ofile(m_path+m_name+".optimizer", std::ios::trunc);
+	for (const Layer& layer : m_layers) {
+		bool err = layer.m_optimizer.Save(ofile);
+        if (err) { std::cerr << "Failed to save optimizer state\n"; }
+	}
+	ofile.close();
+}
+void NeuralNetwork::LoadOptimizers() {
+    // iterate layers and load optimizer state
+	std::ifstream ifile(m_path+m_name+".optimizer");
+
+    if (ifile.is_open()) {
+	    for (Layer& layer : m_layers) {
+	    	bool err = layer.m_optimizer.Load(ifile);
+            if (err) { std::cerr << "Failed to load optimizer state\n"; }
+
+	    }
+	    ifile.close();
+    }
+}

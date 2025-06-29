@@ -54,8 +54,8 @@ void Layer::InitializeSizes(size_t bn, size_t tn) {
 
     switch (type) {
         case LayerType::input:
-            m_a_bytes = RoundTo(32, nodes*bn*sizeof(float));
-            m_ta_bytes = RoundTo(32, nodes*tn*sizeof(float));
+            m_a_bytes = MathUtils::RoundTo(32, nodes*bn*sizeof(float));
+            m_ta_bytes = MathUtils::RoundTo(32, nodes*tn*sizeof(float));
 
             layer_batch_bytes = m_a_bytes;
             layer_test_bytes = m_ta_bytes;            
@@ -91,10 +91,10 @@ void Layer::InitializePointers(char* data, char* batchdata, char* testdata, size
             break;
         case LayerType::hidden: case LayerType::output:
             m_w = (float*)(data+offset);
-            offset += RoundTo(32, wsize*sizeof(float));
+            offset += MathUtils::RoundTo(32, wsize*sizeof(float));
 
             m_b = (float*)(data+offset);
-            offset += RoundTo(32, bsize*sizeof(float));
+            offset += MathUtils::RoundTo(32, bsize*sizeof(float));
             break;
     }
 
@@ -119,10 +119,10 @@ void Layer::InitializePointers(char* data, char* batchdata, char* testdata, size
             size_t output_size = nodes*tn*sizeof(float);
 
             m_tz = (float*)(testdata+offset);
-            offset += RoundTo(32, output_size);
+            offset += MathUtils::RoundTo(32, output_size);
 
             m_ta = (float*)(testdata+offset);
-            offset += RoundTo(32, output_size);
+            offset += MathUtils::RoundTo(32, output_size);
             break;
     }
 }

@@ -3,12 +3,13 @@ dataset: mnist
 
 dataset_args:
   rotation: 15
-  rot_variants: 10
+  min_rotation: 8
+  rot_variants: 5
 
 
-optimization:
-  type: rmsprop
-  learning_rate: 0.01
+optimizer:
+  type: adam
+  learning_rate: 0.05
 
 
 layers:

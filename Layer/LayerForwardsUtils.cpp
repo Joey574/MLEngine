@@ -18,7 +18,7 @@ void Layer::ApplyDropoutFP(size_t n) {
             mask[byteidx] |= (1 << bitidx);
         } else {
             a[i] = 0.0f;
-            mask[byteidx] &= (0 << bitidx);
+            mask[byteidx] &= ~(1 << bitidx);
         }
     }
 }

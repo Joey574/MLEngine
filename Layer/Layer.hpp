@@ -72,6 +72,10 @@ public:
 
     size_t params;
 
+    // optimizer data
+    Optimizer m_optimizer;
+    size_t m_o_bytes;
+
 protected:
 
     // bools for various options
@@ -93,10 +97,6 @@ protected:
     size_t m_s_idx;
     size_t m_s_base;
     size_t m_s_skip;
-
-    // optimizer data
-    Optimizer m_optimizer;
-    size_t m_o_bytes;
 
 private:
 
@@ -131,7 +131,6 @@ private:
     void AssignFunctionPointers();
 
     void SetBasicBatchTestBytes(size_t bn, size_t tn);
-    static size_t RoundTo(size_t alignment, size_t n);
     static std::string CleanSize(size_t bytes);
 
     // network data

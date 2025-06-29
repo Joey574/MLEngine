@@ -83,38 +83,41 @@ void Optimizer::Initialize(float* dw, float* db, char* data, size_t wsize, size_
     size_t offset = 0;
     m_s_dw = dw;
     m_s_db = db;
+    
+    this->wsize = wsize;
+    this->bsize = bsize;
 
     switch (m_update) {
         case Update::sgd:
             break;
         case Update::momentumsgd:
             m_m_vw = (float*)(data+offset);
-            offset += RoundTo(32, wsize*sizeof(float));
+            offset += MathUtils::RoundTo(32, wsize*sizeof(float));
             
             m_m_vb = (float*)(data+offset);
-            offset += RoundTo(32, bsize*sizeof(float));
+            offset += MathUtils::RoundTo(32, bsize*sizeof(float));
             break;
 
         case Update::rmsprop:
             m_r_gw = (float*)(data+offset);
-            offset += RoundTo(32, wsize*sizeof(float));
+            offset += MathUtils::RoundTo(32, wsize*sizeof(float));
 
             m_r_gb = (float*)(data+offset);
-            offset += RoundTo(32, bsize*sizeof(float));
+            offset += MathUtils::RoundTo(32, bsize*sizeof(float));
             break;
 
         case Update::adam:
             m_a_wm = (float*)(data+offset);
-            offset += RoundTo(32, wsize*sizeof(float));
+            offset += MathUtils::RoundTo(32, wsize*sizeof(float));
 
             m_a_wv = (float*)(data+offset);
-            offset += RoundTo(32, wsize*sizeof(float));
+            offset += MathUtils::RoundTo(32, wsize*sizeof(float));
 
             m_a_bm = (float*)(data+offset);
-            offset += RoundTo(32, bsize*sizeof(float));
+            offset += MathUtils::RoundTo(32, bsize*sizeof(float));
 
             m_a_bv = (float*)(data+offset);
-            offset += RoundTo(32, bsize*sizeof(float));
+            offset += MathUtils::RoundTo(32, bsize*sizeof(float));
     }
 }
 
@@ -149,29 +152,74 @@ size_t Optimizer::Size(size_t wsize, size_t bsize) {
         case Update::sgd:
             break;
         case Update::momentumsgd:
-            size += RoundTo(32, wsize*sizeof(float));
-            size += RoundTo(32, bsize*sizeof(float));
+            size += MathUtils::RoundTo(32, wsize*sizeof(float));
+            size += MathUtils::RoundTo(32, bsize*sizeof(float));
             break;
         
         case Update::rmsprop:
-            size += RoundTo(32, wsize*sizeof(float));
-            size += RoundTo(32, bsize*sizeof(float));
+            size += MathUtils::RoundTo(32, wsize*sizeof(float));
+            size += MathUtils::RoundTo(32, bsize*sizeof(float));
             break;
 
         case Update::adam:
-            size += RoundTo(32, wsize*sizeof(float));
-            size += RoundTo(32, wsize*sizeof(float));
+            size += MathUtils::RoundTo(32, wsize*sizeof(float));
+            size += MathUtils::RoundTo(32, wsize*sizeof(float));
 
-            size += RoundTo(32, bsize*sizeof(float));
-            size += RoundTo(32, bsize*sizeof(float));
+            size += MathUtils::RoundTo(32, bsize*sizeof(float));
+            size += MathUtils::RoundTo(32, bsize*sizeof(float));
             break;
     }
 
     return size;
 }
 
-/// @brief only works with powers of 2
-size_t Optimizer::RoundTo(size_t alignment, size_t n) {
-        alignment--;
-        return (n+alignment) & ~alignment;
+bool Optimizer::Save(std::ofstream& file) const {
+    if (wsize == 0 && bsize == 0) { return false; }
+
+    switch (m_update) {
+        case Update::sgd:
+            return false;
+        case Update::momentumsgd:
+            file.write((char*)m_m_vw, wsize*sizeof(float));
+            file.write((char*)m_m_vb, bsize*sizeof(float));
+            return file.fail();
+        case Update::rmsprop:
+            file.write((char*)m_r_gw, wsize*sizeof(float));
+            file.write((char*)m_r_gb, bsize*sizeof(float));
+            return file.fail();
+        case Update::adam:
+            file.write((char*)&m_a_t, sizeof(size_t));
+            file.write((char*)m_a_wv, wsize*sizeof(float));
+            file.write((char*)m_a_wm, wsize*sizeof(float));
+            file.write((char*)m_a_bv, bsize*sizeof(float));
+            file.write((char*)m_a_bm, bsize*sizeof(float));
+            return file.fail();
+    }
+    
+    return true;
+}
+bool Optimizer::Load(std::ifstream& file) {
+    if (wsize == 0 && bsize == 0) { return false; }
+
+    switch (m_update) {
+        case Update::sgd:
+            return false;
+        case Update::momentumsgd:
+            file.read((char*)m_m_vw, wsize*sizeof(float));
+            file.read((char*)m_m_vb, bsize*sizeof(float));
+            return file.fail();
+        case Update::rmsprop:
+            file.read((char*)m_r_gw, wsize*sizeof(float));
+            file.read((char*)m_r_gb, bsize*sizeof(float));
+            return file.fail();
+        case Update::adam:
+            file.read((char*)&m_a_t, sizeof(size_t));
+            file.read((char*)m_a_wv, wsize*sizeof(float));
+            file.read((char*)m_a_wm, wsize*sizeof(float));
+            file.read((char*)m_a_bv, bsize*sizeof(float));
+            file.read((char*)m_a_bm, bsize*sizeof(float));
+            return file.fail();
+    }
+
+    return true;
 }

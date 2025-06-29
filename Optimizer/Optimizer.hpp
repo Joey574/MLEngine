@@ -1,4 +1,5 @@
 #pragma once
+#include "../MathUtils/MathUtils.hpp"
 
 struct Optimizer {
 public:
@@ -18,6 +19,9 @@ public:
     void Initialize(float* dw, float* db, char* data, size_t wsize, size_t bsize);
     size_t Size(size_t wsize, size_t bsize);
 
+    bool Save(std::ofstream& file) const;
+    bool Load(std::ifstream& file);
+
     static std::string ParseRegName(Regularization reg);
     static std::string ParseUpdName(Update upd);
     static Regularization ParseRegType(const std::string& reg);
@@ -26,11 +30,12 @@ public:
 private:
 
     void AssignPtr();
-    static size_t RoundTo(size_t alignment, size_t n);
 
     // basic data
     Update m_update;
     float m_lr;
+    size_t wsize;
+    size_t bsize;
 
     // sgd data
     float* m_s_dw;

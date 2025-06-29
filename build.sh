@@ -16,10 +16,11 @@ mkdir -p CMakeBuild
 cd CMakeBuild
 
 # configure
+export OMP_WAIT_POLICY=active
 cmake .. -DCMAKE_BUILD_TYPE="$build_type" -G Ninja
 
 # build program
-echo "Building program ($build_type)"
+echo "-- Building program ($build_type)"
 cmake --build . -j
 
 # output

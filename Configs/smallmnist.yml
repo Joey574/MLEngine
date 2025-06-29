@@ -5,6 +5,10 @@ dataset_args:
   rotation: 15
   rot_variants: 5
 
+optimizer:
+  type: sgd
+  learning_rate: 0.01
+
 weight: normalize
 
 layers:
@@ -13,15 +17,11 @@ layers:
   - type: hidden
     nodes: 32
     activation: leakyrelu
-    regularization: l2
-    l2_lambda: 0.00001
 
 
   - type: hidden
     nodes: 32
     activation: leakyrelu
-    regularization: l2
-    l2_lambda: 0.00001
 
 
   - type: output
@@ -29,11 +29,7 @@ layers:
     activation: sigmoid
     loss: onehot
     metric: accuracy
-    regularization: l2
-    l2_lambda: 0.00001
-    momentum: 0.1
 
 epochs: 500
 valid_freq: 1
-learning_rate: 0.01
 batch_size: 512

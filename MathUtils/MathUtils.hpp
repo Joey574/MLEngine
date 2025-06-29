@@ -13,4 +13,10 @@ public:
     static float Sum512(__m512 _x);
     static __m256 Exp256(__m256 _x);
     static __m512 Exp512(__m512 _x);
+
+    /// @brief only works with powers of 2
+    static inline size_t RoundTo(size_t alignment, size_t n) {
+        alignment--;
+        return (n+alignment) & ~alignment;
+    }
 };

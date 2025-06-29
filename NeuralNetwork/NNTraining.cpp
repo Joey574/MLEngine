@@ -17,6 +17,8 @@ nlohmann::json NeuralNetwork::Fit(Dataset& dataset, nlohmann::json& storedhistor
 	InitializeLayerData(batch_size, dataset.testDataRows);
 	InitializeLayerPointers(batch_size, dataset.testDataRows);
 
+	LoadOptimizers();
+
 	const size_t iterations = std::ceil((double)dataset.trainDataRows/(double)batch_size);
 	
 	for (size_t e = 0; e < epochs && KEEPRUNNING; e++) {
@@ -48,6 +50,8 @@ nlohmann::json NeuralNetwork::Fit(Dataset& dataset, nlohmann::json& storedhistor
 
 	// forced network test to make sure we get at least one save if model wasn't validated during training
 	TestNetwork(dataset, history, storedhistory, epochs);
+
+	SaveOptimizers();
 	
 	FitEnd(history, fitstart);
 	storedhistory[J_RUNS].push_back(history);

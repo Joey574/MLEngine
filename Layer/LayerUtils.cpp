@@ -31,12 +31,6 @@ Layer::LayerType Layer::ParseType(const std::string& type) {
     return LayerType::none;
 }
 
-/// @brief only works with powers of 2
-size_t Layer::RoundTo(size_t alignment, size_t n) {
-        alignment--;
-        return (n+alignment) & ~alignment;
-}
-
 std::string Layer::CleanSize(size_t bytes) {
     long double dbytes = bytes;
     const double gb = 1e9;

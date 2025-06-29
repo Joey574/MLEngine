@@ -16,8 +16,8 @@ void Layer::AssignLayerSize() {
             params = wsize+bsize;
 
             // size for weights and biases
-            m_w_bytes = RoundTo(32, wsize*sizeof(float));
-            m_b_bytes = RoundTo(32, bsize*sizeof(float));
+            m_w_bytes = MathUtils::RoundTo(32, wsize*sizeof(float));
+            m_b_bytes = MathUtils::RoundTo(32, bsize*sizeof(float));
 
             layer_bytes += m_w_bytes + m_b_bytes;
             break;
@@ -56,19 +56,19 @@ void Layer::AssignBasicBatchPtrs(char* batchdata, size_t bn) {
 
 void Layer::SetBasicBatchTestBytes(size_t bn, size_t tn) {
  
-    m_z_bytes = RoundTo(32, nodes*bn*sizeof(float));
-    m_a_bytes = RoundTo(32, nodes*bn*sizeof(float));
+    m_z_bytes = MathUtils::RoundTo(32, nodes*bn*sizeof(float));
+    m_a_bytes = MathUtils::RoundTo(32, nodes*bn*sizeof(float));
 
-    m_tz_bytes = RoundTo(32, nodes*tn*sizeof(float));
-    m_ta_bytes = RoundTo(32, nodes*tn*sizeof(float));
+    m_tz_bytes = MathUtils::RoundTo(32, nodes*tn*sizeof(float));
+    m_ta_bytes = MathUtils::RoundTo(32, nodes*tn*sizeof(float));
 
-    m_dt_bytes = RoundTo(32, nodes*bn*sizeof(float));
+    m_dt_bytes = MathUtils::RoundTo(32, nodes*bn*sizeof(float));
     m_dw_bytes = m_w_bytes;
     m_db_bytes = m_b_bytes;
 
     if (m_d_dropout) {
         // bit packed
-        m_d_dpmask_bytes = RoundTo(32, (nodes+(bn-1))*bn/8);
+        m_d_dpmask_bytes = MathUtils::RoundTo(32, (nodes+(bn-1))*bn/8);
     }
 
     // size for optimizer

@@ -132,14 +132,17 @@ Dataset DataLoader::LoadMNIST(YAML::Node& args) {
     if (args[Y_ROTATION]) {
         std::mt19937 rd(SEED+50);
         float rot = args[Y_ROTATION].as<float>();
+        float mrot = args[Y_MIN_ROTATION].as<float>(Y_MIN_ROTATION_DEFAULT);
 
         std::uniform_real_distribution<float> gen(-rot, rot);
         size_t samples = args[Y_ROT_VARIANTS].as<size_t>(Y_ROT_VAR_DEFAULT);
 
         // generate randomly rotated images of test dataset
         for (size_t i = 0; i < base_samples; i++) {
+
             for (size_t j = 0; j < samples; j++) {
                 float deg = gen(rd);
+                deg += deg < 0.0f ? -mrot : mrot;
 
                 std::vector<float> image = RotateImage(&mnist.trainData[i*mnist.trainDataCols], width, height, deg);
 
@@ -195,8 +198,7 @@ Dataset DataLoader::LoadMandlebrot(YAML::Node& args) {
     const double yMin = -1.1;
     const double yMax = 1.1;
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
+    std::mt19937 gen(SEED-82);
 
     std::uniform_real_distribution<double> xrand(xMin, xMax);
     std::uniform_real_distribution<double> yrand(yMin, yMax);
