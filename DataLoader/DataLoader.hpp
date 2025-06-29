@@ -14,6 +14,7 @@ public:
 private:
     // mnist / fmnist utils
     static int ReadBigInt(std::ifstream* f);
+    static void LoadMNISTStyleDataset(Dataset& dataset, YAML::Node& args, std::ifstream& traind, std::ifstream& trainl, std::ifstream& testd, std::ifstream& testl);
 
     static std::vector<float> RotateImage(const float* image, size_t width, size_t height, float deg);
     static std::vector<float> ScaleImage(const float* image, size_t width, size_t height, float scale);

@@ -6,7 +6,8 @@
 // ds arg defaults
 #define Y_ROT_VAR_DEFAULT 0
 #define Y_MIN_ROTATION_DEFAULT 0
-#define Y_SCALE_VAR_DEFAULT 0   
+#define Y_SCALE_VAR_DEFAULT 0
+#define Y_MIN_SCALE_DEFAULT 0
 #define Y_SAMPLE_DEFAULT 0
 #define Y_MANDLEDEPTH_DEFAULT 50
 #define Y_FOURIER_DEFAULT 0

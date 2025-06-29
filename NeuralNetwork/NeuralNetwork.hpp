@@ -5,7 +5,7 @@
 
 struct State;
 
-class NeuralNetwork {
+struct NeuralNetwork {
     friend struct Layer;
     friend struct Activation;
     friend struct LossMetric;

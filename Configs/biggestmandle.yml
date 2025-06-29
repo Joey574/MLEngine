@@ -2,7 +2,7 @@ name: biggest
 dataset: mandlebrot
 
 optimizer:
-  type: sgd
+  type: adam
   learning_rate: 0.0000001
 
 dataset_args:

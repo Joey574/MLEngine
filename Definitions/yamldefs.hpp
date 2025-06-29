@@ -13,6 +13,7 @@
 #define Y_MIN_ROTATION "min_rotation"
 #define Y_ROT_VARIANTS "rot_variants"
 #define Y_SCALE "scale"
+#define Y_MIN_SCALE "min_scale"
 #define Y_SCALE_VARIANTS "scale_variants"
 #define Y_SAMPLES "samples"
 #define Y_MANDLEDEPTH "mandledepth"

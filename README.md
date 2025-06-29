@@ -9,6 +9,7 @@ MLEngine is a C++ command line tool for linux aimed to allow easy iteration on d
 * GPU compatability
 * Adding/Removing layers through iterations
 * Custom language for the program
+* User-defined datasets
 
 ### Install
 To compile the project from source, simply download and extract the repo, then, in the project directory, run
@@ -17,7 +18,7 @@ To compile the project from source, simply download and extract the repo, then, 
 bash build.sh
 ```
 
-which will compile the program in release mode for you using CMake, considering the nature of the program compilation is source-distributed to allow for the maximum compiler optimizations available
+which will compile the program in release mode for you using CMake, I'd **strongly** reccommend using a GNU compiler, (g++ for unix, minGW for Windows)
 
 ### Description
 
@@ -33,7 +34,7 @@ MLEngine -c someconfig.yml
 All specific YAML configurations and settings can be found in *DOCUMENTATION.md*
 
 ### How it works
-MLEngine uses a general top down framework to allow vast customizability and modification while maintaining performance
+MLEngine uses a general top down framework to allow vast customizability and modification while maintaining performance through use of templates
 
 ```mermaid
 flowchart TD

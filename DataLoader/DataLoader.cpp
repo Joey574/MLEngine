@@ -1,10 +1,6 @@
 #include "DataLoader.hpp"
 
-/// @brief 
-///  Returns the passed dataset as constrained by args
-/// @param dataset 
-/// @param args 
-/// @return
+/// @brief Returns the passed dataset as constrained by args
 Dataset DataLoader::LoadDataset(YAML::Node& config) {
     std::string dataset = config[Y_DATASET].as<std::string>();
     YAML::Node dsargs = config[Y_DATASETARGS];
@@ -33,153 +29,56 @@ Dataset DataLoader::LoadMNIST(YAML::Node& args) {
     std::string testingImages = ExpandPath("~/.local/share/ReconSuite/MLEngine/Datasets/MNIST/TestingData/t10k-images.idx3-ubyte");
     std::string testingLabels = ExpandPath("~/.local/share/ReconSuite/MLEngine/Datasets/MNIST/TestingData/t10k-labels.idx1-ubyte");
 
-    // open training files
+    // open files
     std::ifstream traind(trainingImages, std::ios::binary);
     std::ifstream trainl(trainingLabels, std::ios::binary);
-
-    ReadBigInt(&trainl);
-    ReadBigInt(&trainl);
-
-    ReadBigInt(&traind);
-    int imagenum = ReadBigInt(&traind);
-    int width = ReadBigInt(&traind);
-    int height = ReadBigInt(&traind);
-
-    // set up vector sizes
-    mnist.trainData = std::vector<float>();
-    mnist.trainLabels= std::vector<float>(imagenum);
-    mnist.trainData.reserve(imagenum*width*height);
-
-    mnist.trainDataRows = imagenum;
-    mnist.trainDataCols = width*height;
-
-    mnist.trainLabelRows = imagenum;
-    mnist.trainLabelCols = 1;
-
-    // parse out training data
-    for (int i = 0; i < imagenum; i++) {
-        // read one image from the file
-        std::vector<uint8_t> bytes(width * height);
-        traind.read(reinterpret_cast<char*>(bytes.data()), bytes.size());
-
-        // convert data to float array
-        std::vector<float> floatdata(bytes.size());
-        std::transform(bytes.begin(), bytes.end(), floatdata.begin(), [](uint8_t val) { return (float)val / 255.0f; });
-
-        // insert data into dataset
-        mnist.trainData.insert(mnist.trainData.end(), floatdata.begin(), floatdata.end());
-
-        // get label for data
-        char byte;
-        trainl.read(&byte, 1);
-        int label = static_cast<int>(static_cast<unsigned char>(byte));
-        mnist.trainLabels[i] = label;
-    }
-
-    traind.close();
-    trainl.close();
-
-
-    // open testing files
     std::ifstream testd(testingImages, std::ios::binary);
     std::ifstream testl(testingLabels, std::ios::binary);
 
-    ReadBigInt(&testl);
-    ReadBigInt(&testl);
-
-    ReadBigInt(&testd);
-    imagenum = ReadBigInt(&testd);
-    width = ReadBigInt(&testd);
-    height = ReadBigInt(&testd);
-
-    // set up vector sizes
-    mnist.testData = std::vector<float>();
-    mnist.testLabels= std::vector<float>(imagenum);
-    mnist.testData.reserve(imagenum*width*height);
-
-    mnist.testDataRows = imagenum;
-    mnist.testDataCols = width*height;
-  
-    mnist.testLabelRows = imagenum;
-    mnist.testLabelCols = 1;
-
-    // parse out test data
-    for (int i = 0; i < imagenum; i++) {
-        // read one image from the file
-        std::vector<uint8_t> bytes(width * height);
-        testd.read(reinterpret_cast<char*>(bytes.data()), bytes.size());
-
-        // convert data to float array
-        std::vector<float> floatdata(bytes.size());
-        std::transform(bytes.begin(), bytes.end(), floatdata.begin(), [](uint8_t val) { return (float)val / 255.0f; });
-
-        // insert data into dataset
-        mnist.testData.insert(mnist.testData.end(), floatdata.begin(), floatdata.end());
-
-        // get label for data
-        char byte;
-        testl.read(&byte, 1);
-        int label = static_cast<int>(static_cast<unsigned char>(byte));
-        mnist.testLabels[i] = label;
+    if (!traind.is_open() || !trainl.is_open() || !testd.is_open() || !testl.is_open()) {
+        std::cerr << "Failed to open dataset file(s)\n";
     }
 
+    LoadMNISTStyleDataset(mnist, args, traind, trainl, testd, testl);
+
+    // close files
+    traind.close();
+    trainl.close();
     testd.close();
     testl.close();
     
-
-    size_t base_samples = mnist.trainDataRows;
-    
-    if (args[Y_ROTATION]) {
-        std::mt19937 rd(SEED+50);
-        float rot = args[Y_ROTATION].as<float>();
-        float mrot = args[Y_MIN_ROTATION].as<float>(Y_MIN_ROTATION_DEFAULT);
-
-        std::uniform_real_distribution<float> gen(-rot, rot);
-        size_t samples = args[Y_ROT_VARIANTS].as<size_t>(Y_ROT_VAR_DEFAULT);
-
-        // generate randomly rotated images of test dataset
-        for (size_t i = 0; i < base_samples; i++) {
-
-            for (size_t j = 0; j < samples; j++) {
-                float deg = gen(rd);
-                deg += deg < 0.0f ? -mrot : mrot;
-
-                std::vector<float> image = RotateImage(&mnist.trainData[i*mnist.trainDataCols], width, height, deg);
-
-                mnist.trainData.insert(mnist.trainData.end(), image.begin(), image.end());
-                mnist.trainLabels.push_back(mnist.trainLabels[i]);
-                mnist.trainDataRows++;
-                mnist.trainLabelRows++;
-            }
-        }
-    }
-
-    if (args[Y_SCALE]) {
-        std::mt19937 rd(SEED+71);
-        float scale = args[Y_SCALE].as<float>();
-
-        std::uniform_real_distribution<float> gen(1.0f-scale, 1.0f+scale);
-        size_t samples = args[Y_SCALE_VARIANTS].as<size_t>(Y_SCALE_VAR_DEFAULT);
-
-        for (size_t i = 0; i < base_samples; i++) {
-            for (size_t j = 0; j < samples; j++) {
-                float scale = gen(rd);
-
-                std::vector<float> image = ScaleImage(&mnist.trainData[i*mnist.trainDataCols], width, height, scale);
-
-                mnist.trainData.insert(mnist.trainData.end(), image.begin(), image.end());
-                mnist.trainLabels.push_back(mnist.trainLabels[i]);
-                mnist.trainDataRows++;
-                mnist.trainLabelRows++;
-            }
-        }
-    }
-
     return mnist;
 }
 Dataset DataLoader::LoadFMNIST(YAML::Node& args) {
     Dataset fmnist(Datasets::FMNIST, "fmnist");
+    fmnist.hasTestData = true;
 
+    // training dataset path
+    std::string trainingImages = ExpandPath("~/.local/share/ReconSuite/MLEngine/Datasets/FMNIST/TrainingData/train-images-idx3-ubyte");
+    std::string trainingLabels = ExpandPath("~/.local/share/ReconSuite/MLEngine/Datasets/FMNIST/TrainingData/train-labels-idx1-ubyte");
+
+    // testing dataset path
+    std::string testingImages = ExpandPath("~/.local/share/ReconSuite/MLEngine/Datasets/FMNIST/TestingData/t10k-images-idx3-ubyte");
+    std::string testingLabels = ExpandPath("~/.local/share/ReconSuite/MLEngine/Datasets/FMNIST/TestingData/t10k-labels-idx1-ubyte");
+
+    // open files
+    std::ifstream traind(trainingImages, std::ios::binary);
+    std::ifstream trainl(trainingLabels, std::ios::binary);
+    std::ifstream testd(testingImages, std::ios::binary);
+    std::ifstream testl(testingLabels, std::ios::binary);
+
+    if (!traind.is_open() || !trainl.is_open() || !testd.is_open() || !testl.is_open()) {
+        std::cerr << "Failed to open dataset file(s)\n";
+    }
+
+    LoadMNISTStyleDataset(fmnist, args, traind, trainl, testd, testl);
+
+    // close files
+    traind.close();
+    trainl.close();
+    testd.close();
+    testl.close();
+    
     return fmnist;
 }
 Dataset DataLoader::LoadMandlebrot(YAML::Node& args) {
@@ -277,6 +176,136 @@ Dataset DataLoader::LoadMandlebrot(YAML::Node& args) {
     }
     
     return mandlebrot;
+}
+
+void DataLoader::LoadMNISTStyleDataset(Dataset& dataset, YAML::Node& args, std::ifstream& traind, std::ifstream& trainl, std::ifstream& testd, std::ifstream& testl) {
+    ReadBigInt(&trainl);
+    ReadBigInt(&trainl);
+
+    ReadBigInt(&traind);
+    int imagenum = ReadBigInt(&traind);
+    int width = ReadBigInt(&traind);
+    int height = ReadBigInt(&traind);
+
+    // set up vector sizes
+    dataset.trainData = std::vector<float>();
+    dataset.trainLabels= std::vector<float>(imagenum);
+    dataset.trainData.reserve(imagenum*width*height);
+
+    dataset.trainDataRows = imagenum;
+    dataset.trainDataCols = width*height;
+
+    dataset.trainLabelRows = imagenum;
+    dataset.trainLabelCols = 1;
+
+    // parse out training data
+    for (int i = 0; i < imagenum; i++) {
+        // read one image from the file
+        std::vector<uint8_t> bytes(width * height);
+        traind.read(reinterpret_cast<char*>(bytes.data()), bytes.size());
+
+        // convert data to float array
+        std::vector<float> floatdata(bytes.size());
+        std::transform(bytes.begin(), bytes.end(), floatdata.begin(), [](uint8_t val) { return (float)val / 255.0f; });
+
+        // insert data into dataset
+        dataset.trainData.insert(dataset.trainData.end(), floatdata.begin(), floatdata.end());
+
+        // get label for data
+        char byte;
+        trainl.read(&byte, 1);
+        int label = static_cast<int>(static_cast<unsigned char>(byte));
+        dataset.trainLabels[i] = label;
+    }
+
+    ReadBigInt(&testl);
+    ReadBigInt(&testl);
+
+    ReadBigInt(&testd);
+    imagenum = ReadBigInt(&testd);
+    width = ReadBigInt(&testd);
+    height = ReadBigInt(&testd);
+
+    // set up vector sizes
+    dataset.testData = std::vector<float>();
+    dataset.testLabels= std::vector<float>(imagenum);
+    dataset.testData.reserve(imagenum*width*height);
+
+    dataset.testDataRows = imagenum;
+    dataset.testDataCols = width*height;
+  
+    dataset.testLabelRows = imagenum;
+    dataset.testLabelCols = 1;
+
+    // parse out test data
+    for (int i = 0; i < imagenum; i++) {
+        // read one image from the file
+        std::vector<uint8_t> bytes(width * height);
+        testd.read(reinterpret_cast<char*>(bytes.data()), bytes.size());
+
+        // convert data to float array
+        std::vector<float> floatdata(bytes.size());
+        std::transform(bytes.begin(), bytes.end(), floatdata.begin(), [](uint8_t val) { return (float)val / 255.0f; });
+
+        // insert data into dataset
+        dataset.testData.insert(dataset.testData.end(), floatdata.begin(), floatdata.end());
+
+        // get label for data
+        char byte;
+        testl.read(&byte, 1);
+        int label = static_cast<int>(static_cast<unsigned char>(byte));
+        dataset.testLabels[i] = label;
+    }
+
+    size_t base_samples = dataset.trainDataRows;
+    
+    if (args[Y_ROTATION]) {
+        std::mt19937 rd(SEED+50);
+        float rot = args[Y_ROTATION].as<float>();
+        float mrot = args[Y_MIN_ROTATION].as<float>(Y_MIN_ROTATION_DEFAULT);
+
+        std::uniform_real_distribution<float> gen(-rot, rot);
+        size_t samples = args[Y_ROT_VARIANTS].as<size_t>(Y_ROT_VAR_DEFAULT);
+
+        // generate randomly rotated images of test dataset
+        for (size_t i = 0; i < base_samples; i++) {
+
+            for (size_t j = 0; j < samples; j++) {
+                float deg = gen(rd);
+                deg += deg < 0.0f ? -mrot : mrot;
+
+                std::vector<float> image = RotateImage(&dataset.trainData[i*dataset.trainDataCols], width, height, deg);
+
+                dataset.trainData.insert(dataset.trainData.end(), image.begin(), image.end());
+                dataset.trainLabels.push_back(dataset.trainLabels[i]);
+                dataset.trainDataRows++;
+                dataset.trainLabelRows++;
+            }
+        }
+    }
+
+    if (args[Y_SCALE]) {
+        std::mt19937 rd(SEED+71);
+        float scale = args[Y_SCALE].as<float>();
+        float mscale = args[Y_SCALE].as<float>(Y_MIN_SCALE_DEFAULT);
+
+        std::uniform_real_distribution<float> gen(1.0f-scale, 1.0f+scale);
+        size_t samples = args[Y_SCALE_VARIANTS].as<size_t>(Y_SCALE_VAR_DEFAULT);
+
+        for (size_t i = 0; i < base_samples; i++) {
+            for (size_t j = 0; j < samples; j++) {
+                float scale = gen(rd);
+                scale += scale < 1.0f ? -mscale : mscale;
+
+                std::vector<float> image = ScaleImage(&dataset.trainData[i*dataset.trainDataCols], width, height, scale);
+
+                dataset.trainData.insert(dataset.trainData.end(), image.begin(), image.end());
+                dataset.trainLabels.push_back(dataset.trainLabels[i]);
+                dataset.trainDataRows++;
+                dataset.trainLabelRows++;
+            }
+        }
+    }
 }
 
 int DataLoader::ReadBigInt(std::ifstream* f) {

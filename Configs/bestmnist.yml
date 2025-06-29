@@ -4,12 +4,15 @@ dataset: mnist
 dataset_args:
   rotation: 15
   min_rotation: 8
-  rot_variants: 5
+  rot_variants: 8
+  scale: 0.1
+  min_scale: 0.1
+  scale_variants: 2
 
 
 optimizer:
   type: adam
-  learning_rate: 0.05
+  learning_rate: 0.01
 
 
 layers:
