@@ -68,7 +68,7 @@ void Layer::SetBasicBatchTestBytes(size_t bn, size_t tn) {
 
     if (m_d_dropout) {
         // bit packed
-        m_d_dpmask_bytes = MathUtils::RoundTo(32, (nodes+(bn-1))*bn/8);
+        m_d_dpmask_bytes = MathUtils::RoundTo(32, (nodes*bn+7)/8);
     }
 
     // size for optimizer

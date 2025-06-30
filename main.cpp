@@ -82,10 +82,11 @@ int main(int argc, char* argv[]) {
     KEEPRUNNING = true;
     signal(SIGINT, handleInterupt);
     signal(SIGSEGV, segv);
+
+    DEBUG_LOG("Running in DEBUG mode\n");
     
     State state;
     state.Init();
-
     std::string config_file;
 
     // flags

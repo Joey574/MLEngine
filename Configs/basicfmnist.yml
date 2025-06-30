@@ -4,7 +4,7 @@ dataset: fmnist
 dataset_args:
   rotation: 15
   min_rotation: 10
-  rot_variants: 5
+  rot_variants: 2
 
 optimizer:
   type: adam
@@ -24,7 +24,9 @@ layers:
     loss: onehot
     metric: accuracy
 
+seed: 101
+
 weight: he
-epochs: 100
+epochs: 25
 valid_freq: 1
 batch_size: 512
