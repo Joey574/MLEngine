@@ -12,9 +12,15 @@
 #define Y_ROTATION "rotation"
 #define Y_MIN_ROTATION "min_rotation"
 #define Y_ROT_VARIANTS "rot_variants"
+
 #define Y_SCALE "scale"
 #define Y_MIN_SCALE "min_scale"
 #define Y_SCALE_VARIANTS "scale_variants"
+
+#define Y_SHEAR "shear"
+#define Y_MIN_SHEAR "min_shear"
+#define Y_SHEAR_VARIANTS "shear_variants"
+
 #define Y_SAMPLES "samples"
 #define Y_MANDLEDEPTH "mandledepth"
 #define Y_FOURIERSERIES "fourier_series"

@@ -29,22 +29,8 @@ void Layer::ComputeDN(const float* __restrict input, size_t n) {
     // prep db by copying in first values, clearing existing ones
     std::memcpy(db, dt, nodes*sizeof(float));
 
-    // compute db
-    for (size_t i = 1; i < n; i++) {
-
-        size_t j = 0;
-        for (; j <= (ssize_t)nodes-8; j+= 8) {
-            const __m256 _a = _mm256_loadu_ps(&dt[i*nodes+j]);
-            const __m256 _b = _mm256_loadu_ps(&db[j]);
-            const __m256 _c = _mm256_add_ps(_a, _b);
-
-            _mm256_storeu_ps(&db[j], _c);
-        }
-
-        for (size_t j = nodes-(nodes%8); j < nodes; j++) {
-            db[j] += dt[i*nodes+j];
-        }
-    }
+    // offset rows by 1 to account for memcpy
+    MathUtils::MatrixColumnSum<false>(&dt[nodes], db, n-1, nodes);
 }
 void Layer::ComputeSkipDN(const float* __restrict input, size_t n) {
     float* __restrict dt = m_dt;
@@ -61,22 +47,8 @@ void Layer::ComputeSkipDN(const float* __restrict input, size_t n) {
     // prep db by copying in first values, clearing existing ones
     std::memcpy(db, dt, nodes*sizeof(float));
 
-    // compute db
-    for (size_t i = 1; i < n; i++) {
-
-        size_t j = 0;
-        for (; j+8 <= nodes; j+= 8) {
-            const __m256 _a = _mm256_loadu_ps(&dt[i*nodes+j]);
-            const __m256 _b = _mm256_loadu_ps(&db[j]);
-            const __m256 _c = _mm256_add_ps(_a, _b);
-
-            _mm256_storeu_ps(&db[j], _c);
-        }
-
-        for (; j < nodes; j++) {
-            db[j] += dt[i*nodes+j];
-        }
-    }
+    // offset rows by 1 to account for memcpy
+    MathUtils::MatrixColumnSum<false>(&dt[nodes], db, n-1, nodes);
 }
 
 void Layer::ApplyDropoutBP(size_t n) {

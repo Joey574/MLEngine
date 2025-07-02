@@ -3,16 +3,19 @@ dataset: mnist
 
 dataset_args:
   rotation: 15
-  min_rotation: 8
+  min_rotation: 10
   rot_variants: 8
   scale: 0.1
-  min_scale: 0.1
+  min_scale: 0.15
   scale_variants: 2
+  shear: 0.1
+  min_shear: 0.2
+  shear_variants: 4
 
 
 optimizer:
   type: adam
-  learning_rate: 0.01
+  learning_rate: 0.001
 
 
 layers:
@@ -28,6 +31,8 @@ layers:
     activation: sigmoid
     loss: onehot
     metric: accuracy
+
+seed: 406246
 
 weight: he
 epochs: 1000

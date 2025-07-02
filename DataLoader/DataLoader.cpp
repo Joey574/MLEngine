@@ -287,17 +287,17 @@ void DataLoader::LoadMNISTStyleDataset(Dataset& dataset, YAML::Node& args, std::
     if (args[Y_SCALE]) {
         std::mt19937 rd(SEED+71);
         float scale = args[Y_SCALE].as<float>();
-        float mscale = args[Y_SCALE].as<float>(Y_MIN_SCALE_DEFAULT);
+        float mscale = args[Y_MIN_SCALE].as<float>(Y_MIN_SCALE_DEFAULT);
 
         std::uniform_real_distribution<float> gen(1.0f-scale, 1.0f+scale);
         size_t samples = args[Y_SCALE_VARIANTS].as<size_t>(Y_SCALE_VAR_DEFAULT);
 
         for (size_t i = 0; i < base_samples; i++) {
             for (size_t j = 0; j < samples; j++) {
-                float scale = gen(rd);
-                scale += scale < 1.0f ? -mscale : mscale;
+                float rscale = gen(rd);
+                rscale += rscale < 1.0f ? -mscale : mscale;
 
-                std::vector<float> image = ScaleImage(&dataset.trainData[i*dataset.trainDataCols], width, height, scale);
+                std::vector<float> image = ScaleImage(&dataset.trainData[i*dataset.trainDataCols], width, height, rscale);
 
                 dataset.trainData.insert(dataset.trainData.end(), image.begin(), image.end());
                 dataset.trainLabels.push_back(dataset.trainLabels[i]);
@@ -305,6 +305,31 @@ void DataLoader::LoadMNISTStyleDataset(Dataset& dataset, YAML::Node& args, std::
                 dataset.trainLabelRows++;
             }
         }
+    }
+
+    if (args[Y_SHEAR]) {
+        std::mt19937 rd(SEED-123);
+        float shear = args[Y_SHEAR].as<float>();
+        float mshear = args[Y_MIN_SHEAR].as<float>(Y_MIN_SHEAR_DEFAULT);
+
+        std::uniform_real_distribution<float> gen(-shear, shear);
+        size_t samples = args[Y_SHEAR_VARIANTS].as<size_t>(Y_SHEAR_VAR_DEFAULT);
+
+
+        for (size_t i = 0; i < base_samples; i++) {
+            for (size_t j = 0; j < samples; j++) {
+
+                float rshear = gen(rd);
+                rshear += rshear < 0.0 ? -mshear : mshear;
+
+                std::vector<float> image = ShearImage(&dataset.trainData[i*dataset.trainDataCols], width, height, rshear);
+                
+                dataset.trainData.insert(dataset.trainData.end(), image.begin(), image.end());
+                dataset.trainLabels.push_back(dataset.trainLabels[i]);
+                dataset.trainDataRows++;
+                dataset.trainLabelRows++;
+            }
+        }    
     }
 }
 
@@ -317,6 +342,32 @@ int DataLoader::ReadBigInt(std::ifstream* f) {
     std::swap(bytes[1], bytes[2]);
 
     return lint;
+}
+
+float DataLoader::BilinearSample(const float* image, size_t w, size_t h, float fx, float fy) {
+    int x0 = fx;
+    int y0 = fy;
+    int x1 = x0+1;
+    int y1 = y0+1;
+
+    x0 = std::clamp(x0, 0, (int)w-1);
+    x1 = std::clamp(x1, 0, (int)w-1);
+    y0 = std::clamp(y0, 0, (int)h-1);
+    y1 = std::clamp(y1, 0, (int)h-1);
+
+    float dx = fx-x0;
+    float dy = fy-y0;
+
+    float v00 = image[y0*w + x0];
+    float v10 = image[y0*w + x1];
+    float v01 = image[y1*w + x0];
+    float v11 = image[y1*w + x1];
+
+    float v0 = v00+(v10-v00)*dx;
+    float v1 = v01+(v11-v01)*dx;
+    float v  = v0+(v1-v0)*dy;
+
+    return v;
 }
 std::vector<float> DataLoader::RotateImage(const float* image, size_t width, size_t height, float deg) {
     const double rad = deg * M_PI / 180.0;
@@ -383,6 +434,33 @@ std::vector<float> DataLoader::ScaleImage(const float* image, size_t width, size
     }
 
     return scaled;
+}
+std::vector<float> DataLoader::ShearImage(const float* image, size_t width, size_t height, float shear) {
+    std::vector<float> sheared(width * height, 0.0f);
+
+    float cx =  width  * 0.5f;
+    float cy =  height * 0.5f;
+    float det = 1.0f - shear * shear;
+
+    for (size_t y = 0; y < height; y++) {
+        for (size_t x = 0; x < width; x++) {
+            float xr = x-cx;
+            float yr = y-cy;
+
+
+            float x0 = (xr-shear*yr)/det;
+            float y0 = (-shear*xr+yr)/det;
+            
+            float fx = x0+cx;
+            float fy = y0+cy;
+
+            if (fx >= 0 && fx < width && fy >= 0 && fy < height) {
+                sheared[y*width+x] = BilinearSample(image, width, height, fx, fy);
+            }
+        }
+    }
+
+    return sheared;
 }
 
 float DataLoader::InMandlebrot(double x, double y, size_t it) {
