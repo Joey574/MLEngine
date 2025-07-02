@@ -2,6 +2,8 @@
 
 #if defined(__AVX512F__)
 void Optimizer::SGDCompute(float* __restrict p, const float* __restrict d, size_t size, float lr, size_t n) {
+    assert(__builtin_cpu_supports("avx512f"));
+
     // adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
     const __m512 _factor = _mm512_set1_ps(factor);
@@ -21,6 +23,8 @@ void Optimizer::SGDCompute(float* __restrict p, const float* __restrict d, size_
 	}
 }
 void Optimizer::SGDL1Compute(float* __restrict p, const float* __restrict d, size_t size, float lr, size_t n, float lambda) {
+    assert(__builtin_cpu_supports("avx512f"));
+
     // adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
     const __m512 _factor = _mm512_set1_ps(factor);
@@ -51,6 +55,8 @@ void Optimizer::SGDL1Compute(float* __restrict p, const float* __restrict d, siz
     }
 }
 void Optimizer::SGDL2Compute(float* __restrict p, const float* __restrict d, size_t size, float lr, size_t n, float lambda) {
+    assert(__builtin_cpu_supports("avx512f"));
+
     // adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
     const __m512 _factor = _mm512_set1_ps(factor);
@@ -74,6 +80,8 @@ void Optimizer::SGDL2Compute(float* __restrict p, const float* __restrict d, siz
 }
 #elif defined(__AVX2__) && defined(__FMA__)
 void Optimizer::SGDCompute(float* __restrict p, const float* __restrict d, size_t size, float lr, size_t n) {
+    assert(__builtin_cpu_supports("avx2"));
+    assert(__builtin_cpu_supports("fma"));
 
     // adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
@@ -94,6 +102,8 @@ void Optimizer::SGDCompute(float* __restrict p, const float* __restrict d, size_
 	}
 }
 void Optimizer::SGDL1Compute(float* __restrict p, const float* __restrict d, size_t size, float lr, size_t n, float lambda) {
+    assert(__builtin_cpu_supports("avx2"));
+    assert(__builtin_cpu_supports("fma"));
 
     // adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
@@ -125,6 +135,9 @@ void Optimizer::SGDL1Compute(float* __restrict p, const float* __restrict d, siz
     }
 }
 void Optimizer::SGDL2Compute(float* __restrict p, const float* __restrict d, size_t size, float lr, size_t n, float lambda) {
+    assert(__builtin_cpu_supports("avx2"));
+    assert(__builtin_cpu_supports("fma"));
+
     // adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
     const __m256 _factor = _mm256_set1_ps(factor);
@@ -148,7 +161,6 @@ void Optimizer::SGDL2Compute(float* __restrict p, const float* __restrict d, siz
 }
 #else
 void Optimizer::SGDCompute(float* __restrict p, const float* __restrict d, size_t size, float lr, size_t n) {
-
     // adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
 
@@ -159,7 +171,6 @@ void Optimizer::SGDCompute(float* __restrict p, const float* __restrict d, size_
 	}
 }
 void Optimizer::SGDL1Compute(float* __restrict p, const float* __restrict d, size_t size, float lr, size_t n, float lambda) {
-
     // adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
 
@@ -170,7 +181,6 @@ void Optimizer::SGDL1Compute(float* __restrict p, const float* __restrict d, siz
     }
 }
 void Optimizer::SGDL2Compute(float* __restrict p, const float* __restrict d, size_t size, float lr, size_t n, float lambda) {
-    
     // adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
 

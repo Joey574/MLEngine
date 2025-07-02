@@ -71,7 +71,7 @@ template <bool clear> void MathUtils::DotProdTB(const float* __restrict a, const
 }
 #else
 template <bool clear> void MathUtils::DotProdTB(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c) {
-    #pragma omp parallel for simd
+    #pragma omp parallel for
 	for (size_t i = 0; i < a_r; i++) {
 		const size_t aidx = i*a_c;
 		const size_t cidx = i*b_r;
@@ -85,6 +85,7 @@ template <bool clear> void MathUtils::DotProdTB(const float* __restrict a, const
 				c[cidx+k] = a[aidx+0] * b[bidx+0];
 			}
 
+			#pragma omp simd
 			for (; j < b_c; j++) {
 				c[cidx+k] += a[aidx+j] * b[bidx+j];
 			}

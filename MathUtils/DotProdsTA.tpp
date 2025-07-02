@@ -101,7 +101,7 @@ template <bool clear> void MathUtils::DotProdTA(const float* __restrict a, const
 }
 #else
 template <bool clear> void MathUtils::DotProdTA(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c) {
-    #pragma omp parallel for simd
+    #pragma omp parallel for
 	for (size_t i = 0; i < a_c; i++) {
 		const size_t cidx = i*b_c;
         size_t j = 0;
@@ -110,6 +110,7 @@ template <bool clear> void MathUtils::DotProdTA(const float* __restrict a, const
 		if constexpr (clear) {
             j = 1;
 			
+			#pragma omp simd
 			for (size_t k = 0; k < b_c; k++) {
 				c[cidx+k] = a[0*a_c+i] * b[0*b_c+k];
 			}
@@ -120,6 +121,7 @@ template <bool clear> void MathUtils::DotProdTA(const float* __restrict a, const
 			const size_t aidx = j*a_c;
 			const size_t bidx = j*b_c;
 
+			#pragma omp simd
 			for (size_t k = 0; k < b_c; k++) {
 				c[cidx+k] += a[aidx+i] * b[bidx+k];
 			}

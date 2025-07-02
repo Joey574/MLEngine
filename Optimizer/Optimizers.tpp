@@ -34,8 +34,8 @@ void Optimizer::RMSProp(float* __restrict w, float* __restrict b, size_t wsize, 
 }
 
 void Optimizer::Adam(float* __restrict w, float* __restrict b, size_t wsize, size_t bsize, size_t n) {
-    AdamCompute(w, m_a_wm, m_a_wv, m_s_dw, wsize, m_lr, n, m_a_b1, m_a_b2, m_a_epsl, m_a_t);
-    AdamCompute(b, m_a_bm, m_a_bv, m_s_db, bsize, m_lr, n, m_a_b1, m_a_b2, m_a_epsl, m_a_t);
+    AdamCompute(w, m_a_mw, m_a_vw, m_s_dw, wsize, m_lr, n, m_a_b1, m_a_b2, m_a_epsl, m_a_t);
+    AdamCompute(b, m_a_mb, m_a_vb, m_s_db, bsize, m_lr, n, m_a_b1, m_a_b2, m_a_epsl, m_a_t);
 
     m_a_t++;
 }

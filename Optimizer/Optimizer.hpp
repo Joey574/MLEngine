@@ -57,10 +57,10 @@ private:
     float m_a_b2;
     float m_a_epsl;
     size_t m_a_t;
-    float* m_a_wm;
-    float* m_a_wv;
-    float* m_a_bm;
-    float* m_a_bv;
+    float* m_a_mw;
+    float* m_a_vw;
+    float* m_a_mb;
+    float* m_a_vb;
 
     // regularization techniques
     Regularization m_reg;

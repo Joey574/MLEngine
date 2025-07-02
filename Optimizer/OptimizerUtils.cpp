@@ -107,16 +107,16 @@ void Optimizer::Initialize(float* dw, float* db, char* data, size_t wsize, size_
             break;
 
         case Update::adam:
-            m_a_wm = (float*)(data+offset);
+            m_a_mw = (float*)(data+offset);
             offset += MathUtils::RoundTo(32, wsize*sizeof(float));
 
-            m_a_wv = (float*)(data+offset);
+            m_a_vw = (float*)(data+offset);
             offset += MathUtils::RoundTo(32, wsize*sizeof(float));
 
-            m_a_bm = (float*)(data+offset);
+            m_a_mb = (float*)(data+offset);
             offset += MathUtils::RoundTo(32, bsize*sizeof(float));
 
-            m_a_bv = (float*)(data+offset);
+            m_a_vb = (float*)(data+offset);
             offset += MathUtils::RoundTo(32, bsize*sizeof(float));
     }
 }
@@ -189,10 +189,10 @@ bool Optimizer::Save(std::ofstream& file) const {
             return file.fail();
         case Update::adam:
             file.write((char*)&m_a_t, sizeof(size_t));
-            file.write((char*)m_a_wv, wsize*sizeof(float));
-            file.write((char*)m_a_wm, wsize*sizeof(float));
-            file.write((char*)m_a_bv, bsize*sizeof(float));
-            file.write((char*)m_a_bm, bsize*sizeof(float));
+            file.write((char*)m_a_vw, wsize*sizeof(float));
+            file.write((char*)m_a_mw, wsize*sizeof(float));
+            file.write((char*)m_a_vb, bsize*sizeof(float));
+            file.write((char*)m_a_mb, bsize*sizeof(float));
             return file.fail();
     }
     
@@ -214,10 +214,10 @@ bool Optimizer::Load(std::ifstream& file) {
             return file.fail();
         case Update::adam:
             file.read((char*)&m_a_t, sizeof(size_t));
-            file.read((char*)m_a_wv, wsize*sizeof(float));
-            file.read((char*)m_a_wm, wsize*sizeof(float));
-            file.read((char*)m_a_bv, bsize*sizeof(float));
-            file.read((char*)m_a_bm, bsize*sizeof(float));
+            file.read((char*)m_a_vw, wsize*sizeof(float));
+            file.read((char*)m_a_mw, wsize*sizeof(float));
+            file.read((char*)m_a_vb, bsize*sizeof(float));
+            file.read((char*)m_a_mb, bsize*sizeof(float));
             return file.fail();
     }
 

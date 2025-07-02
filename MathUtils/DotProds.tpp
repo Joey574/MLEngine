@@ -52,6 +52,7 @@ template <bool clear> void MathUtils::DotProd(const float* __restrict a, const f
 #elif defined(__AVX2__) && defined(__FMA__)
 template <bool clear> void MathUtils::DotProd(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c) {
 	assert(__builtin_cpu_supports("avx2"));
+    assert(__builtin_cpu_supports("fma"));
 
 	#pragma omp parallel for
     for (size_t i = 0; i < a_r; i++) {		
@@ -100,7 +101,7 @@ template <bool clear> void MathUtils::DotProd(const float* __restrict a, const f
 }
 #else
 template <bool clear> void MathUtils::DotProd(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c) {
-    #pragma omp parallel for simd
+    #pragma omp parallel for
     for (size_t i = 0; i < a_r; i++) {		
 		const size_t aidx = i*a_c;
 		const size_t cidx = i*b_c;
@@ -111,6 +112,7 @@ template <bool clear> void MathUtils::DotProd(const float* __restrict a, const f
         if constexpr (clear) {
             j = 1;
             
+            #pragma omp simd
             for(size_t k = 0; k < b_c; k++) {
                 c[cidx+k] = a[aidx+0] * b[0*b_c+k];
             }
@@ -120,6 +122,7 @@ template <bool clear> void MathUtils::DotProd(const float* __restrict a, const f
         for (;j < b_r; j++) {
 			const size_t bidx = j*b_c;
 
+            #pragma omp simd
             for(size_t k = 0; k < b_c; k++) {
                 c[cidx+k] += a[aidx+j] * b[bidx+k];
             }

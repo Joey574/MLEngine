@@ -1,6 +1,6 @@
 #include "MathUtils.hpp"
 
-__attribute__((target("avx2")))
+__attribute__((target("avx2,fma")))
 float MathUtils::Sum256(__m256 _x) {
     __m256 _sum1 = _mm256_hadd_ps(_x, _x);
     __m256 _sum2 = _mm256_hadd_ps(_sum1, _sum1);
@@ -12,7 +12,7 @@ float MathUtils::Sum256(__m256 _x) {
     return _mm_cvtss_f32(_res);
 }
 
-__attribute__((target("avx2")))
+__attribute__((target("avx2,fma")))
 __m256 MathUtils::Exp256(__m256 _x) {
     __m256 _a = _mm256_set1_ps(12102203.0f); 
     __m256 _b = _mm256_set1_ps(127.0f * (1 << 23));

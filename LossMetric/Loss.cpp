@@ -11,6 +11,8 @@ void LossMetric::OneHotLoss(const float* __restrict x, const float* __restrict y
 
 #if defined(__AVX512F__)
 void LossMetric::MaeLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols) {
+    assert(__builtin_cpu_supports("avx512f"));
+
     const __m512 _zero = _mm512_setzero_ps();
     const __m512 _one = _mm512_set1_ps(1.0f);
     const __m512 _none = _mm512_set1_ps(-1.0f);
@@ -32,6 +34,8 @@ void LossMetric::MaeLoss(const float* __restrict x, const float* __restrict y, f
     }
 }
 void LossMetric::MseLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols) {
+    assert(__builtin_cpu_supports("avx512f"));
+
     const __m512 _two = _mm512_set1_ps(2.0f);
 
     #pragma omp parallel for
@@ -50,6 +54,9 @@ void LossMetric::MseLoss(const float* __restrict x, const float* __restrict y, f
 }
 #elif defined(__AVX2__) && defined(__FMA__)
 void LossMetric::MaeLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols) {
+    assert(__builtin_cpu_supports("avx2"));
+    assert(__builtin_cpu_supports("fma"));
+
     const __m256 _zero = _mm256_setzero_ps();
     const __m256 _one = _mm256_set1_ps(1.0f);
     const __m256 _none = _mm256_set1_ps(-1.0f);
@@ -72,6 +79,9 @@ void LossMetric::MaeLoss(const float* __restrict x, const float* __restrict y, f
 
 }
 void LossMetric::MseLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols) {
+    assert(__builtin_cpu_supports("avx2"));
+    assert(__builtin_cpu_supports("fma"));
+    
     const __m256 _two = _mm256_set1_ps(2.0f);
 
     #pragma omp parallel for

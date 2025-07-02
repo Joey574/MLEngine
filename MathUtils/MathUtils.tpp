@@ -4,11 +4,13 @@
 
 #if defined(__AVX512F__)
 template <bool clear> void MathUtils::MatrixColumnSum(const float* a, float* b, size_t a_r, size_t a_c) {
+    assert(__builtin_cpu_supports("avx512f"));
+
     // compute sum
     for (size_t i = 0; i < a_r; i++) {
 
         size_t j = 0;
-        for (; j <= (ssize_t)a_c-16; j+= 16) {
+        for (; j+16 <= a_c; j += 16) {
             const __m256 _a = _mm512_loadu_ps(&a[i*a_c+j]);
             const __m256 _b = _mm512_loadu_ps(&b[j]);
             const __m256 _c = _mm512_add_ps(_a, _b);
@@ -23,11 +25,14 @@ template <bool clear> void MathUtils::MatrixColumnSum(const float* a, float* b, 
 }
 #elif defined(__AVX2__) && defined(__FMA__)
 template <bool clear> void MathUtils::MatrixColumnSum(const float* a, float* b, size_t a_r, size_t a_c) {
+    assert(__builtin_cpu_supports("avx2"));
+    assert(__builtin_cpu_supports("fma"));
+
     // compute sum
     for (size_t i = 0; i < a_r; i++) {
 
         size_t j = 0;
-        for (; j <= (ssize_t)a_c-8; j+= 8) {
+        for (; j+8 <= a_c; j += 8) {
             const __m256 _a = _mm256_loadu_ps(&a[i*a_c+j]);
             const __m256 _b = _mm256_loadu_ps(&b[j]);
             const __m256 _c = _mm256_add_ps(_a, _b);

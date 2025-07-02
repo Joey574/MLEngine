@@ -5,11 +5,12 @@
 float LossMetric::AccuracyScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
     size_t correct = 0;
 
-    #pragma omp parallel for simd
+    #pragma omp parallel for
     for(size_t r = 0; r < rows; r++) {
         size_t midx = 0;
         float max = x[r*cols+0];
 
+        #pragma omp simd
         for (size_t c = 1; c < cols; c++) {
             if (x[r*cols+c] > max) {
                 max = x[r*cols+c];
@@ -29,6 +30,8 @@ float LossMetric::AccuracyScore(const float* __restrict x, const float* __restri
 
 #if defined(__AVX512F__)
 float LossMetric::MaeScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
+    assert(__builtin_cpu_supports("avx512f"));
+
     const __m512 _absmask = _mm512_castsi512_ps(_mm512_set1_epi32(0x7FFFFFFF));
     __m512 _sum = _mm512_setzero_ps();
 
@@ -51,6 +54,8 @@ float LossMetric::MaeScore(const float* __restrict x, const float* __restrict y,
     return error / (float)(rows*cols);
 }
 float LossMetric::MseScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
+    assert(__builtin_cpu_supports("avx512f"));
+
     __m512 _sum = _mm512_setzero_ps();
 
     size_t i = 0;
@@ -73,6 +78,9 @@ float LossMetric::MseScore(const float* __restrict x, const float* __restrict y,
 }
 #elif defined(__AVX2__) && defined(__FMA__)
 float LossMetric::MaeScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
+    assert(__builtin_cpu_supports("avx2"));
+    assert(__builtin_cpu_supports("fma"));
+
     const __m256 _absmask = _mm256_castsi256_ps(_mm256_set1_epi32(0x7FFFFFFF));
     __m256 _sum = _mm256_setzero_ps();
 
@@ -95,6 +103,9 @@ float LossMetric::MaeScore(const float* __restrict x, const float* __restrict y,
     return error / (float)(rows*cols);
 }
 float LossMetric::MseScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
+    assert(__builtin_cpu_supports("avx2"));
+    assert(__builtin_cpu_supports("fma"));
+    
     __m256 _sum = _mm256_setzero_ps();
 
     size_t i = 0;

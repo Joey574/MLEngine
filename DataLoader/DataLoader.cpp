@@ -259,6 +259,7 @@ void DataLoader::LoadMNISTStyleDataset(Dataset& dataset, YAML::Node& args, std::
 
     size_t base_samples = dataset.trainDataRows;
     
+    // add rotation variants
     if (args[Y_ROTATION]) {
         std::mt19937 rd(SEED+50);
         float rot = args[Y_ROTATION].as<float>();
@@ -284,6 +285,7 @@ void DataLoader::LoadMNISTStyleDataset(Dataset& dataset, YAML::Node& args, std::
         }
     }
 
+    // add scale variants
     if (args[Y_SCALE]) {
         std::mt19937 rd(SEED+71);
         float scale = args[Y_SCALE].as<float>();
@@ -307,6 +309,7 @@ void DataLoader::LoadMNISTStyleDataset(Dataset& dataset, YAML::Node& args, std::
         }
     }
 
+    // add shear variants
     if (args[Y_SHEAR]) {
         std::mt19937 rd(SEED-123);
         float shear = args[Y_SHEAR].as<float>();
@@ -413,21 +416,7 @@ std::vector<float> DataLoader::ScaleImage(const float* image, size_t width, size
             float srcx = std::min(std::max((x-dx)/scale, 0.0f), width - 1.001f);
             float srcy = std::min(std::max((y-dy)/scale, 0.0f), height - 1.001f);
 
-            // bilinear interpolation
-            int x0 = std::floor(srcx);
-            int y0 = std::floor(srcy);
-            int x1 = x0+1;
-            int y1 = y0+1;
-
-            float wx = srcx-x0;
-            float wy = srcy-y0;
-
-            float v00 = (x0 >= 0 && x0 < width && y0 >= 0 && y0 < height) ? image[y0*width+x0] : 0.0f;
-            float v01 = (x1 >= 0 && x1 < width && y0 >= 0 && y0 < height) ? image[y0*width+x1] : 0.0f;
-            float v10 = (x0 >= 0 && x0 < width && y1 >= 0 && y1 < height) ? image[y1*width+x0] : 0.0f;
-            float v11 = (x1 >= 0 && x1 < width && y1 >= 0 && y1 < height) ? image[y1*width+x1] : 0.0f;
-
-            float value = (1-wy)*((1-wx)*v00+wx*v01) + wy*((1-wx)*v10+wx*v11);
+            float value = BilinearSample(image, width, height, srcx, srcy);
 
             scaled[y*width+x] = value;
         }
@@ -462,6 +451,7 @@ std::vector<float> DataLoader::ShearImage(const float* image, size_t width, size
 
     return sheared;
 }
+
 
 float DataLoader::InMandlebrot(double x, double y, size_t it) {
     std::complex<double> c(x, y);

@@ -22,6 +22,8 @@ void Activation::LeakyReLUDerivative(const float* __restrict x, float* __restric
 
 #if defined(__AVX512F__)
 void Activation::SigmoidDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
+    assert(__builtin_cpu_supports("avx512f"));
+
     const __m512 _zero = _mm512_setzero_ps();
     const __m512 _one = _mm512_set1_ps(1.0f);
     const size_t n = r*c;
@@ -36,7 +38,7 @@ void Activation::SigmoidDerivative(const float* __restrict x, float* __restrict 
         const __m512 _ex = MathUtils::Exp512(_nx);
 
         const __m512 _x2 = _mm512_add_ps(_one, _ex);
-        const __m512 _ires = _mm512_rcp_ps(_x2);
+        const __m512 _ires = _mm512_rcp14_ps(_x2);
 
         const __m512 _nires = _mm512_sub_ps(_one, _ires);
         const __m512 _x3 = _mm512_mul_ps(_ires, _nires);
@@ -51,6 +53,8 @@ void Activation::SigmoidDerivative(const float* __restrict x, float* __restrict 
     }
 }
 void Activation::ELUDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
+    assert(__builtin_cpu_supports("avx512f"));
+
     const __m512 _zero = _mm512_setzero_ps();
     const __m512 _one = _mm512_set1_ps(1.0f);
     const size_t n = r*c;
@@ -75,6 +79,9 @@ void Activation::ELUDerivative(const float* __restrict x, float* __restrict y, s
 }
 #elif defined(__AVX2__) && defined(__FMA__)
 void Activation::SigmoidDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
+    assert(__builtin_cpu_supports("avx2"));
+    assert(__builtin_cpu_supports("fma"));
+
     const __m256 _zero = _mm256_setzero_ps();
     const __m256 _one = _mm256_set1_ps(1.0f);
     const size_t n = r*c;
@@ -104,6 +111,9 @@ void Activation::SigmoidDerivative(const float* __restrict x, float* __restrict 
     }
 }
 void Activation::ELUDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
+    assert(__builtin_cpu_supports("avx2"));
+    assert(__builtin_cpu_supports("fma"));
+    
     const __m256 _zero = _mm256_setzero_ps();
     const __m256 _one = _mm256_set1_ps(1.0f);
     const size_t n = r*c;
