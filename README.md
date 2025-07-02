@@ -50,7 +50,7 @@ flowchart TD
 
     lossmetric["`**LossMetric:** Implements various loss and scoring functions`"]
 
-    optimizer["`**Optimizer:** Implements things like sgd, rmsprop, and more, this guy is responsible for all things regarding parameter updates`"]
+    optimizer["`**Optimizer:** Responsible for all things regarding parameter updates and different optimizer implementations`"]
 
     mathutils["`**MathUtils:** More of its own thing, used by various classes/structs, implements various dot prods, and other specific math utils (shocking)`"]
 

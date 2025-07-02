@@ -38,6 +38,7 @@ public:
 
     // visualization utils
     std::string Visualize();
+    std::string InferenceCost();
 
     YAML::Node config;
 

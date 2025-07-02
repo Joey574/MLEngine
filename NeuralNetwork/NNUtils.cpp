@@ -114,6 +114,10 @@ std::string NeuralNetwork::Visualize() {
 
     return res;
 }
+std::string NeuralNetwork::InferenceCost() {
+    // TODO: need to add layer function to get different ops needed, needs to be done for activations as well
+    return "";
+}
 
 void NeuralNetwork::SaveOptimizers() const {
     // iterate layers and save optimizer state

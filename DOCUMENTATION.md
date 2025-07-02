@@ -1,5 +1,13 @@
 **This document provides explanations and examples of all YAML arguments that can be passed to the program**
 
+*Parameters take the form*
+<br>
+
+**name** *(type):(default)* description
+<br>
+
+if no default is provided, assume it's required
+
 ## Metadata
 **modelname** *(string):* defines modelname which is used for saving and loading over multiple runs
 
@@ -13,27 +21,43 @@
 #### MNIST Args
 All following args must be passed in **dataset_args**
 
-**rotation** *(int):* maximum roation (+-) to use when generating randomly rotated samples
+**rotation** *(float):(null)* random roation (+-) to use when generating randomly rotated samples
 <br>
 
-**rot_variants** *(int):* number of rotated samples to generate per original sample in the dataset
+**min_rotation** *(float):(0)* offset added to rotation to ensure some minimum value (value is subtracted if rotation is -, added if rotation is +), this means rotation values have a maximum value of *rotation + min_rotation*
 <br>
 
-**scale** *(float):* maximum scale (+-) centered around 1 to use when randomly generating scaled samples
+**rot_variants** *(int):(0)* number of rotated samples to generate per original sample in the dataset
 <br>
 
-**scale_variants** *(int):* number of scaled samples to generate per original sample in the dataset
+**scale** *(float):(null)* maximum scale (+-) centered around 1 to use when randomly generating scaled samples
+<br>
+
+**min_scale** *(float):(0)* offset added to scale to ensure some minimum value (value is subtracted if scale is < 1, added if scale is > 1), this means scale values have a maximum value of *1 + scale + min_scale*
+<br>
+
+**scale_variants** *(int):(0)* number of scaled samples to generate per original sample in the dataset
+<br>
+
+**shear** *(float):(null)* random shear (+-) to use when generating randomly sheared samples
+<br>
+
+**min_shear** *(float):(0)* offset added to shear to ensure some minimum value (shear is subtracted if shear is -, added if shear is +), this means rotation values have a maximum value of *shear + min_shear*
+<br>
+
+**shear_variants** *(int):(0)* number of sheared samples to generate per original sample in the dataset
+<br>
 
 #### Mandlebrot Args
 All following args must be passed in **dataset_args**
 
-**samples** *(int):* number of sample points to generate
+**samples** *(int):(0)* number of sample points to generate
 <br>
 
-**mandledepth** *(int):* maximum number of iterations when calculating if a point is in the mandlebrot or not
+**mandledepth** *(int):(50)* maximum number of iterations when calculating if a point is in the mandlebrot or not
 <br>
 
-**fourier_series** *(int):* number of fourier orders to compute as additional features for the dataset
+**fourier_series** *(int):(0)* number of fourier orders to compute as additional features for the dataset
 
 ## Layers
 **layers** *(object array):* defines the networks layers structure
@@ -48,19 +72,19 @@ All following args must be passed in **layers**
 **nodes** *(int):* defines the number of nodes in that layer, input layer doesn't take nodes as an argument
 <br>
 
-**activation** *(string):* defines what activation and derivative function to use *(linear, sigmoid, relu, leakyrelu, elu, softmax)*
+**activation** *(string):(none)* defines what activation and derivative function to use *(linear, sigmoid, relu, leakyrelu, elu, softmax)*
 <br>
 
-**loss** *(string):* defines what loss metric to use during backprop, only applies to output layer *(mae, mse, onehot)*
+**loss** *(string):(none)* defines what loss metric to use during backprop, only applies to output layer *(mae, mse, onehot)*
 <br>
 
-**metric** *(string):* defines what scoring function to use when validating model, only applies to output layer *(mae, mse, accuracy)*
+**metric** *(string):(none)* defines what scoring function to use when validating model, only applies to output layer *(mae, mse, accuracy)*
 <br>
 
-**dropout** *(float):* defines what dropout rate to use during training for the layer, if dropout is not defined, it's not used
+**dropout** *(float):(null)* defines what dropout rate to use during training for the layer, if dropout is not defined, it's not used
 <br>
 
-**skipconn** *(int):* defines what layer's output to append to the layer's input, ie skipconn: 0 would append the 0th layers output to this layers input
+**skipconn** *(int):(null)* defines what layer's output to append to the layer's input, ie skipconn: 0 would append the 0th layers output to this layers input
 <br>
 
 ## Optimizer
@@ -70,55 +94,58 @@ All following args must be passed in **layers**
 #### Optimizer Args
 All following args must be passed in **optimizer**
 
-**learning_rate** *(float):* learning rate to use during training
+**learning_rate** *(float):(0.1)* learning rate to use during training
 <br>
 
-**type** *(string):* type of optimizer to use *(sgd, momuntumsgd, rmsprop, adam)*
+**type** *(string):(sgd)* type of optimizer to use *(sgd, momuntumsgd, rmsprop, adam)*
 
 #### SGD Args
 All following args only used if **sgd** is used
 
-**regularization** *(string):* Defines what regularization tehcnique to use, if not defined, a basic update rule is used *(l1, l2)*
+**regularization** *(string):(null)* Defines what regularization tehcnique to use, if not defined, a basic update rule is used *(l1, l2)*
 <br>
 
-**reg_lambda** *(float):* Defines the l1/l2 lambda value used if regularization is defined
+**reg_lambda** *(float):(0.0001)* Defines the l1/l2 lambda value used if regularization is defined
 <br>
 
 ## MomentumSGD Args
 All following args only used if **momentumsgd** is used *(momentum can also make use of the sgd args)*
 
-**momentum** *(float):* Defines the momentum to use during training
+**momentum** *(float):(0.9)* Defines the momentum to use during training
 <br>
 
 #### RMSProp Args
 All following args only used if **rmsprop** is used
 
-**decay** *(float):* Defines the decay value to use during training
+**decay** *(float):(0.999)* Defines the decay value to use during training
 <br>
 
-**epsl** *(float):* Defines the epsilon value to use during training
+**epsl** *(float):(0.000001)* Defines the epsilon value to use during training
 <br>
 
 #### Adam Args
 All following args only used if **adam** is used
 
-**b1** *(float):* Defines the B1 value to use (first moment) <br>
+**b1** *(float):(0.9)* Defines the B1 value to use (first moment) <br>
 
-**b2** *(float):* Defines the B2 value to use (second moment) <br>
+**b2** *(float):(0.999)* Defines the B2 value to use (second moment) <br>
 
-**epsl** *(float):* Defines the epsilon value to use during training <br>
+**epsl** *(float):(0.000001)* Defines the epsilon value to use during training <br>
 
 ## Training/Init
-**weight** *(string):* Defines the weight initialization technique to use in model is being created not loaded *(he, xavier, normalize)*
+**weight** *(string):(none)* Defines the weight initialization technique to use in model is being created not loaded *(he, xavier, normalize)*
 <br>
 
-**epochs** *(int):* Number of epochs to train for
+**epochs** *(int):(0)* Number of epochs to train for
 <br>
 
-**valid_freq** *(int):* How often to test the network against the validation set during training, in epochs, ie. 2 = test every 2 epochs
+**valid_freq** *(int):(0)* How often to test the network against the validation set during training, in epochs, ie. 2 = test every 2 epochs
 <br>
 
-**batch_size** *(int):* Batch size to use during training
+**batch_size** *(int):(512)* Batch size to use during training
+<br>
+
+**seed** *(int):(random)* Seed value for rngs, randomly generated if nothing is set
 
 ## Examples
 

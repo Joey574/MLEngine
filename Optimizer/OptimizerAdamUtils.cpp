@@ -20,7 +20,7 @@ void Optimizer::AdamCompute(float* __restrict p, float* __restrict m, float* __r
     #pragma omp parallel for
     for (ssize_t i = 0; i <= ((ssize_t)size)-16; i += 16) {
         const __m512 _d = _mm512_load_ps(&d[i]);
-	const __m512 _p = _mm512_load_ps(&p[i]);
+	    const __m512 _p = _mm512_load_ps(&p[i]);
         const __m512 _v = _mm512_load_ps(&v[i]);
         const __m512 _m = _mm512_load_ps(&m[i]);
 
@@ -76,7 +76,7 @@ void Optimizer::AdamCompute(float* __restrict p, float* __restrict m, float* __r
     #pragma omp parallel for
     for (ssize_t i = 0; i <= ((ssize_t)size)-8; i += 8) {
         const __m256 _d = _mm256_load_ps(&d[i]);
-	const __m256 _p = _mm256_load_ps(&p[i]);
+	    const __m256 _p = _mm256_load_ps(&p[i]);
         const __m256 _v = _mm256_load_ps(&v[i]);
         const __m256 _m = _mm256_load_ps(&m[i]);
 

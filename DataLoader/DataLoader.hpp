@@ -21,6 +21,7 @@ private:
     static std::vector<float> RotateImage(const float* image, size_t width, size_t height, float deg);
     static std::vector<float> ScaleImage(const float* image, size_t width, size_t height, float scale);
     static std::vector<float> ShearImage(const float* image, size_t width, size_t height, float shear);
+    static std::vector<float> ElasticDeformImage(const float* image, size_t width, size_t height);
 
 
     // mandlebrot utils

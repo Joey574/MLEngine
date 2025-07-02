@@ -43,7 +43,6 @@ set(GNU_RELEASE_FLAGS
 set(GNU_DEBUG_FLAGS
   -march=native 
   -O0 -g -DDEBUG -rdynamic
-  -fno-omit-frame-pointer
   -fno-lto -fopenmp
 )
 
@@ -60,7 +59,7 @@ set(MSVC_DEBUG_FLAGS
 )
 
 
-# use ccache
+# use ccache if available
 find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
   set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
@@ -74,7 +73,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   set(RELEASE_FLAGS ${GNU_RELEASE_FLAGS})
   set(DEBUG_FLAGS ${GNU_DEBUG_FLAGS})
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-  message(WARNING "Fallback to msvc, degraded performance expected (MinGW recommended)")
+  message(WARNING "Fallback to msvc, degraded performance/support expected (MinGW STRONGLY recommended)")
 
   set(RELEASE_FLAGS ${MSVC_RELEASE_FLAGS})
   set(DEBUG_FLAGS ${MSVC_DEBUG_FLAGS})
