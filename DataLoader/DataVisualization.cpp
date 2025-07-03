@@ -1,9 +1,5 @@
 #include "DataLoader.hpp"
 
-void DataLoader::VisualizeMandlebrot(NeuralNetwork& model, const std::string& path, size_t width, size_t height) {
-    
-}
-
 void DataLoader::VisualizeTerminalMNISTLike(const float* image, size_t width, size_t height) {
     for (size_t h = 0; h < height; h++) {
         for (size_t w = 0; w < width; w++) {

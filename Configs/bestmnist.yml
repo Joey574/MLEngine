@@ -2,20 +2,28 @@ name: bestmnist
 dataset: mnist
 
 dataset_args:
+  running_augmentations: true
+
   rotation: 15
   min_rotation: 10
-  rot_variants: 8
+  rot_variants: 4
+
   scale: 0.1
   min_scale: 0.15
   scale_variants: 2
-  shear: 0.1
-  min_shear: 0.2
-  shear_variants: 4
 
+  shear: 0.2
+  min_shear: 0.1
+  shear_variants: 4
+  
+  elastic_deform:
+    alpha: 34
+    sigma: 4
+    variants: 5
 
 optimizer:
   type: adam
-  learning_rate: 0.001
+  learning_rate: 0.01
 
 
 layers:

@@ -25,6 +25,11 @@
 #define Y_MANDLEDEPTH "mandledepth"
 #define Y_FOURIERSERIES "fourier_series"
 
+#define Y_ELASTIC_DEFORM "elastic_deform"
+#define Y_ELASTIC_ALPHA "alpha"
+#define Y_ELASTIC_SIGMA "sigma"
+#define Y_ELASTIC_VARIANTS "variants"
+
 // training data
 #define Y_EPOCHS "epochs"
 #define Y_BATCHSIZE "batch_size"

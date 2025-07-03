@@ -13,7 +13,11 @@ Activation::Type Activation::ParseType(const std::string& actv) {
         return Activation::Type::elu;
     } else if (actv == "softmax") {
         return Activation::Type::softmax;
+    } else if (actv == "none") {
+        return Activation::Type::none;
     }
+
+    std::cerr << "[-] Invalid Activation Type: " << actv << "\n";
     return Activation::Type::none;
 }
 std::string Activation::ParseName(Type type) {
@@ -30,7 +34,10 @@ std::string Activation::ParseName(Type type) {
             return "elu";
         case Type::softmax:
             return "softmax";
+        case Type::none:
+            return "none";
         default:
+            std::cerr << "[-] Invalid Activation Type: " << (int)type << "\n";
             return "none";
     }
 }

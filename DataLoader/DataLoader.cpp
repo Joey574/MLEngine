@@ -1,25 +1,25 @@
 #include "DataLoader.hpp"
 
 /// @brief Returns the passed dataset as constrained by args
-Dataset DataLoader::LoadDataset(YAML::Node& config) {
+void DataLoader::LoadDataset(YAML::Node& config) {
     std::string dataset = config[Y_DATASET].as<std::string>();
-    YAML::Node dsargs = config[Y_DATASETARGS];
+    args = config[Y_DATASETARGS];
 
     if (dataset == "mnist") {
-        return LoadMNIST(dsargs);
+        LoadMNIST();
     } else if (dataset == "fmnist") {
-        return LoadFMNIST(dsargs);
+        LoadFMNIST();
     } else if (dataset == "mandlebrot") {
-        return LoadMandlebrot(dsargs);
+        LoadMandlebrot();
+    } else {
+        std::cerr << "Failed to initialize dataset\n";
     }
-
-    std::cerr << "Failed to load dataset\n";
-    return Dataset{};
 }
 
-Dataset DataLoader::LoadMNIST(YAML::Node& args) {
-    Dataset mnist(Datasets::MNIST, "mnist");
-    mnist.hasTestData = true;
+void DataLoader::LoadMNIST() {
+    name = "mnist";
+    type = Type::mnist;
+    hasTestData = true;
 
     // training dataset path
     std::string trainingImages = ExpandPath("~/.local/share/ReconSuite/MLEngine/Datasets/MNIST/TrainingData/train-images.idx3-ubyte");
@@ -39,19 +39,18 @@ Dataset DataLoader::LoadMNIST(YAML::Node& args) {
         std::cerr << "Failed to open dataset file(s)\n";
     }
 
-    LoadMNISTStyleDataset(mnist, args, traind, trainl, testd, testl);
+    LoadMNISTStyleDataset(traind, trainl, testd, testl);
 
     // close files
     traind.close();
     trainl.close();
     testd.close();
     testl.close();
-    
-    return mnist;
 }
-Dataset DataLoader::LoadFMNIST(YAML::Node& args) {
-    Dataset fmnist(Datasets::FMNIST, "fmnist");
-    fmnist.hasTestData = true;
+void DataLoader::LoadFMNIST() {
+    name = "fmnist";
+    type = Type::fmnist;
+    hasTestData = true;
 
     // training dataset path
     std::string trainingImages = ExpandPath("~/.local/share/ReconSuite/MLEngine/Datasets/FMNIST/TrainingData/train-images-idx3-ubyte");
@@ -71,20 +70,18 @@ Dataset DataLoader::LoadFMNIST(YAML::Node& args) {
         std::cerr << "Failed to open dataset file(s)\n";
     }
 
-    LoadMNISTStyleDataset(fmnist, args, traind, trainl, testd, testl);
+    LoadMNISTStyleDataset(traind, trainl, testd, testl);
 
     // close files
     traind.close();
     trainl.close();
     testd.close();
     testl.close();
-    
-    return fmnist;
 }
-Dataset DataLoader::LoadMandlebrot(YAML::Node& args) {
-    Dataset mandlebrot(Datasets::MANDLEBROT, "mandlebrot");
-    mandlebrot.hasTestData = true;
-    mandlebrot.args = args;
+void DataLoader::LoadMandlebrot() {
+    name = "mandlebrot";
+    type = Type::mandlebrot;
+    hasTestData = true;
 
     size_t n = args[Y_SAMPLES].as<size_t>(Y_SAMPLE_DEFAULT);
     size_t depth = args[Y_MANDLEDEPTH].as<size_t>(Y_MANDLEDEPTH_DEFAULT);
@@ -102,21 +99,21 @@ Dataset DataLoader::LoadMandlebrot(YAML::Node& args) {
     std::uniform_real_distribution<double> xrand(xMin, xMax);
     std::uniform_real_distribution<double> yrand(yMin, yMax);
 
-    mandlebrot.trainDataRows = n;
-    mandlebrot.trainDataCols = 2 + (fourier*4);
-    mandlebrot.testDataRows = test_elements;
-    mandlebrot.testDataCols = 2 + (fourier*4);
+    trainDataRows = n;
+    trainDataCols = 2 + (fourier*4);
+    testDataRows = test_elements;
+    testDataCols = 2 + (fourier*4);
 
-    mandlebrot.trainLabelRows = n;
-    mandlebrot.trainLabelCols = 1;
-    mandlebrot.testLabelRows = test_elements;
-    mandlebrot.testLabelCols = 1;
+    trainLabelRows = n;
+    trainLabelCols = 1;
+    testLabelRows = test_elements;
+    testLabelCols = 1;
 
-    mandlebrot.trainData = std::vector<float>(mandlebrot.trainDataRows*mandlebrot.trainDataCols);  
-    mandlebrot.testData = std::vector<float>(mandlebrot.testDataRows*mandlebrot.testDataCols);
+    trainData = std::vector<float>(trainDataRows*trainDataCols);  
+    testData = std::vector<float>(testDataRows*testDataCols);
 
-    mandlebrot.trainLabels = std::vector<float>(n);
-    mandlebrot.testLabels = std::vector<float>(test_elements);
+    trainLabels = std::vector<float>(n);
+    testLabels = std::vector<float>(test_elements);
 
     // build training dataset
     for (size_t i = 0; i < n; i++) {
@@ -125,11 +122,11 @@ Dataset DataLoader::LoadMandlebrot(YAML::Node& args) {
 
         float m = InMandlebrot(x, y, depth);
 
-        mandlebrot.trainData[i*mandlebrot.trainDataCols] = x;
-        mandlebrot.trainData[i*mandlebrot.trainDataCols+1] = y;
-        mandlebrot.trainLabels[i] = m;
+        trainData[i*trainDataCols] = x;
+        trainData[i*trainDataCols+1] = y;
+        trainLabels[i] = m;
 
-        ComputeFourier(&mandlebrot.trainData[i*mandlebrot.trainDataCols], fourier);
+        ComputeFourier(&trainData[i*trainDataCols], fourier);
     }
 
     // build testing dataset
@@ -139,21 +136,21 @@ Dataset DataLoader::LoadMandlebrot(YAML::Node& args) {
 
         float m = InMandlebrot(x, y, depth);
 
-        mandlebrot.testData[i*mandlebrot.testDataCols] = x;
-        mandlebrot.testData[i*mandlebrot.testDataCols+1] = y;
-        mandlebrot.testLabels[i] = m;
+        testData[i*testDataCols] = x;
+        testData[i*testDataCols+1] = y;
+        testLabels[i] = m;
 
-        ComputeFourier(&mandlebrot.testData[i*mandlebrot.testDataCols], fourier);
+        ComputeFourier(&testData[i*testDataCols], fourier);
     }
 
     #pragma omp parallel for
-    for (size_t c = 0; c < mandlebrot.trainDataCols; c++) {
+    for (size_t c = 0; c < trainDataCols; c++) {
         // find col min/max
-        float min = mandlebrot.trainData[c];
-        float max = mandlebrot.trainData[c];
-        for (size_t i = 1; i < mandlebrot.trainDataRows; i++) {
-            if (mandlebrot.trainData[i*mandlebrot.trainDataCols+c] > max) { max = mandlebrot.trainData[i*mandlebrot.trainDataCols+c]; }
-            if (mandlebrot.trainData[i*mandlebrot.trainDataCols+c] < min) { min = mandlebrot.trainData[i*mandlebrot.trainDataCols+c]; }
+        float min = trainData[c];
+        float max = trainData[c];
+        for (size_t i = 1; i < trainDataRows; i++) {
+            if (trainData[i*trainDataCols+c] > max) { max = trainData[i*trainDataCols+c]; }
+            if (trainData[i*trainDataCols+c] < min) { min = trainData[i*trainDataCols+c]; }
         }
 
         if (max <= min) {
@@ -163,22 +160,20 @@ Dataset DataLoader::LoadMandlebrot(YAML::Node& args) {
         const float range = max-min;
 
         // normalize training col
-        for (size_t i = 0; i < mandlebrot.trainDataRows; i++) {
-            const size_t idx = i*mandlebrot.trainDataCols+c;
-            mandlebrot.trainData[idx] = (mandlebrot.trainData[idx] - min) / range;
+        for (size_t i = 0; i < trainDataRows; i++) {
+            const size_t idx = i*trainDataCols+c;
+            trainData[idx] = (trainData[idx] - min) / range;
         }
 
         // normalize testing col
-        for (size_t i = 0; i < mandlebrot.testDataRows; i++) {
-            const size_t idx = i*mandlebrot.testDataCols+c;
-            mandlebrot.testData[idx] = (mandlebrot.testData[idx] - min) / range;
+        for (size_t i = 0; i < testDataRows; i++) {
+            const size_t idx = i*testDataCols+c;
+            testData[idx] = (testData[idx] - min) / range;
         }
     }
-    
-    return mandlebrot;
 }
 
-void DataLoader::LoadMNISTStyleDataset(Dataset& dataset, YAML::Node& args, std::ifstream& traind, std::ifstream& trainl, std::ifstream& testd, std::ifstream& testl) {
+void DataLoader::LoadMNISTStyleDataset(std::ifstream& traind, std::ifstream& trainl, std::ifstream& testd, std::ifstream& testl) {
     ReadBigInt(&trainl);
     ReadBigInt(&trainl);
 
@@ -188,15 +183,15 @@ void DataLoader::LoadMNISTStyleDataset(Dataset& dataset, YAML::Node& args, std::
     int height = ReadBigInt(&traind);
 
     // set up vector sizes
-    dataset.trainData = std::vector<float>();
-    dataset.trainLabels= std::vector<float>(imagenum);
-    dataset.trainData.reserve(imagenum*width*height);
+    originalData.data = std::vector<float>();
+    originalLabels.data = std::vector<float>(imagenum);
+    originalData.data.reserve(imagenum*width*height);
 
-    dataset.trainDataRows = imagenum;
-    dataset.trainDataCols = width*height;
+    originalData.rows = imagenum;
+    originalData.cols = width*height;
 
-    dataset.trainLabelRows = imagenum;
-    dataset.trainLabelCols = 1;
+    originalLabels.rows = imagenum;
+    originalLabels.cols = 1;
 
     // parse out training data
     for (int i = 0; i < imagenum; i++) {
@@ -209,13 +204,13 @@ void DataLoader::LoadMNISTStyleDataset(Dataset& dataset, YAML::Node& args, std::
         std::transform(bytes.begin(), bytes.end(), floatdata.begin(), [](uint8_t val) { return (float)val / 255.0f; });
 
         // insert data into dataset
-        dataset.trainData.insert(dataset.trainData.end(), floatdata.begin(), floatdata.end());
+        originalData.data.insert(originalData.data.end(), floatdata.begin(), floatdata.end());
 
         // get label for data
         char byte;
         trainl.read(&byte, 1);
         int label = static_cast<int>(static_cast<unsigned char>(byte));
-        dataset.trainLabels[i] = label;
+        originalLabels.data[i] = label;
     }
 
     ReadBigInt(&testl);
@@ -227,15 +222,15 @@ void DataLoader::LoadMNISTStyleDataset(Dataset& dataset, YAML::Node& args, std::
     height = ReadBigInt(&testd);
 
     // set up vector sizes
-    dataset.testData = std::vector<float>();
-    dataset.testLabels= std::vector<float>(imagenum);
-    dataset.testData.reserve(imagenum*width*height);
+    testData.data = std::vector<float>();
+    testLabels.data = std::vector<float>(imagenum);
+    testData.data.reserve(imagenum*width*height);
 
-    dataset.testDataRows = imagenum;
-    dataset.testDataCols = width*height;
+    testData.rows = imagenum;
+    testData.cols = width*height;
   
-    dataset.testLabelRows = imagenum;
-    dataset.testLabelCols = 1;
+    testLabels.rows = imagenum;
+    testLabels.cols = 1;
 
     // parse out test data
     for (int i = 0; i < imagenum; i++) {
@@ -248,20 +243,38 @@ void DataLoader::LoadMNISTStyleDataset(Dataset& dataset, YAML::Node& args, std::
         std::transform(bytes.begin(), bytes.end(), floatdata.begin(), [](uint8_t val) { return (float)val / 255.0f; });
 
         // insert data into dataset
-        dataset.testData.insert(dataset.testData.end(), floatdata.begin(), floatdata.end());
+        testData.data.insert(testData.data.end(), floatdata.begin(), floatdata.end());
 
         // get label for data
         char byte;
         testl.read(&byte, 1);
         int label = static_cast<int>(static_cast<unsigned char>(byte));
-        dataset.testLabels[i] = label;
+        testLabels.data[i] = label;
     }
 
-    size_t base_samples = dataset.trainDataRows;
-    
+    trainData.rows = originalData.rows;
+    trainData.cols = originalData.cols;
+
+    // size in augmentations
+    trainData.rows += originalData.rows*args[Y_ROT_VARIANTS].as<size_t>(Y_ROT_VAR_DEFAULT);
+    trainData.rows += originalData.rows*args[Y_SCALE_VARIANTS].as<size_t>(Y_SCALE_VAR_DEFAULT);
+    trainData.rows += originalData.rows*args[Y_SHEAR_VARIANTS].as<size_t>(Y_SHEAR_VAR_DEFAULT);
+    trainData.rows += originalData.rows*args[Y_ELASTIC_VARIANTS].as<size_t>(Y_ELASTIC_VAR_DEFAULT);
+    trainLabels.rows = originalData.rows;
+
+    // reserve size for augmentations
+    trainData.data = std::vector<float>(trainData.rows*trainData.cols, 0.0f);
+    trainLabels.data = std::vector<float>(trainLabels.rows*trainLabels.cols, 0.0f);
+
+    // set dataset dimensions
+    dims = std::vector<size_t>(2, 28);
+
+    size_t a_idx = base_samples;
+    std::mt19937 rd(SEED+50);
+
+
     // add rotation variants
     if (args[Y_ROTATION]) {
-        std::mt19937 rd(SEED+50);
         float rot = args[Y_ROTATION].as<float>();
         float mrot = args[Y_MIN_ROTATION].as<float>(Y_MIN_ROTATION_DEFAULT);
 
@@ -270,24 +283,20 @@ void DataLoader::LoadMNISTStyleDataset(Dataset& dataset, YAML::Node& args, std::
 
         // generate randomly rotated images of test dataset
         for (size_t i = 0; i < base_samples; i++) {
-
             for (size_t j = 0; j < samples; j++) {
                 float deg = gen(rd);
                 deg += deg < 0.0f ? -mrot : mrot;
 
-                std::vector<float> image = RotateImage(&dataset.trainData[i*dataset.trainDataCols], width, height, deg);
+                RotateImage(&originalData[i*originalDataCols], &originalData[a_idx*originalDataCols], width, height, deg);
+                originalLabels[a_idx] = originalLabels[i];
 
-                dataset.trainData.insert(dataset.trainData.end(), image.begin(), image.end());
-                dataset.trainLabels.push_back(dataset.trainLabels[i]);
-                dataset.trainDataRows++;
-                dataset.trainLabelRows++;
+                a_idx++;
             }
         }
     }
 
     // add scale variants
     if (args[Y_SCALE]) {
-        std::mt19937 rd(SEED+71);
         float scale = args[Y_SCALE].as<float>();
         float mscale = args[Y_MIN_SCALE].as<float>(Y_MIN_SCALE_DEFAULT);
 
@@ -299,19 +308,16 @@ void DataLoader::LoadMNISTStyleDataset(Dataset& dataset, YAML::Node& args, std::
                 float rscale = gen(rd);
                 rscale += rscale < 1.0f ? -mscale : mscale;
 
-                std::vector<float> image = ScaleImage(&dataset.trainData[i*dataset.trainDataCols], width, height, rscale);
+                ScaleImage(&originalData[i*originalDataCols], &originalData[a_idx*originalDataCols], width, height, rscale);
+                originalLabels[a_idx] = originalLabels[i];
 
-                dataset.trainData.insert(dataset.trainData.end(), image.begin(), image.end());
-                dataset.trainLabels.push_back(dataset.trainLabels[i]);
-                dataset.trainDataRows++;
-                dataset.trainLabelRows++;
+                a_idx++;
             }
         }
     }
 
     // add shear variants
     if (args[Y_SHEAR]) {
-        std::mt19937 rd(SEED-123);
         float shear = args[Y_SHEAR].as<float>();
         float mshear = args[Y_MIN_SHEAR].as<float>(Y_MIN_SHEAR_DEFAULT);
 
@@ -325,12 +331,10 @@ void DataLoader::LoadMNISTStyleDataset(Dataset& dataset, YAML::Node& args, std::
                 float rshear = gen(rd);
                 rshear += rshear < 0.0 ? -mshear : mshear;
 
-                std::vector<float> image = ShearImage(&dataset.trainData[i*dataset.trainDataCols], width, height, rshear);
-                
-                dataset.trainData.insert(dataset.trainData.end(), image.begin(), image.end());
-                dataset.trainLabels.push_back(dataset.trainLabels[i]);
-                dataset.trainDataRows++;
-                dataset.trainLabelRows++;
+                ShearImage(&originalData[i*originalDataCols], &originalData[a_idx*originalDataCols], width, height, rshear);
+                originalLabels[a_idx] = originalLabels[i];
+
+                a_idx++;
             }
         }    
     }
@@ -372,7 +376,7 @@ float DataLoader::BilinearSample(const float* image, size_t w, size_t h, float f
 
     return v;
 }
-std::vector<float> DataLoader::RotateImage(const float* image, size_t width, size_t height, float deg) {
+void DataLoader::RotateImage(const float* __restrict image, float* __restrict out, size_t width, size_t height, float deg) {
     const double rad = deg * M_PI / 180.0;
     const double cos_a = std::cos(rad);
     const double sin_a = std::sin(rad);
@@ -380,9 +384,10 @@ std::vector<float> DataLoader::RotateImage(const float* image, size_t width, siz
     const double cx = width / 2.0;
     const double cy = height / 2.0;
 
-    std::vector<float>rimage(width*height, 0.0f);
-
+    #pragma omp parallel for collapse(2)
     for (size_t y = 0; y < height; y++) {
+
+        #pragma omp simd
         for (size_t x = 0; x < width; x++) {
             double x0 = x - cx;
             double y0 = y - cy;
@@ -390,52 +395,49 @@ std::vector<float> DataLoader::RotateImage(const float* image, size_t width, siz
             double src_x =  cos_a * x0 + sin_a * y0 + cx;
             double src_y = -sin_a * x0 + cos_a * y0 + cy;
 
-            int ix = static_cast<int>(std::floor(src_x));
-            int iy = static_cast<int>(std::floor(src_y));
+            int ix = static_cast<int>(std::round(src_x));
+            int iy = static_cast<int>(std::round(src_y));
 
-            // Nearest-neighbor interpolation
+            // nearest-neighbor interpolation
             if (ix >= 0 && ix < width && iy >= 0 && iy < height) {
-                rimage[y*width+x] = image[iy*width+x];
+                out[y*width+x] = image[iy*width+ix];
             }
         }
     }
-
-    return rimage;
 }
-std::vector<float> DataLoader::ScaleImage(const float* image, size_t width, size_t height, float scale) {
-    std::vector<float> scaled(width * height, 0.0f);
-
+void DataLoader::ScaleImage(const float* __restrict image, float* __restrict out, size_t width, size_t height, float scale) {
     const float nw = width*scale;
     const float nh = height*scale;
 
     const float dx = (width-nw)/2.0f;
     const float dy = (height-nh)/2.0f;
 
+    #pragma omp parallel for collapse(2)
     for (size_t y = 0; y < height; y++) {
+
+        #pragma omp simd
         for (size_t x = 0; x < width; x++) {
             float srcx = std::min(std::max((x-dx)/scale, 0.0f), width - 1.001f);
             float srcy = std::min(std::max((y-dy)/scale, 0.0f), height - 1.001f);
 
             float value = BilinearSample(image, width, height, srcx, srcy);
 
-            scaled[y*width+x] = value;
+            out[y*width+x] = value;
         }
     }
-
-    return scaled;
 }
-std::vector<float> DataLoader::ShearImage(const float* image, size_t width, size_t height, float shear) {
-    std::vector<float> sheared(width * height, 0.0f);
-
+void DataLoader::ShearImage(const float* __restrict image, float* __restrict out, size_t width, size_t height, float shear) {
     float cx =  width  * 0.5f;
     float cy =  height * 0.5f;
     float det = 1.0f - shear * shear;
 
+    #pragma omp parallel for collapse(2)
     for (size_t y = 0; y < height; y++) {
+
+        #pragma omp simd
         for (size_t x = 0; x < width; x++) {
             float xr = x-cx;
             float yr = y-cy;
-
 
             float x0 = (xr-shear*yr)/det;
             float y0 = (-shear*xr+yr)/det;
@@ -444,12 +446,109 @@ std::vector<float> DataLoader::ShearImage(const float* image, size_t width, size
             float fy = y0+cy;
 
             if (fx >= 0 && fx < width && fy >= 0 && fy < height) {
-                sheared[y*width+x] = BilinearSample(image, width, height, fx, fy);
+                out[y*width+x] = BilinearSample(image, width, height, fx, fy);
             }
         }
     }
+}
+void DataLoader::ElasticDeformImage(const float* __restrict image, float* __restrict out, size_t width, size_t height, float alpha, float sigma) {
+    std::vector<float> elasticImage(width*height, 0.0f);
 
-    return sheared;
+    std::mt19937 rng(SEED+(((uintptr_t)image)%width));
+    std::uniform_real_distribution<float> udist(-1.0f, 1.0f);
+
+    // generate displatement fields, ux, uy
+    std::vector<float> ux(width*height);
+    std::vector<float> uy(width*height);
+
+    for (size_t i = 0; i < width*height; i++) {
+        ux[i] = udist(rng);
+        uy[i] = udist(rng);
+    }
+
+    // build gaussian smoothing
+    int krad = std::ceil(3.0f*sigma);
+    std::vector<float> k = MakeGaussianKernel(krad, sigma);
+
+    // apply gaussian smoothing
+    std::vector<float> uxs = Convolve(ux, width, height, k, krad);
+    std::vector<float> uys = Convolve(uy, width, height, k, krad);
+
+    // scale by alpha
+    for (size_t i = 0; i < width*height; i++) {
+        uxs[i] *= alpha;
+        uys[i] *= alpha;
+    }
+
+    // map into fixed output
+    float cx = width*0.5f;
+    float cy = height*0.5f;
+
+    #pragma omp parallel for collapse(2)
+    for (size_t y = 0; y < height; y++) {
+
+        #pragma omp simd
+        for (size_t x = 0; x < width; x++) {
+            const size_t idx = y*width+x;
+
+            float xr = x-cx;
+            float yr = y-cy;
+
+            float fx = xr+uxs[idx]+cx;
+            float fy = yr+uys[idx]+cy;
+
+            if (fx >= 0 && fx < width && fy >= 0 && fy < height) {
+                out[idx] = BilinearSample(image, width, height, fx, fy);
+            }
+        }
+    }
+}
+
+std::vector<float> DataLoader::MakeGaussianKernel(int rad, float sigma) {
+    int size = 2*rad+1;
+    std::vector<float> k(size*size);    
+
+    float sum = 0.0f;
+    float inv2s2 = 1.0f/(2.0f*sigma*sigma);
+
+    // generate kernel
+    for (ssize_t dy = -rad; dy <= rad; dy++) {
+        for (ssize_t dx = -rad; dx <= rad; dx++) {
+            float v = std::exp(-(dx*dx+dy*dy)*inv2s2);
+            k[(dy+rad)*size+(dx+rad)] = v;
+            sum += v;
+        }
+    }
+
+    // normalize
+    for (size_t i = 0; i < k.size(); i++) {
+        k[i] /= sum;
+    }
+
+    return k;
+}
+std::vector<float> DataLoader::Convolve(const std::vector<float>& f, size_t width, size_t height, const std::vector<float>& k, int rad) {
+    int size = 2*rad+1;
+    std::vector<float> convolved(width*height, 0.0f);
+
+    for (size_t y = 0; y < height; y++) {
+        for (size_t x = 0; x < width; x++) {
+            float sum = 0.0f;
+
+            for (ssize_t dy = -rad; dy <= rad; dy++) {
+                size_t yy = std::clamp((int)y+(int)dy, 0, (int)height-1);
+
+                for (ssize_t dx = -rad; dx <= rad; dx++) {
+                    size_t xx = std::clamp((int)x+(int)dx, 0, (int)width-1);
+                    sum += f[yy*width+xx] * k[(dy+rad)*size+(dx+rad)];
+                }
+            }
+
+            convolved[y*width+x] = sum;
+        }
+    }
+
+    return convolved;
 }
 
 

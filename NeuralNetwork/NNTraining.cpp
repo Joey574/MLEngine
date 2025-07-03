@@ -24,8 +24,8 @@ nlohmann::json NeuralNetwork::Fit(Dataset& dataset, nlohmann::json& storedhistor
 	for (size_t e = 0; e < epochs && KEEPRUNNING; e++) {
 		auto epochstart = std::chrono::high_resolution_clock::now();
 
-		// shuffle dataset each epoch
-		dataset.Shuffle(e);
+		// apply dataset deformations and shuffle
+		dataset.Deform(e);
 
 		for (size_t i = 0; i < iterations; i++) {
 			float* __restrict x = &dataset.trainData[(i * batch_size) * dataset.trainDataCols];

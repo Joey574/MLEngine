@@ -1,27 +1,59 @@
 #pragma once
 #include "../NeuralNetwork/NeuralNetwork.hpp"
 
-class DataLoader {
+struct DataLoader {
 public:
+    enum Type {
+        none, mnist, fmnist, mandlebrot
+    };
 
-    static Dataset LoadDataset(YAML::Node& config);
-    static Dataset LoadMNIST(YAML::Node& config);
-    static Dataset LoadFMNIST(YAML::Node& config);
-    static Dataset LoadMandlebrot(YAML::Node& config);
+    struct Matrix {
+        size_t rows;
+        size_t cols;
+        std::vector<float> data;
 
-    static void VisualizeMandlebrot(NeuralNetwork& model, const std::string& path, size_t width, size_t height);
+    };
+
+    Type type;
+    std::string name;
+    std::vector<size_t> dims;
+
+    bool running_augment;
+    bool hasTestData;
+
+    Matrix trainData;
+    Matrix trainLabels;
+
+    Matrix testData;
+    Matrix testLabels;
+
+    Matrix originalData;
+    Matrix originalLabels;
+
+    void Deform(size_t e);
+
+    void LoadDataset(YAML::Node& config);
+    void LoadMNIST();
+    void LoadFMNIST();
+    void LoadMandlebrot();
+
     static void VisualizeTerminalMNISTLike(const float* image, size_t width, size_t height);
 
 private:
+    YAML::Node args;
+
     // mnist / fmnist utils
     static int ReadBigInt(std::ifstream* f);
-    static void LoadMNISTStyleDataset(Dataset& dataset, YAML::Node& args, std::ifstream& traind, std::ifstream& trainl, std::ifstream& testd, std::ifstream& testl);
+    void LoadMNISTStyleDataset(std::ifstream& traind, std::ifstream& trainl, std::ifstream& testd, std::ifstream& testl);
 
     static float BilinearSample(const float* image, size_t w, size_t h, float fx, float fy);
-    static std::vector<float> RotateImage(const float* image, size_t width, size_t height, float deg);
-    static std::vector<float> ScaleImage(const float* image, size_t width, size_t height, float scale);
-    static std::vector<float> ShearImage(const float* image, size_t width, size_t height, float shear);
-    static std::vector<float> ElasticDeformImage(const float* image, size_t width, size_t height);
+    static void RotateImage(const float* image, float* out, size_t width, size_t height, float deg);
+    static void ScaleImage(const float* image, float* out, size_t width, size_t height, float scale);
+    static void ShearImage(const float* image, float* out, size_t width, size_t height, float shear);
+    static void ElasticDeformImage(const float* image, float* out, size_t width, size_t height, float alpha, float sigma);
+
+    static std::vector<float> MakeGaussianKernel(int rad, float sigma);
+    static std::vector<float> Convolve(const std::vector<float>& f, size_t width, size_t height, const std::vector<float>& k, int rad);
 
 
     // mandlebrot utils
