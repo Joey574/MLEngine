@@ -101,10 +101,9 @@ void MathUtils::ShearImage(const float* __restrict image, float* __restrict out,
         }
     }
 }
-void MathUtils::ElasticDeformImage(const float* __restrict image, float* __restrict out, size_t width, size_t height, float alpha, float sigma) {
+void MathUtils::ElasticDeformImage(const float* __restrict image, float* __restrict out, std::mt19937& rd, size_t width, size_t height, float alpha, float sigma) {
     std::vector<float> elasticImage(width*height, 0.0f);
 
-    std::mt19937 rng(SEED+(((uintptr_t)image)%width));
     std::uniform_real_distribution<float> udist(-1.0f, 1.0f);
 
     // generate displatement fields, ux, uy
@@ -112,8 +111,8 @@ void MathUtils::ElasticDeformImage(const float* __restrict image, float* __restr
     std::vector<float> uy(width*height);
 
     for (size_t i = 0; i < width*height; i++) {
-        ux[i] = udist(rng);
-        uy[i] = udist(rng);
+        ux[i] = udist(rd);
+        uy[i] = udist(rd);
     }
 
     // build gaussian smoothing
@@ -163,6 +162,8 @@ std::vector<float> MathUtils::MakeGaussianKernel(int rad, float sigma) {
 
     // generate kernel
     for (ssize_t dy = -rad; dy <= rad; dy++) {
+
+        #pragma omp simd
         for (ssize_t dx = -rad; dx <= rad; dx++) {
             float v = std::exp(-(dx*dx+dy*dy)*inv2s2);
             k[(dy+rad)*size+(dx+rad)] = v;
@@ -171,9 +172,7 @@ std::vector<float> MathUtils::MakeGaussianKernel(int rad, float sigma) {
     }
 
     // normalize
-    for (size_t i = 0; i < k.size(); i++) {
-        k[i] /= sum;
-    }
+    Normalize(&k[0], sum, k.size());
 
     return k;
 }
@@ -188,6 +187,7 @@ std::vector<float> MathUtils::Convolve(const std::vector<float>& f, size_t width
             for (ssize_t dy = -rad; dy <= rad; dy++) {
                 size_t yy = std::clamp((int)y+(int)dy, 0, (int)height-1);
 
+                #pragma omp simd
                 for (ssize_t dx = -rad; dx <= rad; dx++) {
                     size_t xx = std::clamp((int)x+(int)dx, 0, (int)width-1);
                     sum += f[yy*width+xx] * k[(dy+rad)*size+(dx+rad)];

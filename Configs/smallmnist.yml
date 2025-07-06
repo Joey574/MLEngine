@@ -3,7 +3,7 @@ dataset: mnist
 
 optimizer:
   type: adam
-  learning_rate: 0.2
+  learning_rate: 0.1
 
 weight: he
 
@@ -26,6 +26,6 @@ layers:
     loss: onehot
     metric: accuracy
 
-epochs: 100
+epochs: 1000
 valid_freq: 1
 batch_size: 512

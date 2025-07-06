@@ -6,7 +6,7 @@ dataset_args:
 
   rotation: 15
   min_rotation: 10
-  rot_variants: 4
+  rot_variants: 2
 
   scale: 0.1
   min_scale: 0.15
@@ -14,12 +14,12 @@ dataset_args:
 
   shear: 0.2
   min_shear: 0.1
-  shear_variants: 4
+  shear_variants: 2
   
   elastic_deform:
     alpha: 34
     sigma: 4
-    variants: 5
+    variants: 2
 
 optimizer:
   type: adam

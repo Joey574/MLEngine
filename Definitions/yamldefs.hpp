@@ -9,6 +9,8 @@
 #define Y_ENSEMBLE "ensemble"
 
 // ds args
+#define Y_RUNNING_AUGMENT "running_augmentations"
+
 #define Y_ROTATION "rotation"
 #define Y_MIN_ROTATION "min_rotation"
 #define Y_ROT_VARIANTS "rot_variants"

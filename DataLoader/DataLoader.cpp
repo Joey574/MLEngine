@@ -4,6 +4,8 @@
 void DataLoader::LoadDataset(YAML::Node& config) {
     std::string dataset = config[Y_DATASET].as<std::string>();
     args = config[Y_DATASETARGS];
+    
+    running_augment = args[Y_RUNNING_AUGMENT].as<bool>(Y_RUNNING_AUGMENT_DEFAULT);
 
     if (dataset == "mnist") {
         LoadMNIST();
@@ -14,9 +16,6 @@ void DataLoader::LoadDataset(YAML::Node& config) {
     } else {
         std::cerr << "Failed to initialize dataset\n";
     }
-
-    trainData = originalData;
-    trainLabels = originalLabels;
 }
 
 void DataLoader::LoadMNIST() {
@@ -186,9 +185,8 @@ void DataLoader::LoadMNISTStyleDataset(std::ifstream& traind, std::ifstream& tra
     int height = ReadBigInt(&traind);
 
     // set up vector sizes
-    originalData.data = std::vector<float>();
+    originalData.data = std::vector<float>(imagenum*width*height, 0.0f);
     originalLabels.data = std::vector<float>(imagenum);
-    originalData.data.reserve(imagenum*width*height);
 
     originalData.rows = imagenum;
     originalData.cols = width*height;
@@ -207,7 +205,7 @@ void DataLoader::LoadMNISTStyleDataset(std::ifstream& traind, std::ifstream& tra
         std::transform(bytes.begin(), bytes.end(), floatdata.begin(), [](uint8_t val) { return (float)val / 255.0f; });
 
         // insert data into dataset
-        originalData.data.insert(originalData.data.end(), floatdata.begin(), floatdata.end());
+        std::memcpy(&originalData.data[i*width*height], &floatdata[0], width*height*sizeof(float));
 
         // get label for data
         char byte;
@@ -246,7 +244,7 @@ void DataLoader::LoadMNISTStyleDataset(std::ifstream& traind, std::ifstream& tra
         std::transform(bytes.begin(), bytes.end(), floatdata.begin(), [](uint8_t val) { return (float)val / 255.0f; });
 
         // insert data into dataset
-        testData.data.insert(testData.data.end(), floatdata.begin(), floatdata.end());
+        std::memcpy(&testData.data[i*width*height], &floatdata[0], width*height*sizeof(float));
 
         // get label for data
         char byte;
@@ -262,8 +260,8 @@ void DataLoader::LoadMNISTStyleDataset(std::ifstream& traind, std::ifstream& tra
     trainData.rows += originalData.rows*args[Y_ROT_VARIANTS].as<size_t>(Y_ROT_VAR_DEFAULT);
     trainData.rows += originalData.rows*args[Y_SCALE_VARIANTS].as<size_t>(Y_SCALE_VAR_DEFAULT);
     trainData.rows += originalData.rows*args[Y_SHEAR_VARIANTS].as<size_t>(Y_SHEAR_VAR_DEFAULT);
-    trainData.rows += originalData.rows*args[Y_ELASTIC_VARIANTS].as<size_t>(Y_ELASTIC_VAR_DEFAULT);
-    trainLabels.rows = originalData.rows;
+    trainData.rows += originalData.rows*args[Y_ELASTIC_DEFORM][Y_ELASTIC_VARIANTS].as<size_t>(Y_ELASTIC_VAR_DEFAULT);
+    trainLabels.rows = trainData.rows; trainLabels.cols = 1;
 
     // reserve size for augmentations
     trainData.data = std::vector<float>(trainData.rows*trainData.cols, 0.0f);
@@ -271,6 +269,56 @@ void DataLoader::LoadMNISTStyleDataset(std::ifstream& traind, std::ifstream& tra
 
     // set dataset dimensions
     dims = std::vector<size_t>(2, 28);
+
+    // check enabled augmentations
+    uint8_t augments = 0;
+
+    if (args[Y_ROTATION]) { augments |= 0b1; }
+    if (args[Y_SCALE]) { augments |= 0b10; }
+    if (args[Y_SHEAR]) { augments |= 0b100; }
+    if (args[Y_ELASTIC_DEFORM]) { augments |= 0b1000; }
+
+    // select correct augment function
+    if (augments == 0b00000001) {
+        augment = static_cast<AugmentFn>(&DataLoader::Augment<0b00000001>);
+    } else if (augments == 0b00000010) {
+        augment = static_cast<AugmentFn>(&DataLoader::Augment<0b00000010>);
+    } else if (augments == 0b00000011) {
+        augment = static_cast<AugmentFn>(&DataLoader::Augment<0b00000011>);
+    } else if (augments == 0b00000100) {
+        augment = static_cast<AugmentFn>(&DataLoader::Augment<0b00000100>);
+    } else if (augments == 0b00000101) {
+        augment = static_cast<AugmentFn>(&DataLoader::Augment<0b00000101>);
+    } else if (augments == 0b00000110) {
+        augment = static_cast<AugmentFn>(&DataLoader::Augment<0b00000110>);
+    } else if (augments == 0b00000111) {
+        augment = static_cast<AugmentFn>(&DataLoader::Augment<0b00000111>);
+    } else if (augments == 0b00001000) {
+        augment = static_cast<AugmentFn>(&DataLoader::Augment<0b00001000>);
+    } else if (augments == 0b00001001) {
+        augment = static_cast<AugmentFn>(&DataLoader::Augment<0b00001001>);
+    } else if (augments == 0b00001010) {
+        augment = static_cast<AugmentFn>(&DataLoader::Augment<0b00001010>);
+    } else if (augments == 0b00001011) {
+        augment = static_cast<AugmentFn>(&DataLoader::Augment<0b00001011>);
+    } else if (augments == 0b00001100) {
+        augment = static_cast<AugmentFn>(&DataLoader::Augment<0b00001100>);
+    } else if (augments == 0b00001101) {
+        augment = static_cast<AugmentFn>(&DataLoader::Augment<0b00001101>);
+    } else if (augments == 0b00001110) {
+        augment = static_cast<AugmentFn>(&DataLoader::Augment<0b00001110>);
+    } else if (augments == 0b00001111) {
+        augment = static_cast<AugmentFn>(&DataLoader::Augment<0b00001111>);
+    } else {
+        // default state
+        augment = nullptr;
+    }
+
+    // if we just pre generate augmentations, build trainData set now and set augment to nullptr
+    if (!running_augment && augment) {
+        (this->*augment)(1234);
+        augment = nullptr;
+    }
 }
 
 int DataLoader::ReadBigInt(std::ifstream* f) {
@@ -283,7 +331,6 @@ int DataLoader::ReadBigInt(std::ifstream* f) {
 
     return lint;
 }
-
 
 
 float DataLoader::InMandlebrot(double x, double y, size_t it) {

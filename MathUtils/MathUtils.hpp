@@ -16,11 +16,12 @@ public:
     static void RotateImage(const float* image, float* out, size_t width, size_t height, float deg);
     static void ScaleImage(const float* image, float* out, size_t width, size_t height, float scale);
     static void ShearImage(const float* image, float* out, size_t width, size_t height, float shear);
-    static void ElasticDeformImage(const float* image, float* out, size_t width, size_t height, float alpha, float sigma);
+    static void ElasticDeformImage(const float* image, float* out, std::mt19937& rd, size_t width, size_t height, float alpha, float sigma);
 
     static std::vector<float> MakeGaussianKernel(int rad, float sigma);
     static std::vector<float> Convolve(const std::vector<float>& f, size_t width, size_t height, const std::vector<float>& k, int rad);
 
+    static void Normalize(float* a, float sum, size_t n);
 
     // math utils
     static float Sum256(__m256 _x);

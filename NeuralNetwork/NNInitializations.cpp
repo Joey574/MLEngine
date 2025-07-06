@@ -29,7 +29,7 @@ void NeuralNetwork::Initialize(const std::string& path, const std::string& name,
     }
 
     // initialize network memory
-    m_network = (float*)aligned_alloc(32, m_network_bytes*sizeof(float));
+    m_network = (float*)aligned_alloc(64, m_network_bytes*sizeof(float));
 
     if (setweights) {
         InitializeWeights(ParseWeight(config[Y_WEIGHT].as<std::string>()));
@@ -56,8 +56,8 @@ void NeuralNetwork::InitializeLayerData(size_t bn, size_t tn) {
         m_test_data_bytes += layer.layer_test_bytes;
     }
 
-    m_batch_data = (float*)aligned_alloc(32, m_batch_data_bytes);
-    m_test_data = (float*)aligned_alloc(32, m_test_data_bytes);
+    m_batch_data = (float*)aligned_alloc(64, m_batch_data_bytes);
+    m_test_data = (float*)aligned_alloc(64, m_test_data_bytes);
 
     memset(m_batch_data, 0, m_batch_data_bytes);
     memset(m_test_data, 0, m_test_data_bytes);
