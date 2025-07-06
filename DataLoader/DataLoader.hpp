@@ -1,5 +1,5 @@
 #pragma once
-#include "../NeuralNetwork/NeuralNetwork.hpp"
+#include "../MathUtils/MathUtils.hpp"
 
 struct DataLoader {
 public:

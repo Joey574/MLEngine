@@ -11,9 +11,9 @@ template <bool clear> void MathUtils::MatrixColumnSum(const float* a, float* b, 
 
         size_t j = 0;
         for (; j+16 <= a_c; j += 16) {
-            const __m256 _a = _mm512_loadu_ps(&a[i*a_c+j]);
-            const __m256 _b = _mm512_loadu_ps(&b[j]);
-            const __m256 _c = _mm512_add_ps(_a, _b);
+            const __m512 _a = _mm512_loadu_ps(&a[i*a_c+j]);
+            const __m512 _b = _mm512_loadu_ps(&b[j]);
+            const __m512 _c = _mm512_add_ps(_a, _b);
 
             _mm512_storeu_ps(&b[j], _c);
         }

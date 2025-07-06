@@ -14,6 +14,9 @@ void DataLoader::LoadDataset(YAML::Node& config) {
     } else {
         std::cerr << "Failed to initialize dataset\n";
     }
+
+    std::memcpy(&trainData.data[0], &originalData.data[0], originalData.data.size()*sizeof(float));
+    std::memcpy(&trainLabels.data[0], &originalLabels.data[0], originalLabels.data.size()*sizeof(float));
 }
 
 void DataLoader::LoadMNIST() {
@@ -99,21 +102,21 @@ void DataLoader::LoadMandlebrot() {
     std::uniform_real_distribution<double> xrand(xMin, xMax);
     std::uniform_real_distribution<double> yrand(yMin, yMax);
 
-    trainDataRows = n;
-    trainDataCols = 2 + (fourier*4);
-    testDataRows = test_elements;
-    testDataCols = 2 + (fourier*4);
+    trainData.rows = n;
+    trainData.cols = 2 + (fourier*4);
+    testData.rows = test_elements;
+    testData.cols = 2 + (fourier*4);
 
-    trainLabelRows = n;
-    trainLabelCols = 1;
-    testLabelRows = test_elements;
-    testLabelCols = 1;
+    trainLabels.rows = n;
+    trainLabels.cols = 1;
+    testLabels.rows = test_elements;
+    testLabels.cols = 1;
 
-    trainData = std::vector<float>(trainDataRows*trainDataCols);  
-    testData = std::vector<float>(testDataRows*testDataCols);
+    trainData.data = std::vector<float>(trainData.rows*trainData.cols);  
+    testData.data = std::vector<float>(testData.rows*testData.cols);
 
-    trainLabels = std::vector<float>(n);
-    testLabels = std::vector<float>(test_elements);
+    trainLabels.data = std::vector<float>(n);
+    testLabels.data = std::vector<float>(test_elements);
 
     // build training dataset
     for (size_t i = 0; i < n; i++) {
@@ -122,11 +125,11 @@ void DataLoader::LoadMandlebrot() {
 
         float m = InMandlebrot(x, y, depth);
 
-        trainData[i*trainDataCols] = x;
-        trainData[i*trainDataCols+1] = y;
-        trainLabels[i] = m;
+        trainData.data[i*trainData.cols] = x;
+        trainData.data[i*trainData.cols+1] = y;
+        trainLabels.data[i] = m;
 
-        ComputeFourier(&trainData[i*trainDataCols], fourier);
+        ComputeFourier(&trainData.data[i*trainData.cols], fourier);
     }
 
     // build testing dataset
@@ -136,21 +139,21 @@ void DataLoader::LoadMandlebrot() {
 
         float m = InMandlebrot(x, y, depth);
 
-        testData[i*testDataCols] = x;
-        testData[i*testDataCols+1] = y;
-        testLabels[i] = m;
+        testData.data[i*testData.cols] = x;
+        testData.data[i*testData.cols+1] = y;
+        testLabels.data[i] = m;
 
-        ComputeFourier(&testData[i*testDataCols], fourier);
+        ComputeFourier(&testData.data[i*testData.cols], fourier);
     }
 
     #pragma omp parallel for
-    for (size_t c = 0; c < trainDataCols; c++) {
+    for (size_t c = 0; c < trainData.cols; c++) {
         // find col min/max
-        float min = trainData[c];
-        float max = trainData[c];
-        for (size_t i = 1; i < trainDataRows; i++) {
-            if (trainData[i*trainDataCols+c] > max) { max = trainData[i*trainDataCols+c]; }
-            if (trainData[i*trainDataCols+c] < min) { min = trainData[i*trainDataCols+c]; }
+        float min = trainData.data[c];
+        float max = trainData.data[c];
+        for (size_t i = 1; i < trainData.rows; i++) {
+            if (trainData.data[i*trainData.cols+c] > max) { max = trainData.data[i*trainData.cols+c]; }
+            if (trainData.data[i*trainData.cols+c] < min) { min = trainData.data[i*trainData.cols+c]; }
         }
 
         if (max <= min) {
@@ -160,15 +163,15 @@ void DataLoader::LoadMandlebrot() {
         const float range = max-min;
 
         // normalize training col
-        for (size_t i = 0; i < trainDataRows; i++) {
-            const size_t idx = i*trainDataCols+c;
-            trainData[idx] = (trainData[idx] - min) / range;
+        for (size_t i = 0; i < trainData.rows; i++) {
+            const size_t idx = i*trainData.cols+c;
+            trainData.data[idx] = (trainData.data[idx] - min) / range;
         }
 
         // normalize testing col
-        for (size_t i = 0; i < testDataRows; i++) {
-            const size_t idx = i*testDataCols+c;
-            testData[idx] = (testData[idx] - min) / range;
+        for (size_t i = 0; i < testData.rows; i++) {
+            const size_t idx = i*testData.cols+c;
+            testData.data[idx] = (testData.data[idx] - min) / range;
         }
     }
 }

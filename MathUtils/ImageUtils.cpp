@@ -34,7 +34,7 @@ void MathUtils::RotateImage(const float* __restrict image, float* __restrict out
     const double cx = width / 2.0;
     const double cy = height / 2.0;
 
-    #pragma omp parallel for collapse(2)
+    #pragma omp parallel for
     for (size_t y = 0; y < height; y++) {
 
         #pragma omp simd
@@ -62,7 +62,7 @@ void MathUtils::ScaleImage(const float* __restrict image, float* __restrict out,
     const float dx = (width-nw)/2.0f;
     const float dy = (height-nh)/2.0f;
 
-    #pragma omp parallel for collapse(2)
+    #pragma omp parallel for
     for (size_t y = 0; y < height; y++) {
 
         #pragma omp simd
@@ -81,7 +81,7 @@ void MathUtils::ShearImage(const float* __restrict image, float* __restrict out,
     float cy =  height * 0.5f;
     float det = 1.0f - shear * shear;
 
-    #pragma omp parallel for collapse(2)
+    #pragma omp parallel for
     for (size_t y = 0; y < height; y++) {
 
         #pragma omp simd
@@ -134,7 +134,7 @@ void MathUtils::ElasticDeformImage(const float* __restrict image, float* __restr
     float cx = width*0.5f;
     float cy = height*0.5f;
 
-    #pragma omp parallel for collapse(2)
+    #pragma omp parallel for
     for (size_t y = 0; y < height; y++) {
 
         #pragma omp simd
