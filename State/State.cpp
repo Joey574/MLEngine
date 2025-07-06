@@ -58,9 +58,9 @@ void State::Load() {
     }
 }
 void State::Build(bool setweights) {
-    if (dataset.type == Datasets::NONE) {
-        dataset = DataLoader::LoadDataset(config);
-        config[Y_LAYERS][0][Y_NODES] = dataset.trainDataCols;
+    if (dataset.type == DataLoader::Type::none) {
+        dataset.LoadDataset(config);
+        config[Y_LAYERS][0][Y_NODES] = dataset.trainData.cols;
     }
 
     // initialize model with provided options

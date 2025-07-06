@@ -44,5 +44,5 @@ private:
     std::string p_models;
 
     NeuralNetwork* model;
-    Dataset dataset;
+    DataLoader dataset;
 };

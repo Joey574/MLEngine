@@ -1,4 +1,5 @@
 #pragma once
+#include "../DataLoader/DataLoader.hpp"
 #include "../Activation/Activation.hpp"
 #include "../LossMetric/LossMetric.hpp"
 #include "../Layer/Layer.hpp"
@@ -28,7 +29,7 @@ public:
         bool setweights
     );
 
-    nlohmann::json Fit(Dataset& dataset, nlohmann::json& history);
+    nlohmann::json Fit(DataLoader& dataset, nlohmann::json& history);
 
     int Save(std::ofstream& file) const;
     int Load(std::ifstream& file);
@@ -74,7 +75,7 @@ private:
     );
 
     std::string TestNetwork(
-        Dataset& dataset,
+        DataLoader& dataset,
         nlohmann::json& history,
         nlohmann::json& storedhistory,
         size_t e

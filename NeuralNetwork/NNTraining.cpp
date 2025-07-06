@@ -1,6 +1,6 @@
 #include "NeuralNetwork.hpp"
 
-nlohmann::json NeuralNetwork::Fit(Dataset& dataset, nlohmann::json& storedhistory) {
+nlohmann::json NeuralNetwork::Fit(DataLoader& dataset, nlohmann::json& storedhistory) {
 	auto fitstart = std::chrono::high_resolution_clock::now();
 
 	std::cout << "\n" << config << "\n\n";
@@ -14,12 +14,12 @@ nlohmann::json NeuralNetwork::Fit(Dataset& dataset, nlohmann::json& storedhistor
 	nlohmann::json history;
 	FitStart(history, epochs, batch_size, learning_rate);
 
-	InitializeLayerData(batch_size, dataset.testDataRows);
-	InitializeLayerPointers(batch_size, dataset.testDataRows);
+	InitializeLayerData(batch_size, dataset.testData.rows);
+	InitializeLayerPointers(batch_size, dataset.testData.rows);
 
 	LoadOptimizers();
 
-	const size_t iterations = std::ceil((double)dataset.trainDataRows/(double)batch_size);
+	const size_t iterations = std::ceil((double)dataset.trainData.rows/(double)batch_size);
 	
 	for (size_t e = 0; e < epochs && KEEPRUNNING; e++) {
 		auto epochstart = std::chrono::high_resolution_clock::now();
@@ -28,11 +28,11 @@ nlohmann::json NeuralNetwork::Fit(Dataset& dataset, nlohmann::json& storedhistor
 		dataset.Deform(e);
 
 		for (size_t i = 0; i < iterations; i++) {
-			float* __restrict x = &dataset.trainData[(i * batch_size) * dataset.trainDataCols];
-			float* __restrict y = &dataset.trainLabels[(i * batch_size) * dataset.trainLabelCols];
+			float* __restrict x = &dataset.trainData.data[(i * batch_size) * dataset.trainData.cols];
+			float* __restrict y = &dataset.trainLabels.data[(i * batch_size) * dataset.trainLabels.cols];
 
 			// set batch size here to be either batch size or number of elements remaining
-			ssize_t remaining_elements = (dataset.trainDataRows - (i * batch_size));
+			ssize_t remaining_elements = (dataset.trainData.rows - (i * batch_size));
 			ssize_t effective_size = batch_size > remaining_elements ? remaining_elements : batch_size;
 
 			ForwardProp<true>(x, effective_size);
@@ -58,11 +58,11 @@ nlohmann::json NeuralNetwork::Fit(Dataset& dataset, nlohmann::json& storedhistor
 	return storedhistory;
 }
 
-std::string NeuralNetwork::TestNetwork(Dataset& dataset, nlohmann::json& history, nlohmann::json& storedhistory, size_t e) {
-	ForwardProp<false>(dataset.testData.data(), dataset.testDataRows);
+std::string NeuralNetwork::TestNetwork(DataLoader& dataset, nlohmann::json& history, nlohmann::json& storedhistory, size_t e) {
+	ForwardProp<false>(dataset.testData.data.data(), dataset.testData.rows);
 	const float* predictions = m_layers.back().Output<false>();
 
-	float score = m_layers.back().lossmetric.metric(predictions, &dataset.testLabels[0], dataset.testDataRows, m_layers.back().nodes);
+	float score = m_layers.back().lossmetric.metric(predictions, &dataset.testLabels.data[0], dataset.testData.rows, m_layers.back().nodes);
 
 	SaveBest(history, storedhistory, score, e);
 	std::string curs = "Score: " + std::to_string(score);

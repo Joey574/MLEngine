@@ -10,6 +10,18 @@ public:
 
     template <bool clear> static void MatrixColumnSum(const float* a, float* b, size_t a_r, size_t a_c);
 
+    // image augmenting utils
+    static float BilinearSample(const float* image, size_t w, size_t h, float fx, float fy);
+    
+    static void RotateImage(const float* image, float* out, size_t width, size_t height, float deg);
+    static void ScaleImage(const float* image, float* out, size_t width, size_t height, float scale);
+    static void ShearImage(const float* image, float* out, size_t width, size_t height, float shear);
+    static void ElasticDeformImage(const float* image, float* out, size_t width, size_t height, float alpha, float sigma);
+
+    static std::vector<float> MakeGaussianKernel(int rad, float sigma);
+    static std::vector<float> Convolve(const std::vector<float>& f, size_t width, size_t height, const std::vector<float>& k, int rad);
+
+
     // math utils
     static float Sum256(__m256 _x);
     static float Sum512(__m512 _x);

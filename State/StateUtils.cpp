@@ -57,8 +57,8 @@ std::string State::VisualizeModel() {
     Build(false);
     
     // initialize model data and pointers
-    model->InitializeLayerData(config[Y_BATCHSIZE].as<size_t>(), dataset.testDataRows);
-    model->InitializeLayerPointers(config[Y_BATCHSIZE].as<size_t>(), dataset.testDataRows);
+    model->InitializeLayerData(config[Y_BATCHSIZE].as<size_t>(), dataset.testData.rows);
+    model->InitializeLayerPointers(config[Y_BATCHSIZE].as<size_t>(), dataset.testData.rows);
 
     return model->Visualize();
 }

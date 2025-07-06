@@ -32,6 +32,7 @@ public:
 
     void Deform(size_t e);
 
+
     void LoadDataset(YAML::Node& config);
     void LoadMNIST();
     void LoadFMNIST();
@@ -42,19 +43,19 @@ public:
 private:
     YAML::Node args;
 
+    // data augment utils
+    void (*augment)(size_t e);
+    template <uint8_t augments> void Augment(size_t e);
+    void Shuffle(size_t e, Matrix& data, Matrix& labels);
+
+    static size_t ApplyRotation(Matrix& data, Matrix& labels, size_t original_samples, std::mt19937& rd, size_t w, size_t h, float rot, float mrot, size_t samples, size_t a_idx);
+    static size_t ApplyScale(Matrix& data, Matrix& labels, size_t original_samples, std::mt19937& rd, size_t w, size_t h, float scale, float mscale, size_t samples, size_t a_idx);
+    static size_t ApplyShear(Matrix& data, Matrix& labels, size_t original_samples, std::mt19937& rd, size_t w, size_t h, float shear, float mshear, size_t samples, size_t a_idx);
+    static size_t ApplyElasticDeform(Matrix& data, Matrix& labels, size_t original_samples, std::mt19937& rd, size_t w, size_t h, float alpha, float sogma, size_t samples, size_t a_idx);
+
     // mnist / fmnist utils
     static int ReadBigInt(std::ifstream* f);
     void LoadMNISTStyleDataset(std::ifstream& traind, std::ifstream& trainl, std::ifstream& testd, std::ifstream& testl);
-
-    static float BilinearSample(const float* image, size_t w, size_t h, float fx, float fy);
-    static void RotateImage(const float* image, float* out, size_t width, size_t height, float deg);
-    static void ScaleImage(const float* image, float* out, size_t width, size_t height, float scale);
-    static void ShearImage(const float* image, float* out, size_t width, size_t height, float shear);
-    static void ElasticDeformImage(const float* image, float* out, size_t width, size_t height, float alpha, float sigma);
-
-    static std::vector<float> MakeGaussianKernel(int rad, float sigma);
-    static std::vector<float> Convolve(const std::vector<float>& f, size_t width, size_t height, const std::vector<float>& k, int rad);
-
 
     // mandlebrot utils
     static float InMandlebrot(double x, double y, size_t it);

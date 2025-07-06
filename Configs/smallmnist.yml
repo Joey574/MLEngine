@@ -1,26 +1,23 @@
 name: smallmnist
 dataset: mnist
 
-dataset_args:
-  rotation: 15
-  rot_variants: 5
-
 optimizer:
   type: sgd
   learning_rate: 0.01
 
-weight: normalize
+weight: he
 
 layers:
   - type: input
 
+
+    # 170 ms for windows desktop version
   - type: hidden
-    nodes: 32
+    nodes: 128
     activation: leakyrelu
 
-
   - type: hidden
-    nodes: 32
+    nodes: 128
     activation: leakyrelu
 
 
@@ -30,6 +27,6 @@ layers:
     loss: onehot
     metric: accuracy
 
-epochs: 500
+epochs: 100
 valid_freq: 1
 batch_size: 512
