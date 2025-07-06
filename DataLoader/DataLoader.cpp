@@ -15,8 +15,8 @@ void DataLoader::LoadDataset(YAML::Node& config) {
         std::cerr << "Failed to initialize dataset\n";
     }
 
-    std::memcpy(&trainData.data[0], &originalData.data[0], originalData.data.size()*sizeof(float));
-    std::memcpy(&trainLabels.data[0], &originalLabels.data[0], originalLabels.data.size()*sizeof(float));
+    trainData = originalData;
+    trainLabels = originalLabels;
 }
 
 void DataLoader::LoadMNIST() {

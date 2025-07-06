@@ -55,13 +55,13 @@ std::string NeuralNetwork::WeightName(Layer::WeightInitialization w) {
 }
 
 int NeuralNetwork::Save(std::ofstream& file) const {
-    DEBUG_LOG("Saving model")
+    DEBUG_LOG("Saving model");
 
     file.write((char*)m_network, m_network_bytes);
     return file.fail();   
 }
 int NeuralNetwork::Load(std::ifstream& file) {
-    DEBUG_LOG("Loading model")
+    DEBUG_LOG("Loading model");
     
     file.read((char*)m_network, m_network_bytes);
     return file.fail();
