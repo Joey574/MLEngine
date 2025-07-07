@@ -88,10 +88,15 @@ size_t DataLoader::ApplyElasticDeform(Matrix& data, Matrix& labels, size_t origi
     // pre make gaussian kernel
     std::vector<float> k = MathUtils::MakeGaussianKernel1D(std::ceil(3.0f*sigma), sigma);
     
+    // pre allocate scratch space
+    std::vector<float> tmp(w*h);
+    std::vector<float> uxs(w*h);
+    std::vector<float> uys(w*h);
+
     for (size_t i = 0; i < original_samples; i++) {
         for (size_t j = 0; j < samples; j++) {
 
-            MathUtils::ElasticDeformImage(&data.data[i*data.cols], &data.data[a_idx*data.cols], k, rd, w, h, alpha, sigma);
+            MathUtils::ElasticDeformImage(&data.data[i*data.cols], &data.data[a_idx*data.cols], k, tmp, uxs, uys, rd, w, h, alpha, sigma);
             labels.data[a_idx] = labels.data[i];
 
             a_idx++;

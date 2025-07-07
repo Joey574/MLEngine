@@ -92,32 +92,32 @@ void Optimizer::Initialize(float* dw, float* db, char* data, size_t wsize, size_
             break;
         case Update::momentumsgd:
             m_m_vw = (float*)(data+offset);
-            offset += MathUtils::RoundTo(32, wsize*sizeof(float));
+            offset += MathUtils::RoundTo(64, wsize*sizeof(float));
             
             m_m_vb = (float*)(data+offset);
-            offset += MathUtils::RoundTo(32, bsize*sizeof(float));
+            offset += MathUtils::RoundTo(64, bsize*sizeof(float));
             break;
 
         case Update::rmsprop:
             m_r_gw = (float*)(data+offset);
-            offset += MathUtils::RoundTo(32, wsize*sizeof(float));
+            offset += MathUtils::RoundTo(64, wsize*sizeof(float));
 
             m_r_gb = (float*)(data+offset);
-            offset += MathUtils::RoundTo(32, bsize*sizeof(float));
+            offset += MathUtils::RoundTo(64, bsize*sizeof(float));
             break;
 
         case Update::adam:
             m_a_mw = (float*)(data+offset);
-            offset += MathUtils::RoundTo(32, wsize*sizeof(float));
+            offset += MathUtils::RoundTo(64, wsize*sizeof(float));
 
             m_a_vw = (float*)(data+offset);
-            offset += MathUtils::RoundTo(32, wsize*sizeof(float));
+            offset += MathUtils::RoundTo(64, wsize*sizeof(float));
 
             m_a_mb = (float*)(data+offset);
-            offset += MathUtils::RoundTo(32, bsize*sizeof(float));
+            offset += MathUtils::RoundTo(64, bsize*sizeof(float));
 
             m_a_vb = (float*)(data+offset);
-            offset += MathUtils::RoundTo(32, bsize*sizeof(float));
+            offset += MathUtils::RoundTo(64, bsize*sizeof(float));
     }
 }
 
@@ -152,21 +152,21 @@ size_t Optimizer::Size(size_t wsize, size_t bsize) {
         case Update::sgd:
             break;
         case Update::momentumsgd:
-            size += MathUtils::RoundTo(32, wsize*sizeof(float));
-            size += MathUtils::RoundTo(32, bsize*sizeof(float));
+            size += MathUtils::RoundTo(64, wsize*sizeof(float));
+            size += MathUtils::RoundTo(64, bsize*sizeof(float));
             break;
         
         case Update::rmsprop:
-            size += MathUtils::RoundTo(32, wsize*sizeof(float));
-            size += MathUtils::RoundTo(32, bsize*sizeof(float));
+            size += MathUtils::RoundTo(64, wsize*sizeof(float));
+            size += MathUtils::RoundTo(64, bsize*sizeof(float));
             break;
 
         case Update::adam:
-            size += MathUtils::RoundTo(32, wsize*sizeof(float));
-            size += MathUtils::RoundTo(32, wsize*sizeof(float));
+            size += MathUtils::RoundTo(64, wsize*sizeof(float));
+            size += MathUtils::RoundTo(64, wsize*sizeof(float));
 
-            size += MathUtils::RoundTo(32, bsize*sizeof(float));
-            size += MathUtils::RoundTo(32, bsize*sizeof(float));
+            size += MathUtils::RoundTo(64, bsize*sizeof(float));
+            size += MathUtils::RoundTo(64, bsize*sizeof(float));
             break;
     }
 

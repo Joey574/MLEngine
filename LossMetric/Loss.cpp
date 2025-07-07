@@ -19,14 +19,14 @@ void LossMetric::MaeLoss(const float* __restrict x, const float* __restrict y, f
 
     #pragma omp parallel for
     for (ssize_t i = 0; i <= (ssize_t)(rows*cols)-16; i += 16) {
-        const __m512 _x = _mm512_loadu_ps(&x[i]);
-        const __m512 _y = _mm512_loadu_ps(&y[i]);
+        const __m512 _x = _mm512_load_ps(&x[i]);
+        const __m512 _y = _mm512_load_ps(&y[i]);
 
         const __m512 _diff = _mm512_sub_ps(_x, _y);
         const __mmask16 _cmp = _mm512_cmp_ps_mask(_diff, _zero, _CMP_GT_OQ);
         const __m512 _res = _mm512_mask_blend_ps(_cmp, _none, _one);
 
-        _mm512_storeu_ps(&c[i], _res);
+        _mm512_store_ps(&c[i], _res);
     }
 
     for (size_t i = (rows*cols)-((rows*cols)%16); i < rows*cols; i++) {
@@ -40,12 +40,12 @@ void LossMetric::MseLoss(const float* __restrict x, const float* __restrict y, f
 
     #pragma omp parallel for
     for (ssize_t i = 0; i <= (ssize_t)(rows*cols)-16; i += 16) {
-        const __m512 _x = _mm512_loadu_ps(&x[i]);
-        const __m512 _y = _mm512_loadu_ps(&y[i]);
+        const __m512 _x = _mm512_load_ps(&x[i]);
+        const __m512 _y = _mm512_load_ps(&y[i]);
 
         const __m512 _x2 = _mm512_sub_ps(_x, _y);
         const __m512 _res = _mm512_mul_ps(_two, _x2);
-        _mm512_storeu_ps(&c[i], _res);
+        _mm512_store_ps(&c[i], _res);
     }
 
     for (size_t i = (rows*cols)-((rows*cols)%16); i < rows*cols; i++) {
@@ -63,14 +63,14 @@ void LossMetric::MaeLoss(const float* __restrict x, const float* __restrict y, f
 
     #pragma omp parallel for
     for (ssize_t i = 0; i <= (ssize_t)(rows*cols)-8; i += 8) {
-        const __m256 _x = _mm256_loadu_ps(&x[i]);
-        const __m256 _y = _mm256_loadu_ps(&y[i]);
+        const __m256 _x = _mm256_load_ps(&x[i]);
+        const __m256 _y = _mm256_load_ps(&y[i]);
 
         const __m256 _diff = _mm256_sub_ps(_x, _y);
         const __m256 _cmp = _mm256_cmp_ps(_diff, _zero, _CMP_GT_OQ);
         const __m256 _res = _mm256_blendv_ps(_none, _one, _cmp);
 
-        _mm256_storeu_ps(&c[i], _res);
+        _mm256_store_ps(&c[i], _res);
     }
 
     for (size_t i = (rows*cols)-((rows*cols)%8); i < rows*cols; i++) {
@@ -86,12 +86,12 @@ void LossMetric::MseLoss(const float* __restrict x, const float* __restrict y, f
 
     #pragma omp parallel for
     for (ssize_t i = 0; i <= (ssize_t)(rows*cols)-8; i += 8) {
-        const __m256 _x = _mm256_loadu_ps(&x[i]);
-        const __m256 _y = _mm256_loadu_ps(&y[i]);
+        const __m256 _x = _mm256_load_ps(&x[i]);
+        const __m256 _y = _mm256_load_ps(&y[i]);
 
         const __m256 _x2 = _mm256_sub_ps(_x, _y);
         const __m256 _res = _mm256_mul_ps(_two, _x2);
-        _mm256_storeu_ps(&c[i], _res);
+        _mm256_store_ps(&c[i], _res);
     }
 
     for (size_t i = (rows*cols)-((rows*cols)%8); i < rows*cols; i++) {

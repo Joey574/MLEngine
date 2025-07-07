@@ -18,6 +18,7 @@ void Activation::Sigmoid(const float* __restrict x, float* __restrict y, size_t 
     #pragma omp parallel for
     for (ssize_t i = 0; i <= ((ssize_t)n)-16; i+= 16) {
         const __m512 _x = _mm512_load_ps(&x[i]);
+        
         const __m512 _nx = _mm512_sub_ps(_zero, _x);
         const __m512 _ex = MathUtils::Exp512(_nx);
 
@@ -59,6 +60,7 @@ void Activation::LeakyReLU(const float* __restrict x, float* __restrict y, size_
     #pragma omp parallel for
     for (ssize_t i = 0; i <= ((ssize_t)n)-16; i+= 16) {
         const __m512 _x = _mm512_load_ps(&x[i]);
+
         const __m512 _x2 = _mm512_mul_ps(_x, _cof);
         const __m512 _res = _mm512_max_ps(_x2, _x);
 
@@ -79,6 +81,7 @@ void Activation::ELU(const float* __restrict x, float* __restrict y, size_t r, s
     #pragma omp parallel for
     for (ssize_t i = 0; i <= ((ssize_t)n)-16; i+= 16) {
         const __m512 _x = _mm512_load_ps(&x[i]);
+
         const __m512 _x2 = MathUtils::Exp512(_x);
         const __m512 _x3 = _mm512_sub_ps(_x2, _one);
 
@@ -104,6 +107,7 @@ void Activation::Sigmoid(const float* __restrict x, float* __restrict y, size_t 
     #pragma omp parallel for
     for (ssize_t i = 0; i <= ((ssize_t)n)-8; i+= 8) {
         const __m256 _x = _mm256_load_ps(&x[i]);
+
         const __m256 _nx = _mm256_sub_ps(_zero, _x);
         const __m256 _ex = MathUtils::Exp256(_nx);
 
@@ -147,6 +151,7 @@ void Activation::LeakyReLU(const float* __restrict x, float* __restrict y, size_
     #pragma omp parallel for
     for (ssize_t i = 0; i <= ((ssize_t)n)-8; i+= 8) {
         const __m256 _x = _mm256_load_ps(&x[i]);
+
         const __m256 _x2 = _mm256_mul_ps(_x, _cof);
         const __m256 _res = _mm256_max_ps(_x2, _x);
 
@@ -168,6 +173,7 @@ void Activation::ELU(const float* __restrict x, float* __restrict y, size_t r, s
     #pragma omp parallel for
     for (ssize_t i = 0; i <= ((ssize_t)n)-8; i+= 8) {
         const __m256 _x = _mm256_load_ps(&x[i]);
+
         const __m256 _x2 = MathUtils::Exp256(_x);
         const __m256 _x3 = _mm256_sub_ps(_x2, _one);
         

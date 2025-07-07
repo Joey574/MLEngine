@@ -40,7 +40,7 @@ layers:
     loss: onehot
     metric: accuracy
 
-seed: 406246
+seed: 406123
 
 weight: he
 epochs: 1000

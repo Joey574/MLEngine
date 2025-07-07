@@ -119,7 +119,12 @@ int main(int argc, char* argv[]) {
     state.modelname = state.config[Y_MODELNAME].as<std::string>();
 
     // set global seed
-    SEED = state.config[Y_SEED].as<uint64_t>(std::random_device{}());
+    if (state.config[Y_SEED]) {
+        SEED = state.config[Y_SEED].as<uint64_t>();
+    } else {
+        SEED = std::random_device{}();
+        std::cout << "Global Seed: " << SEED << "\n";
+    }
 
 
     if (listmeta || listhistory || deletemodel || resetmodel || visualizemodel) {
@@ -128,7 +133,6 @@ int main(int argc, char* argv[]) {
             exit(1);
         }
 
-        
         if (listmeta) { displayMeta(state); }
         if (listhistory) { displayHistory(state); }      
         if (deletemodel) { deleteModel(state); }

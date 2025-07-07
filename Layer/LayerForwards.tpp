@@ -8,13 +8,13 @@ void Layer::InputForward(float* __restrict input, size_t n) {
         std::memcpy(m_ta, input, nodes*n*sizeof(float));
     }
 
-    assert((uintptr_t)m_a%32==0);
-    assert((uintptr_t)m_ta%32==0);
+    assert((uintptr_t)m_a%64==0);
+    assert((uintptr_t)m_ta%64==0);
 }
 
 template <bool training, bool dropout, bool skipconn>
 void Layer::BasicForward(float* __restrict input, size_t n) {
-    assert((uintptr_t)input%32==0);
+    assert((uintptr_t)input%64==0);
 
     const float* __restrict w = m_w;
     const float* __restrict b = m_b;

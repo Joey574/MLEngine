@@ -16,7 +16,7 @@ public:
     static void RotateImage(const float* image, float* out, size_t width, size_t height, float deg);
     static void ScaleImage(const float* image, float* out, size_t width, size_t height, float scale);
     static void ShearImage(const float* image, float* out, size_t width, size_t height, float shear);
-    static void ElasticDeformImage(const float* image, float* out, const std::vector<float>& k, std::mt19937& rd, size_t width, size_t height, float alpha, float sigma);
+    static void ElasticDeformImage(const float* image, float* out, const std::vector<float>& k, std::vector<float>& tmp, std::vector<float>& uxs, std::vector<float>& uys, std::mt19937& rd, size_t width, size_t height, float alpha, float sigma);
 
     static std::vector<float> MakeGaussianKernel2D(int rad, float sigma);
     static std::vector<float> MakeGaussianKernel1D(int rad, float sigma);

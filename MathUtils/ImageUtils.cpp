@@ -27,23 +27,23 @@ float MathUtils::BilinearSample(const float* __restrict image, size_t w, size_t 
 }
 
 void MathUtils::RotateImage(const float* __restrict image, float* __restrict out, size_t width, size_t height, float deg) {
-    const double rad = deg * M_PI / 180.0;
-    const double cos_a = std::cos(rad);
-    const double sin_a = std::sin(rad);
+    const float rad = deg * M_PI / 180.0;
+    const float cos_a = std::cos(rad);
+    const float sin_a = std::sin(rad);
 
-    const double cx = width / 2.0;
-    const double cy = height / 2.0;
+    const float cx = width / 2.0;
+    const float cy = height / 2.0;
 
     #pragma omp parallel for
     for (size_t y = 0; y < height; y++) {
 
         #pragma omp simd
         for (size_t x = 0; x < width; x++) {
-            double x0 = x - cx;
-            double y0 = y - cy;
+            float x0 = x - cx;
+            float y0 = y - cy;
 
-            double src_x =  cos_a * x0 + sin_a * y0 + cx;
-            double src_y = -sin_a * x0 + cos_a * y0 + cy;
+            float src_x =  cos_a * x0 + sin_a * y0 + cx;
+            float src_y = -sin_a * x0 + cos_a * y0 + cy;
 
             int ix = static_cast<int>(std::round(src_x));
             int iy = static_cast<int>(std::round(src_y));
@@ -67,8 +67,8 @@ void MathUtils::ScaleImage(const float* __restrict image, float* __restrict out,
 
         #pragma omp simd
         for (size_t x = 0; x < width; x++) {
-            float srcx = std::min(std::max((x-dx)/scale, 0.0f), width - 1.001f);
-            float srcy = std::min(std::max((y-dy)/scale, 0.0f), height - 1.001f);
+            float srcx = std::min<float>(std::max<float>((x-dx)/scale, 0.0f), width - 1.001f);
+            float srcy = std::min<float>(std::max<float>((y-dy)/scale, 0.0f), height - 1.001f);
 
             float value = BilinearSample(image, width, height, srcx, srcy);
 
@@ -101,7 +101,7 @@ void MathUtils::ShearImage(const float* __restrict image, float* __restrict out,
         }
     }
 }
-void MathUtils::ElasticDeformImage(const float* __restrict image, float* __restrict out, const std::vector<float>& k, std::mt19937& rd, size_t width, size_t height, float alpha, float sigma) {
+void MathUtils::ElasticDeformImage(const float* __restrict image, float* __restrict out, const std::vector<float>& k, std::vector<float>& tmp, std::vector<float>& uxs, std::vector<float>& uys, std::mt19937& rd, size_t width, size_t height, float alpha, float sigma) {
     std::vector<float> elasticImage(width*height, 0.0f);
 
     // generate displatement fields, ux, uy
@@ -119,10 +119,6 @@ void MathUtils::ElasticDeformImage(const float* __restrict image, float* __restr
 
     // apply gaussian smoothing
     int krad = std::ceil(3.0f*sigma);
-    std::vector<float> tmp(width*height, 0.0f);
-    std::vector<float> uxs(width*height, 0.0f);
-    std::vector<float> uys(width*height, 0.0f);
-
     ConvolveHorizontal(ux, tmp, k, width, height, krad);
     ConvolveVertical(tmp, uxs, k, width, height, krad);
 
@@ -178,9 +174,7 @@ std::vector<float> MathUtils::MakeGaussianKernel2D(int rad, float sigma) {
         }
     }
 
-    // normalize
     Normalize(&k[0], sum, k.size());
-
     return k;
 }
 std::vector<float> MathUtils::MakeGaussianKernel1D(int rad, float sigma) {
@@ -231,6 +225,7 @@ void MathUtils::ConvolveHorizontal(const std::vector<float>& f, std::vector<floa
         for (size_t x = 0; x < w; x++) {
             float sum = 0.0f;
 
+            #pragma omp simd
             for (ssize_t dx = -rad; dx <= rad; dx++) {
                 size_t xx = std::clamp<int>(x+dx, 0, w-1);
                 sum += f[y*w+xx] * k[dx+rad];
@@ -246,6 +241,7 @@ void MathUtils::ConvolveVertical(const std::vector<float>& f, std::vector<float>
         for (size_t x = 0; x < w; x++) {
             float sum = 0.0f;
 
+            #pragma omp simd
             for (ssize_t dy = -rad; dy <= rad; dy++) {
                 size_t yy = std::clamp<int>(y+dy, 0, h-1);
                 sum += f[yy*w+x] * k[dy+rad];

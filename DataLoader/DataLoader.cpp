@@ -39,6 +39,7 @@ void DataLoader::LoadMNIST() {
 
     if (!traind.is_open() || !trainl.is_open() || !testd.is_open() || !testl.is_open()) {
         std::cerr << "Failed to open dataset file(s)\n";
+        exit(1);
     }
 
     LoadMNISTStyleDataset(traind, trainl, testd, testl);
@@ -70,6 +71,7 @@ void DataLoader::LoadFMNIST() {
 
     if (!traind.is_open() || !trainl.is_open() || !testd.is_open() || !testl.is_open()) {
         std::cerr << "Failed to open dataset file(s)\n";
+        exit(1);
     }
 
     LoadMNISTStyleDataset(traind, trainl, testd, testl);
@@ -310,7 +312,7 @@ void DataLoader::LoadMNISTStyleDataset(std::ifstream& traind, std::ifstream& tra
     } else if (augments == 0b00001111) {
         augment = static_cast<AugmentFn>(&DataLoader::Augment<0b00001111>);
     } else {
-        // default state
+        // default state, no augmentations
         augment = nullptr;
     }
 

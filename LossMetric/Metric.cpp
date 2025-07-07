@@ -37,8 +37,8 @@ float LossMetric::MaeScore(const float* __restrict x, const float* __restrict y,
 
     size_t i = 0;
     for (; i+16 <= rows*cols; i += 16) {
-        const __m512 _x = _mm512_loadu_ps(&x[i]);
-        const __m512 _y = _mm512_loadu_ps(&y[i]);
+        const __m512 _x = _mm512_load_ps(&x[i]);
+        const __m512 _y = _mm512_load_ps(&y[i]);
 
         const __m512 _e = _mm512_sub_ps(_x, _y);
         const __m512 _res = _mm512_and_ps(_e, _absmask);
@@ -60,8 +60,8 @@ float LossMetric::MseScore(const float* __restrict x, const float* __restrict y,
 
     size_t i = 0;
     for (; i+16 <= rows*cols; i += 16) {
-        const __m512 _x = _mm512_loadu_ps(&x[i]);
-        const __m512 _y = _mm512_loadu_ps(&y[i]);
+        const __m512 _x = _mm512_load_ps(&x[i]);
+        const __m512 _y = _mm512_load_ps(&y[i]);
 
         const __m512 _e = _mm512_sub_ps(_x, _y);
         const __m512 _se = _mm512_mul_ps(_e, _e);
@@ -86,8 +86,8 @@ float LossMetric::MaeScore(const float* __restrict x, const float* __restrict y,
 
     size_t i = 0;
     for (; i+8 <= rows*cols; i += 8) {
-        const __m256 _x = _mm256_loadu_ps(&x[i]);
-        const __m256 _y = _mm256_loadu_ps(&y[i]);
+        const __m256 _x = _mm256_load_ps(&x[i]);
+        const __m256 _y = _mm256_load_ps(&y[i]);
 
         const __m256 _e = _mm256_sub_ps(_x, _y);
         const __m256 _res = _mm256_and_ps(_e, _absmask);
@@ -110,8 +110,8 @@ float LossMetric::MseScore(const float* __restrict x, const float* __restrict y,
 
     size_t i = 0;
     for (; i+8 <= rows*cols; i += 8) {
-        const __m256 _x = _mm256_loadu_ps(&x[i]);
-        const __m256 _y = _mm256_loadu_ps(&y[i]);
+        const __m256 _x = _mm256_load_ps(&x[i]);
+        const __m256 _y = _mm256_load_ps(&y[i]);
 
         const __m256 _e = _mm256_sub_ps(_x, _y);
         const __m256 _se = _mm256_mul_ps(_e, _e);
