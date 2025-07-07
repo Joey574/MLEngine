@@ -4,7 +4,6 @@ void DataLoader::Deform(size_t e) {
 
     // apply data augments
     if (augment != nullptr) {
-        std::cout << "applying augment\n";
         (this->*augment)(e);
     }
 
@@ -86,10 +85,13 @@ size_t DataLoader::ApplyShear(Matrix& data, Matrix& labels, size_t original_samp
     return a_idx;
 }
 size_t DataLoader::ApplyElasticDeform(Matrix& data, Matrix& labels, size_t original_samples, std::mt19937& rd, size_t w, size_t h, float alpha, float sigma, size_t samples, size_t a_idx) {
+    // pre make gaussian kernel
+    std::vector<float> k = MathUtils::MakeGaussianKernel1D(std::ceil(3.0f*sigma), sigma);
+    
     for (size_t i = 0; i < original_samples; i++) {
         for (size_t j = 0; j < samples; j++) {
 
-            MathUtils::ElasticDeformImage(&data.data[i*data.cols], &data.data[a_idx*data.cols], rd, w, h, alpha, sigma);
+            MathUtils::ElasticDeformImage(&data.data[i*data.cols], &data.data[a_idx*data.cols], k, rd, w, h, alpha, sigma);
             labels.data[a_idx] = labels.data[i];
 
             a_idx++;

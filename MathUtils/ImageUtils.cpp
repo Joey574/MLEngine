@@ -101,29 +101,36 @@ void MathUtils::ShearImage(const float* __restrict image, float* __restrict out,
         }
     }
 }
-void MathUtils::ElasticDeformImage(const float* __restrict image, float* __restrict out, std::mt19937& rd, size_t width, size_t height, float alpha, float sigma) {
+void MathUtils::ElasticDeformImage(const float* __restrict image, float* __restrict out, const std::vector<float>& k, std::mt19937& rd, size_t width, size_t height, float alpha, float sigma) {
     std::vector<float> elasticImage(width*height, 0.0f);
-
-    std::uniform_real_distribution<float> udist(-1.0f, 1.0f);
 
     // generate displatement fields, ux, uy
     std::vector<float> ux(width*height);
     std::vector<float> uy(width*height);
 
+    uint32_t rng_state = rd();
+
+    #pragma omp parallel for
     for (size_t i = 0; i < width*height; i++) {
-        ux[i] = udist(rd);
-        uy[i] = udist(rd);
+        uint32_t local_state = rng_state+i;
+        ux[i] = fastRandFloat(local_state);
+        uy[i] = fastRandFloat(local_state);
     }
 
-    // build gaussian smoothing
-    int krad = std::ceil(3.0f*sigma);
-    std::vector<float> k = MakeGaussianKernel(krad, sigma);
-
     // apply gaussian smoothing
-    std::vector<float> uxs = Convolve(ux, width, height, k, krad);
-    std::vector<float> uys = Convolve(uy, width, height, k, krad);
+    int krad = std::ceil(3.0f*sigma);
+    std::vector<float> tmp(width*height, 0.0f);
+    std::vector<float> uxs(width*height, 0.0f);
+    std::vector<float> uys(width*height, 0.0f);
+
+    ConvolveHorizontal(ux, tmp, k, width, height, krad);
+    ConvolveVertical(tmp, uxs, k, width, height, krad);
+
+    ConvolveHorizontal(uy, tmp, k, width, height, krad);
+    ConvolveVertical(tmp, uys, k, width, height, krad);
 
     // scale by alpha
+    #pragma omp parallel for simd
     for (size_t i = 0; i < width*height; i++) {
         uxs[i] *= alpha;
         uys[i] *= alpha;
@@ -153,7 +160,7 @@ void MathUtils::ElasticDeformImage(const float* __restrict image, float* __restr
     }
 }
 
-std::vector<float> MathUtils::MakeGaussianKernel(int rad, float sigma) {
+std::vector<float> MathUtils::MakeGaussianKernel2D(int rad, float sigma) {
     int size = 2*rad+1;
     std::vector<float> k(size*size);    
 
@@ -176,27 +183,75 @@ std::vector<float> MathUtils::MakeGaussianKernel(int rad, float sigma) {
 
     return k;
 }
-std::vector<float> MathUtils::Convolve(const std::vector<float>& f, size_t width, size_t height, const std::vector<float>& k, int rad) {
+std::vector<float> MathUtils::MakeGaussianKernel1D(int rad, float sigma) {
     int size = 2*rad+1;
-    std::vector<float> convolved(width*height, 0.0f);
+    std::vector<float> k(size);
 
-    for (size_t y = 0; y < height; y++) {
-        for (size_t x = 0; x < width; x++) {
+    float sum = 0.0f;
+    float inv2s2 = 1.0f / (2.0f * sigma * sigma);
+
+    #pragma omp simd
+    for (ssize_t i = -rad; i <= rad; i++) {
+        float v = std::exp(-i * i * inv2s2);
+        k[i+rad] = v;
+        sum += v;
+    }
+
+    Normalize(&k[0], sum, size);
+    return k;
+}
+
+std::vector<float> MathUtils::Convolve2D(const std::vector<float>& f, const std::vector<float>& k, size_t w, size_t h, int rad) {
+    int size = 2*rad+1;
+    std::vector<float> convolved(w*h, 0.0f);
+
+    #pragma omp parallel for
+    for (size_t y = 0; y < h; y++) {
+        for (size_t x = 0; x < w; x++) {
             float sum = 0.0f;
 
             for (ssize_t dy = -rad; dy <= rad; dy++) {
-                size_t yy = std::clamp((int)y+(int)dy, 0, (int)height-1);
+                size_t yy = std::clamp((int)y+(int)dy, 0, (int)h-1);
 
-                #pragma omp simd
                 for (ssize_t dx = -rad; dx <= rad; dx++) {
-                    size_t xx = std::clamp((int)x+(int)dx, 0, (int)width-1);
-                    sum += f[yy*width+xx] * k[(dy+rad)*size+(dx+rad)];
+                    size_t xx = std::clamp<int>(x+dx, 0, w-1);
+                    sum += f[yy*w+xx] * k[(dy+rad)*size+(dx+rad)];
                 }
             }
 
-            convolved[y*width+x] = sum;
+            convolved[y*w+x] = sum;
         }
     }
 
     return convolved;
+}
+void MathUtils::ConvolveHorizontal(const std::vector<float>& f, std::vector<float>& out, const std::vector<float>& k, size_t w, size_t h, int rad) {
+    #pragma omp parallel for
+    for (size_t y = 0; y < h; y++) {
+        for (size_t x = 0; x < w; x++) {
+            float sum = 0.0f;
+
+            for (ssize_t dx = -rad; dx <= rad; dx++) {
+                size_t xx = std::clamp<int>(x+dx, 0, w-1);
+                sum += f[y*w+xx] * k[dx+rad];
+            }
+
+            out[y*w+x] = sum;
+        }
+    }
+}
+void MathUtils::ConvolveVertical(const std::vector<float>& f, std::vector<float>& out, const std::vector<float>& k, size_t w, size_t h, int rad) {
+    #pragma omp parallel for
+    for (size_t y = 0; y < h; y++) {
+        for (size_t x = 0; x < w; x++) {
+            float sum = 0.0f;
+
+            for (ssize_t dy = -rad; dy <= rad; dy++) {
+                size_t yy = std::clamp<int>(y+dy, 0, h-1);
+                sum += f[yy*w+x] * k[dy+rad];
+            }
+
+            out[y*w+x] = sum;
+        }
+    }
 }

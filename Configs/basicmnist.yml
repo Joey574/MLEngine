@@ -1,6 +1,17 @@
 name: basicmnist
 dataset: mnist
 
+dataset_args:
+  running_augmentations: true
+
+  rotation: 15
+  min_rotation: 10
+  rot_variants: 2
+
+  elastic_deform:
+    alpha: 34
+    sigma: 4
+    variants: 1
 
 optimizer:
   type: sgd
