@@ -118,15 +118,6 @@ int main(int argc, char* argv[]) {
     state.config = YAML::LoadFile(config_file);
     state.modelname = state.config[Y_MODELNAME].as<std::string>();
 
-    // set global seed
-    if (state.config[Y_SEED]) {
-        SEED = state.config[Y_SEED].as<uint64_t>();
-    } else {
-        SEED = std::random_device{}();
-        std::cout << "Global Seed: " << SEED << "\n";
-    }
-
-
     if (listmeta || listhistory || deletemodel || resetmodel || visualizemodel) {
         if (!state.ModelExists()) {
             std::cerr << "Model not found: " << state.config[Y_MODELNAME].as<std::string>() << "\n";
@@ -140,6 +131,7 @@ int main(int argc, char* argv[]) {
         if (visualizemodel) { visualizeModel(state); }
     }
 
+
     #if defined(__AVX512F__)
         std::cout << "AVX512 Enabled\n";
     #elif defined(__AVX2__) && defined(__FMA__)
@@ -147,6 +139,16 @@ int main(int argc, char* argv[]) {
     #else
         std::cout << "Scalar Enabled\n";
     #endif
+
+
+    // set global seed
+    if (state.config[Y_SEED]) {
+        SEED = state.config[Y_SEED].as<uint64_t>();
+    } else {
+        SEED = std::random_device{}();
+        std::cout << "Global Seed: " << SEED << "\n";
+    }
+    
 
     if (state.ModelExists()) {
         std::cout << "Loading existing model\n";

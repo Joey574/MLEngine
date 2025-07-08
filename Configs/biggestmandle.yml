@@ -3,7 +3,7 @@ dataset: mandlebrot
 
 optimizer:
   type: adam
-  learning_rate: 0.0000001
+  learning_rate: 0.0001
 
 dataset_args:
   samples: 200000
@@ -22,9 +22,8 @@ layers:
 
   - type: hidden
     nodes: 512
-    
     activation: leakyrelu
-    skipconn: 0
+    #skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -33,7 +32,6 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -42,7 +40,7 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
+    #skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -51,7 +49,6 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -60,7 +57,7 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
+    #skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -69,7 +66,6 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
   
   - type: hidden
     nodes: 512
@@ -78,7 +74,7 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
+    #skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -87,7 +83,6 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -96,7 +91,7 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
+    #skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -105,7 +100,6 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -114,7 +108,7 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
+    #skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -123,7 +117,6 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -132,7 +125,7 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
+    #skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -141,7 +134,6 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -150,7 +142,7 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
+    #skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -159,7 +151,6 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -168,7 +159,7 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
+    #skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -177,7 +168,6 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -186,7 +176,7 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
+    #skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -195,7 +185,6 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -204,7 +193,7 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
+    #skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -213,7 +202,6 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -222,7 +210,7 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
+    #skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -231,7 +219,6 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
 
   - type: hidden
     nodes: 512
@@ -240,7 +227,7 @@ layers:
   - type: hidden
     nodes: 512
     activation: leakyrelu
-    skipconn: 0
+    #skipconn: 0
 
 
   - type: output
