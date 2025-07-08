@@ -2,7 +2,7 @@ name: bestmnist
 dataset: mnist
 
 dataset_args:
-  running_augmentations: true
+  running_augmentations: false
 
   rotation: 15
   min_rotation: 10
@@ -19,7 +19,7 @@ dataset_args:
   elastic_deform:
     alpha: 34
     sigma: 4
-    variants: 2
+    variants: 4
 
 optimizer:
   type: adam
@@ -36,7 +36,7 @@ layers:
 
   - type: output
     nodes: 10
-    activation: sigmoid
+    activation: softmax
     loss: onehot
     metric: accuracy
 

@@ -22,7 +22,7 @@ void Activation::LeakyReLUDerivative(const float* __restrict x, float* __restric
 
 #if defined(__AVX512F__)
 void Activation::SigmoidDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
-    assert(__builtin_cpu_supports("avx512f"));
+    AVX512_VALID_PATH();
 
     const __m512 _zero = _mm512_setzero_ps();
     const __m512 _one = _mm512_set1_ps(1.0f);
@@ -53,7 +53,7 @@ void Activation::SigmoidDerivative(const float* __restrict x, float* __restrict 
     }
 }
 void Activation::ELUDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
-    assert(__builtin_cpu_supports("avx512f"));
+    AVX512_VALID_PATH();
 
     const __m512 _zero = _mm512_setzero_ps();
     const __m512 _one = _mm512_set1_ps(1.0f);
@@ -79,8 +79,7 @@ void Activation::ELUDerivative(const float* __restrict x, float* __restrict y, s
 }
 #elif defined(__AVX2__) && defined(__FMA__)
 void Activation::SigmoidDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
-    assert(__builtin_cpu_supports("avx2"));
-    assert(__builtin_cpu_supports("fma"));
+    AVX2_VALID_PATH();
 
     const __m256 _zero = _mm256_setzero_ps();
     const __m256 _one = _mm256_set1_ps(1.0f);
@@ -111,8 +110,7 @@ void Activation::SigmoidDerivative(const float* __restrict x, float* __restrict 
     }
 }
 void Activation::ELUDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
-    assert(__builtin_cpu_supports("avx2"));
-    assert(__builtin_cpu_supports("fma"));
+    AVX2_VALID_PATH();
     
     const __m256 _zero = _mm256_setzero_ps();
     const __m256 _one = _mm256_set1_ps(1.0f);
@@ -138,6 +136,8 @@ void Activation::ELUDerivative(const float* __restrict x, float* __restrict y, s
 }
 #else
 void Activation::SigmoidDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
+    SCALAR_VALID_PATH();
+
     const size_t n = r*c;
 
     #pragma omp parallel for simd
@@ -147,6 +147,8 @@ void Activation::SigmoidDerivative(const float* __restrict x, float* __restrict 
     }
 }
 void Activation::ELUDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
+    SCALAR_VALID_PATH();
+
     const size_t n = r*c;
 
     #pragma omp parallel for simd

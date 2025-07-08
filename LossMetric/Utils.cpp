@@ -9,10 +9,14 @@ LossMetric::Type LossMetric::ParseType(const std::string& lm) {
         return Type::accuracy;
     } else if (lm == "onehot") {
         return Type::onehot;
+    } else if (lm == "none") {
+        return Type::none;
+    } else {
+        std::cerr << "[-] Invalid LossMetric Type: " << lm << "\n";
+        return Type::none;
     }
-
-    return Type::none;
 }
+
 std::string LossMetric::ParseName(Type type) {
     switch (type) {
         case Type::mae:
@@ -23,7 +27,10 @@ std::string LossMetric::ParseName(Type type) {
             return "accuracy";
         case Type::onehot:
             return "onehot";
+        case Type::none:
+            return "none";
         default:
+            std::cerr << "[-] Invalid LossMetric Type: " << (int)type << "\n";
             return "none";
     }
 }

@@ -6,10 +6,10 @@
 
 struct State;
 
+/* @brief
+
+*/
 struct NeuralNetwork {
-    friend struct Layer;
-    friend struct Activation;
-    friend struct LossMetric;
     friend struct State;
 
 public:

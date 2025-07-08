@@ -6,7 +6,10 @@ std::string Optimizer::ParseRegName(Regularization reg) {
             return "l1";
         case Regularization::l2:
             return "l2";
+        case Regularization::none:
+            return "none";
         default:
+            std::cerr << "[-] Invalid Regularization Type: " << (int)reg << "\n";
             return "none";
     }
 }
@@ -20,7 +23,10 @@ std::string Optimizer::ParseUpdName(Update upd) {
             return "rmsprop";
         case Update::adam:
             return "adam";
+        case Update::none:
+            return "none";
         default:
+            std::cerr << "[-] Invalid Update Type: " << (int)upd << "\n";
             return "none";
     }
 }
@@ -30,9 +36,12 @@ Optimizer::Regularization Optimizer::ParseRegType(const std::string& reg) {
         return Regularization::l1;
     } else if (reg == "l2") {
         return Regularization::l2;
+    } else if (reg == "none") {
+        return Regularization::none;
+    } else {
+        std::cerr << "[-] Invalid Regularization Type: " << reg << "\n";
+        return Regularization::none;
     }
-
-    return Regularization::none;
 }
 Optimizer::Update Optimizer::ParseUpdType(const std::string& upd) {
     if (upd == "sgd") {
@@ -43,9 +52,12 @@ Optimizer::Update Optimizer::ParseUpdType(const std::string& upd) {
         return Update::rmsprop;
     } else if (upd == "adam") {
         return Update::adam;
+    } else if (upd == "none") {
+        return Update::none;
+    } else {
+        std::cerr << "[-] Invalid Update Type: " << upd << "\n";
+        return Update::none;        
     }
-
-    return Update::none;
 }
 
 void Optimizer::Define(YAML::Node config) {
