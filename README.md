@@ -40,7 +40,9 @@ MLEngine uses a general top down framework to allow vast customizability and mod
 flowchart TD
     state["`**State:** Manages everything from the top down, specifically responsible for saving and loading configs`"]
 
-    nn["`**NeuralNetwork:** Manages the memory allocation of the network and is specifically responsible for dealing with logging, and managing training state`"]
+    supervisor["`**Supervisor:** Manages NeuralNetwork(s) and their states and handles grading for said networks and final output`"]
+
+    nn["`**NeuralNetwork:** Manages the memory allocation of the network and managing training state`"]
 
     layer["`**Layer:** Responsible for the exact mathematical implementations of forward and back prop, makes heavy use of templates to allow customization and improve performance`"]
 
@@ -54,10 +56,13 @@ flowchart TD
 
     mathutils["`**MathUtils:** More of its own thing, used by various classes/structs, implements various dot prods, and other specific math utils (shocking)`"]
 
-    state-->nn
+    state-->supervisor
     state-->dataload
 
+    supervisor-->nn
+
     nn-->layer
+    nn-->dataload
 
     layer-->actv
     layer-->lossmetric
