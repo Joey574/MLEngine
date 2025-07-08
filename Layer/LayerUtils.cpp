@@ -12,7 +12,10 @@ std::string Layer::ParseName(LayerType type) {
             return "conv2D";
         case LayerType::conv3D:
             return "conv3D";
+        case LayerType::none:
+            return "none";
         default:
+            std::cerr << "[-] Invalid Layer Type: " << (int)type << "\n";
             return "none";
     }
 }
@@ -27,8 +30,12 @@ Layer::LayerType Layer::ParseType(const std::string& type) {
         return LayerType::conv2D;
     } else if (type == "conv3D") {
         return LayerType::conv3D;
+    } else if (type == "none") {
+        return LayerType::none;
+    } else {
+        std::cerr << "[-] Invalid Layer Type: " << type << "\n";
+        return LayerType::none;
     }
-    return LayerType::none;
 }
 
 std::string Layer::CleanSize(size_t bytes) {

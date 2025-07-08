@@ -5,6 +5,9 @@
 #include "../Optimizer/Optimizer.hpp"
 #include "../Tensor/Tensor.hpp"
 
+/* @brief
+
+*/
 struct Layer {
 public:
 

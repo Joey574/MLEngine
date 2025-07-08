@@ -1,5 +1,8 @@
 #pragma once
 
+/* @brief
+
+*/
 struct LossMetric {
 public:
     enum class Type {

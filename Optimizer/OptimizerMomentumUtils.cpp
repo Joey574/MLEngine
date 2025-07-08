@@ -2,7 +2,7 @@
 
 #if defined(__AVX512F__)
 void Optimizer::MomentumSGDCompute(float* __restrict  p, float* __restrict  v, const float* __restrict  d, size_t size, float lr, size_t n, float coef) {
-    assert(__builtin_cpu_supports("avx512f"));
+    AVX512_VALID_PATH();
     
     // adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
@@ -30,7 +30,7 @@ void Optimizer::MomentumSGDCompute(float* __restrict  p, float* __restrict  v, c
 	}
 }
 void Optimizer::MomentumSGDL1Compute(float* __restrict p, float* __restrict  v, const float* __restrict d, size_t size, float lr, size_t n, float lambda, float coef) {
-    assert(__builtin_cpu_supports("avx512f"));
+    AVX512_VALID_PATH();
 
     // adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
@@ -69,7 +69,7 @@ void Optimizer::MomentumSGDL1Compute(float* __restrict p, float* __restrict  v, 
     }
 }
 void Optimizer::MomentumSGDL2Compute(float* __restrict p, float* __restrict  v, const float* __restrict d, size_t size, float lr, size_t n, float lambda, float coef) {
-    assert(__builtin_cpu_supports("avx512f"));
+    AVX512_VALID_PATH();
 
     // adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
@@ -102,8 +102,7 @@ void Optimizer::MomentumSGDL2Compute(float* __restrict p, float* __restrict  v, 
 
 #elif defined(__AVX2__) && defined(__FMA__)
 void Optimizer::MomentumSGDCompute(float* __restrict  p, float* __restrict  v, const float* __restrict  d, size_t size, float lr, size_t n, float coef) {
-    assert(__builtin_cpu_supports("avx2"));
-    assert(__builtin_cpu_supports("fma"));
+    AVX2_VALID_PATH();
 
     // adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
@@ -131,8 +130,7 @@ void Optimizer::MomentumSGDCompute(float* __restrict  p, float* __restrict  v, c
 	}
 }
 void Optimizer::MomentumSGDL1Compute(float* __restrict p, float* __restrict  v, const float* __restrict d, size_t size, float lr, size_t n, float lambda, float coef) {
-    assert(__builtin_cpu_supports("avx2"));
-    assert(__builtin_cpu_supports("fma"));
+    AVX2_VALID_PATH();
 
     // adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
@@ -171,8 +169,7 @@ void Optimizer::MomentumSGDL1Compute(float* __restrict p, float* __restrict  v, 
     }
 }
 void Optimizer::MomentumSGDL2Compute(float* __restrict p, float* __restrict  v, const float* __restrict d, size_t size, float lr, size_t n, float lambda, float coef) {
-    assert(__builtin_cpu_supports("avx2"));
-    assert(__builtin_cpu_supports("fma"));
+    AVX2_VALID_PATH();
 
     // adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
@@ -204,6 +201,7 @@ void Optimizer::MomentumSGDL2Compute(float* __restrict p, float* __restrict  v, 
 }
 #else
 void Optimizer::MomentumSGDCompute(float* __restrict  p, float* __restrict  v, const float* __restrict  d, size_t size, float lr, size_t n, float coef) {
+    SCALAR_VALID_PATH();
 
     // adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
@@ -216,6 +214,7 @@ void Optimizer::MomentumSGDCompute(float* __restrict  p, float* __restrict  v, c
 	}
 }
 void Optimizer::MomentumSGDL1Compute(float* __restrict p, float* __restrict  v, const float* __restrict d, size_t size, float lr, size_t n, float lambda, float coef) {
+    SCALAR_VALID_PATH();
 
     // adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
@@ -228,7 +227,8 @@ void Optimizer::MomentumSGDL1Compute(float* __restrict p, float* __restrict  v, 
     }
 }
 void Optimizer::MomentumSGDL2Compute(float* __restrict p, float* __restrict  v, const float* __restrict d, size_t size, float lr, size_t n, float lambda, float coef) {
-    
+    SCALAR_VALID_PATH();
+
     // adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
 

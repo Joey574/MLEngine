@@ -4,7 +4,7 @@
 
 #if defined(__AVX512F__)
 template <bool clear> void MathUtils::MatrixColumnSum(const float* a, float* b, size_t a_r, size_t a_c) {
-    assert(__builtin_cpu_supports("avx512f"));
+    AVX512_VALID_PATH();
 
     // compute sum
     for (size_t i = 0; i < a_r; i++) {
@@ -24,7 +24,7 @@ template <bool clear> void MathUtils::MatrixColumnSum(const float* a, float* b, 
     }
 }
 void MathUtils::Normalize(float* a, float sum, size_t n) {
-    assert(__builtin_cpu_supports("avx512f"));
+    AVX512_VALID_PATH();
 
     const __m512 _sum = _mm512_set1_ps(sum);
 
@@ -41,7 +41,7 @@ void MathUtils::Normalize(float* a, float sum, size_t n) {
     }
 }
 void MathUtils::Scale(float* a, float scale, size_t n) {
-    assert(__builtin_cpu_supports("avx512f"));
+    AVX512_VALID_PATH();
 
     const __m512 _scale = _mm512_set1_ps(scale);
 
@@ -59,8 +59,7 @@ void MathUtils::Scale(float* a, float scale, size_t n) {
 }
 #elif defined(__AVX2__) && defined(__FMA__)
 template <bool clear> void MathUtils::MatrixColumnSum(const float* a, float* b, size_t a_r, size_t a_c) {
-    assert(__builtin_cpu_supports("avx2"));
-    assert(__builtin_cpu_supports("fma"));
+    AVX2_VALID_PATH();
 
     // compute sum
     for (size_t i = 0; i < a_r; i++) {
@@ -80,8 +79,7 @@ template <bool clear> void MathUtils::MatrixColumnSum(const float* a, float* b, 
     }
 }
 void MathUtils::Normalize(float* a, float sum, size_t n) {
-    assert(__builtin_cpu_supports("avx2"));
-    assert(__builtin_cpu_supports("fma"));
+    AVX2_VALID_PATH();
 
     const __m256 _sum = _mm256_set1_ps(sum);
 
@@ -98,8 +96,7 @@ void MathUtils::Normalize(float* a, float sum, size_t n) {
     }
 }
 void MathUtils::Scale(float* a, float scale, size_t n) {
-    assert(__builtin_cpu_supports("avx2"));
-    assert(__builtin_cpu_supports("fma"));
+    AVX2_VALID_PATH();
 
     const __m256 _scale = _mm256_set1_ps(scale);
 
@@ -117,6 +114,8 @@ void MathUtils::Scale(float* a, float scale, size_t n) {
 }
 #else
 template <bool clear> void MathUtils::MatrixColumnSum(const float* a, float* b, size_t a_r, size_t a_c) {
+    SCALAR_VALID_PATH();
+    
     // compute sum
     for (size_t i = 0; i < a_r; i++) {
 
@@ -127,6 +126,7 @@ template <bool clear> void MathUtils::MatrixColumnSum(const float* a, float* b, 
     }
 }
 void MathUtils::Normalize(float* a, float sum, size_t n) {
+    SCALAR_VALID_PATH();
 
     #pragma omp simd
     for (size_t i = 0; i < n; i++) {
@@ -134,6 +134,7 @@ void MathUtils::Normalize(float* a, float sum, size_t n) {
     }
 }
 void MathUtils::Scale(float* a, float scale, size_t n) {
+    SCALAR_VALID_PATH();
 
     #pragma omp simd
     for (size_t i = 0; i < n; i++) {

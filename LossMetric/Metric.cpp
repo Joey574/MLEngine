@@ -1,7 +1,6 @@
 #include "LossMetric.hpp"
 #include "../MathUtils/MathUtils.hpp"
 
-
 float LossMetric::AccuracyScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
     size_t correct = 0;
 
@@ -27,10 +26,9 @@ float LossMetric::AccuracyScore(const float* __restrict x, const float* __restri
     return ((float)correct / (float)rows) * 100.0f;
 }
 
-
 #if defined(__AVX512F__)
 float LossMetric::MaeScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
-    assert(__builtin_cpu_supports("avx512f"));
+    AVX512_VALID_PATH();
 
     const __m512 _absmask = _mm512_castsi512_ps(_mm512_set1_epi32(0x7FFFFFFF));
     __m512 _sum = _mm512_setzero_ps();
@@ -54,7 +52,7 @@ float LossMetric::MaeScore(const float* __restrict x, const float* __restrict y,
     return error / (float)(rows*cols);
 }
 float LossMetric::MseScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
-    assert(__builtin_cpu_supports("avx512f"));
+    AVX512_VALID_PATH();
 
     __m512 _sum = _mm512_setzero_ps();
 
@@ -78,8 +76,7 @@ float LossMetric::MseScore(const float* __restrict x, const float* __restrict y,
 }
 #elif defined(__AVX2__) && defined(__FMA__)
 float LossMetric::MaeScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
-    assert(__builtin_cpu_supports("avx2"));
-    assert(__builtin_cpu_supports("fma"));
+    AVX2_VALID_PATH();
 
     const __m256 _absmask = _mm256_castsi256_ps(_mm256_set1_epi32(0x7FFFFFFF));
     __m256 _sum = _mm256_setzero_ps();
@@ -103,8 +100,7 @@ float LossMetric::MaeScore(const float* __restrict x, const float* __restrict y,
     return error / (float)(rows*cols);
 }
 float LossMetric::MseScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
-    assert(__builtin_cpu_supports("avx2"));
-    assert(__builtin_cpu_supports("fma"));
+    AVX2_VALID_PATH();
     
     __m256 _sum = _mm256_setzero_ps();
 
@@ -128,6 +124,8 @@ float LossMetric::MseScore(const float* __restrict x, const float* __restrict y,
 }
 #else
 float LossMetric::MaeScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
+    SCALAR_VALID_PATH();
+    
     float error = 0.0f;
 
     #pragma omp parallel for simd
@@ -139,6 +137,8 @@ float LossMetric::MaeScore(const float* __restrict x, const float* __restrict y,
     return error / (float)(rows*cols);
 }
 float LossMetric::MseScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
+    SCALAR_VALID_PATH();
+
     float error = 0.0f;
 
     #pragma omp parallel for simd

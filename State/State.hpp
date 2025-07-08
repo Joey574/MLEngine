@@ -1,7 +1,10 @@
+#pragma once
 #include "../NeuralNetwork/NeuralNetwork.hpp"
 #include "../DataLoader/DataLoader.hpp"
 
-#pragma once
+/* @brief
+
+*/
 struct State {
 public:
 

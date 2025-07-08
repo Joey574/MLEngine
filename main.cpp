@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
     signal(SIGINT, handleInterupt);
     signal(SIGSEGV, segv);
 
-    DEBUG_LOG("Running in DEBUG mode\n");
+    DEBUG_LOG("Running in DEBUG mode");
     
     State state;
     state.Init();

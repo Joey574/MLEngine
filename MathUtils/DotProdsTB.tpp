@@ -2,7 +2,7 @@
 
 #if defined(__AVX512F__)
 template <bool clear> void MathUtils::DotProdTB(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c) {
-    assert(__builtin_cpu_supports("avx512f"));
+    AVX512_VALID_PATH();
 
 	#pragma omp parallel for
 	for (size_t i = 0; i < a_r; i++) {
@@ -36,8 +36,7 @@ template <bool clear> void MathUtils::DotProdTB(const float* __restrict a, const
 }
 #elif defined (__AVX2__) && defined(__FMA__)
 template <bool clear> void MathUtils::DotProdTB(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c) {
-	assert(__builtin_cpu_supports("avx2"));
-    assert(__builtin_cpu_supports("fma"));
+	AVX2_VALID_PATH();
 
 	#pragma omp parallel for
 	for (size_t i = 0; i < a_r; i++) {
@@ -71,7 +70,9 @@ template <bool clear> void MathUtils::DotProdTB(const float* __restrict a, const
 }
 #else
 template <bool clear> void MathUtils::DotProdTB(const float* __restrict a, const float* __restrict b, float* __restrict c, size_t a_r, size_t a_c, size_t b_r, size_t b_c) {
-    #pragma omp parallel for
+    SCALAR_VALID_PATH();
+	
+	#pragma omp parallel for
 	for (size_t i = 0; i < a_r; i++) {
 		const size_t aidx = i*a_c;
 		const size_t cidx = i*b_r;

@@ -1,6 +1,9 @@
 #pragma once
 #include "../MathUtils/MathUtils.hpp"
 
+/* @brief
+
+*/
 struct Optimizer {
 public:
     using UpdateFn = void (Optimizer::*)(float*, float*, size_t, size_t, size_t);

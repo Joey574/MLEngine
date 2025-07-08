@@ -1,6 +1,9 @@
 #pragma once
 #include "../MathUtils/MathUtils.hpp"
 
+/* @brief
+The DataLoader struct is responsible for loading, storing, and augmenting datasets to be used in training
+*/
 struct DataLoader {
 public:
     using AugmentFn = void (DataLoader::*)(size_t);
