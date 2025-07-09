@@ -23,7 +23,7 @@ public:
     std::string name;
     std::vector<size_t> dims;
 
-    bool running_augment;
+    size_t refresh_every;
     bool hasTestData;
 
     Matrix trainData;

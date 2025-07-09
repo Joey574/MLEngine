@@ -57,6 +57,10 @@ nlohmann::json NeuralNetwork::Fit(DataLoader& dataset, nlohmann::json& storedhis
 	storedhistory[J_RUNS].push_back(history);
 	return storedhistory;
 }
+float* NeuralNetwork::Predict(DataLoader& dataset) {
+	ForwardProp<false>(dataset.testData.data.data(), dataset.testData.rows);
+	return m_layers.back().Output<false>();
+}
 
 std::string NeuralNetwork::TestNetwork(DataLoader& dataset, nlohmann::json& history, nlohmann::json& storedhistory, size_t e) {
 	ForwardProp<false>(dataset.testData.data.data(), dataset.testData.rows);

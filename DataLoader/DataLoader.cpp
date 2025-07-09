@@ -5,7 +5,7 @@ void DataLoader::LoadDataset(YAML::Node& config) {
     std::string dataset = config[Y_DATASET].as<std::string>();
     args = config[Y_DATASETARGS];
     
-    running_augment = args[Y_RUNNING_AUGMENT].as<bool>(Y_RUNNING_AUGMENT_DEFAULT);
+    refresh_every = args[Y_AUGMENT_REF_INTERVAL].as<size_t>(Y_AUGMENT_REF_INTERVAL_DEFAULT);
 
     if (dataset == "mnist") {
         LoadMNIST();
@@ -317,7 +317,7 @@ void DataLoader::LoadMNISTStyleDataset(std::ifstream& traind, std::ifstream& tra
     }
 
     // if we just pre generate augmentations, build trainData set now and set augment to nullptr
-    if (!running_augment && augment) {
+    if (refresh_every == -1 && augment) {
         (this->*augment)(1234);
         augment = nullptr;
     }

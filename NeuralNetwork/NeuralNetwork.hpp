@@ -30,6 +30,7 @@ public:
     );
 
     nlohmann::json Fit(DataLoader& dataset, nlohmann::json& history);
+    float* Predict(DataLoader& dataset);
 
     int Save(std::ofstream& file) const;
     int Load(std::ifstream& file);

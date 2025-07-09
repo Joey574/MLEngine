@@ -15,7 +15,7 @@ Also included is some basic parsing functionality for converting types to names 
 */
 struct Activation {
 public:
-    enum class Type {
+    enum Type {
         none, linear, sigmoid, relu, leakyrelu, elu, softmax
     };
 

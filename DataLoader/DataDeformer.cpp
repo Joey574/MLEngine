@@ -3,7 +3,7 @@
 void DataLoader::Deform(size_t e) {
 
     // apply data augments
-    if (augment != nullptr) {
+    if (augment != nullptr && e % refresh_every == 0) {
         (this->*augment)(e);
     }
 

@@ -5,7 +5,7 @@
 */
 struct LossMetric {
 public:
-    enum class Type {
+    enum Type {
         none, mae, mse, accuracy, onehot
     };
 
@@ -36,5 +36,4 @@ private:
     static float MaeScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols);
     static float MseScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols);
     static float AccuracyScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols);
-
 };

@@ -2,7 +2,7 @@ name: bestmnist
 dataset: mnist
 
 dataset_args:
-  running_augmentations: false
+  augment_refresh_interval: 1000
 
   rotation: 15
   min_rotation: 10
@@ -43,6 +43,6 @@ layers:
 seed: 406123
 
 weight: he
-epochs: 1000
+epochs: 5000
 valid_freq: 1
 batch_size: 512

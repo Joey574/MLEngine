@@ -4,7 +4,8 @@
 #define Y_WEIGHT_DEFAULT "none"
 
 // ds arg defaults
-#define Y_RUNNING_AUGMENT_DEFAULT false
+#define Y_AUGMENT_REF_INTERVAL_DEFAULT -1
+
 #define Y_ROT_VAR_DEFAULT 0
 #define Y_MIN_ROTATION_DEFAULT 0
 

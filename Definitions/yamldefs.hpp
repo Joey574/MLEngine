@@ -9,7 +9,7 @@
 #define Y_ENSEMBLE "ensemble"
 
 // ds args
-#define Y_RUNNING_AUGMENT "running_augmentations"
+#define Y_AUGMENT_REF_INTERVAL "augment_refresh_interval"
 
 #define Y_ROTATION "rotation"
 #define Y_MIN_ROTATION "min_rotation"
