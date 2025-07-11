@@ -8,7 +8,7 @@ struct DataLoader {
 public:
     using AugmentFn = void (DataLoader::*)(size_t);
 
-    enum Type {
+    enum class Type {
         none, mnist, fmnist, mandlebrot
     };
 
@@ -43,8 +43,9 @@ public:
     void LoadFMNIST();
     void LoadMandlebrot();
 
+    void MakeMandlebrotImage(YAML::Node& config, size_t width, size_t height);
     static void VisualizeTerminalMNISTLike(const float* image, size_t width, size_t height);
-
+    
 private:
     YAML::Node args;
 

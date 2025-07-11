@@ -4,7 +4,7 @@
 void Optimizer::AdamCompute(float* __restrict p, float* __restrict m, float* __restrict v, const float* __restrict d, size_t size, float lr, size_t n, float b1, float b2, float epsl, size_t t) {
     AVX512_VALID_PATH();
 
-    // adjust learning rate to factor in number of elements
+    // simd const values
     const float factor = lr / (float)n;
     const __m512 _factor = _mm512_set1_ps(factor);
     const __m512 _b1 = _mm512_set1_ps(b1);
@@ -59,7 +59,7 @@ void Optimizer::AdamCompute(float* __restrict p, float* __restrict m, float* __r
 void Optimizer::AdamCompute(float* __restrict p, float* __restrict m, float* __restrict v, const float* __restrict d, size_t size, float lr, size_t n, float b1, float b2, float epsl, size_t t) {
     AVX2_VALID_PATH();
     
-    // adjust learning rate to factor in number of elements
+    // simd const values
     const float factor = lr / (float)n;
     const __m256 _factor = _mm256_set1_ps(factor);
     const __m256 _b1 = _mm256_set1_ps(b1);
@@ -114,7 +114,6 @@ void Optimizer::AdamCompute(float* __restrict p, float* __restrict m, float* __r
 void Optimizer::AdamCompute(float* __restrict p, float* __restrict m, float* __restrict v, const float* __restrict d, size_t size, float lr, size_t n, float b1, float b2, float epsl, size_t t) {
     SCALAR_VALID_PATH();
 
-    // adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
 
     // update parameters

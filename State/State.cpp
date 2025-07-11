@@ -48,7 +48,7 @@ void State::Load() {
         ifile.close();
 
         if (err) {
-            // failed to laod, build model again
+            // failed to load, build model again
             std::cerr << "Failed to load parameters, rebuilding model\n";
             Build(true);
         }        

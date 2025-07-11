@@ -1,8 +1,8 @@
 #pragma once
 
 /* @brief
-An entirely static struct that just contains various math implementations, useful to abstract away the complicated math bits, entire class in parallelized and vectorized,
-ensuring that any other struct can access highly optimized methods for any purpose
+An entirely static struct that just contains various math implementations, useful to abstract away the complicated math bits, highly optimized
+to allow any struct to perform effectively
 */
 struct MathUtils {
 public:

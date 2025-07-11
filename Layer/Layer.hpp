@@ -3,10 +3,10 @@
 #include "../LossMetric/LossMetric.hpp"
 #include "../MathUtils/MathUtils.hpp"
 #include "../Optimizer/Optimizer.hpp"
-#include "../Tensor/Tensor.hpp"
 
 /* @brief
-
+Meat and potatoes of all the machine learning implementations, handles input and output for neural network layers
+and manages the optimizer for parameter update
 */
 struct Layer {
 public:
@@ -35,20 +35,9 @@ public:
     float* Truth() { return m_dt; }
     float* Weights() { return m_w; }
 
-    template <bool training> void forward(
-        float* x,
-        size_t n
-    );
-
-    void backward(
-        const float* truth,
-        const float* input,
-        size_t n
-    );
-    
-    void update(
-        size_t n
-    );
+    template <bool training> void forward(float* x, size_t n);
+    void backward(const float* truth, const float* input, size_t n);
+    void update(size_t n);
 
     std::string VisualizeNet();
     std::string VisualizeBatch();

@@ -5,7 +5,7 @@
 */
 struct LossMetric {
 public:
-    enum Type {
+    enum class Type {
         none, mae, mse, accuracy, onehot
     };
 

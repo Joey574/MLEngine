@@ -120,7 +120,7 @@ int main(int argc, char* argv[]) {
 
     if (listmeta || listhistory || deletemodel || resetmodel || visualizemodel) {
         if (!state.ModelExists()) {
-            std::cerr << "Model not found: " << state.config[Y_MODELNAME].as<std::string>() << "\n";
+            std::cerr << "Model not found: " << state.config[Y_MODELNAME].as<std::string>("NULL") << "\n";
             exit(1);
         }
 
@@ -145,7 +145,8 @@ int main(int argc, char* argv[]) {
     if (state.config[Y_SEED]) {
         SEED = state.config[Y_SEED].as<uint64_t>();
     } else {
-        SEED = std::random_device{}();
+        std::random_device rd;
+        SEED = rd();
         std::cout << "Global Seed: " << SEED << "\n";
     }
     

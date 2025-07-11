@@ -4,7 +4,7 @@
 void Optimizer::MomentumSGDCompute(float* __restrict  p, float* __restrict  v, const float* __restrict  d, size_t size, float lr, size_t n, float coef) {
     AVX512_VALID_PATH();
     
-    // adjust learning rate to factor in number of elements
+    // simd const values
     const float factor = lr / (float)n;
     const __m512 _factor = _mm512_set1_ps(factor);
     const __m512 _coef = _mm512_set1_ps(coef);
@@ -32,7 +32,7 @@ void Optimizer::MomentumSGDCompute(float* __restrict  p, float* __restrict  v, c
 void Optimizer::MomentumSGDL1Compute(float* __restrict p, float* __restrict  v, const float* __restrict d, size_t size, float lr, size_t n, float lambda, float coef) {
     AVX512_VALID_PATH();
 
-    // adjust learning rate to factor in number of elements
+    // simd const values
     const float factor = lr / (float)n;
     const __m512 _factor = _mm512_set1_ps(factor);
     const __m512 _coef = _mm512_set1_ps(coef);

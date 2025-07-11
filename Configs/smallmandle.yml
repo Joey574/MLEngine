@@ -7,21 +7,20 @@ dataset_args:
   fourier_series: 64
 
 optimizer:
-  type: rmsprop
-  learning_rate: 0.001
+  type: adam
+  learning_rate: 0.01
 
-weight: he
 
 layers:
   - type: input
 
   - type: hidden
-    nodes: 512
+    nodes: 1024
     dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
-    nodes: 512
+    nodes: 1024
     dropout: 0.2
     activation: leakyrelu
 
@@ -31,6 +30,7 @@ layers:
     loss: mse
     metric: mae
 
+weight: he
 epochs: 1000
 valid_freq: 1
 batch_size: 512

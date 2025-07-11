@@ -114,7 +114,7 @@ template <bool clear> void MathUtils::DotProd(const float* __restrict a, const f
             j = 1;
             
             #pragma omp simd
-            for(size_t k = 0; k < b_c; k++) {
+            for (size_t k = 0; k < b_c; k++) {
                 c[cidx+k] = a[aidx+0] * b[0*b_c+k];
             }
         }
@@ -124,7 +124,7 @@ template <bool clear> void MathUtils::DotProd(const float* __restrict a, const f
 			const size_t bidx = j*b_c;
 
             #pragma omp simd
-            for(size_t k = 0; k < b_c; k++) {
+            for (size_t k = 0; k < b_c; k++) {
                 c[cidx+k] += a[aidx+j] * b[bidx+k];
             }
         }

@@ -8,7 +8,7 @@
 struct Supervisor {
 public:
 
-    enum EnsembleTechnique {
+    enum class EnsembleTechnique {
         none, sum, average
     };
 

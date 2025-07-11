@@ -6,8 +6,8 @@
 struct Scheduler {
 public:
 
-    enum class LRSchedule {
-        none, step_decay, on_plateau, inv_time_decay
+    enum class VisSchedule {
+        none, step_vis
     };
 
     Scheduler() { memset(this, 0, sizeof(Scheduler)); }
@@ -16,17 +16,8 @@ public:
     void Initialize(YAML::Node& config);
     void (Scheduler::*execute)(YAML::Node&);
 
-    static std::string ParseLRName(LRSchedule lrsch);
-    static LRSchedule ParseLRType(const std::string& lr);
-
 private:
-
-    LRSchedule m_LRSchedule;
-
     void AssignPtr();
-    template <LRSchedule lr_sch> void Execute(YAML::Node& trainingData);
 
-    void LRStepDecay(YAML::Node& trainingData);
-    void LROnPlateau(YAML::Node& trainingData);
-    void LRInvTimeDecay(YAML::Node& trainingData);
+    void StepVis(YAML::Node& config);
 };
