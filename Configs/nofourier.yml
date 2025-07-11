@@ -2,12 +2,13 @@ name: nofourier
 dataset: mandlebrot
 
 dataset_args:
-  samples: 100000
+  samples: 150000
   mandledepth: 500
+  fourier_series: 16
 
 optimizer:
   type: adam
-  learning_rate: 0.01
+  learning_rate: 0.1
 
 
 layers:
@@ -15,12 +16,12 @@ layers:
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
+    dropout: 0.1
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
+    dropout: 0.1
     activation: leakyrelu
 
   - type: output
@@ -29,6 +30,7 @@ layers:
     loss: mse
     metric: mae
 
+seed: 101
 weight: he
 epochs: 1000
 valid_freq: 1
