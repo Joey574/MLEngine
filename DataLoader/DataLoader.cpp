@@ -87,11 +87,16 @@ void DataLoader::LoadMandlebrot() {
     type = Type::mandlebrot;
     hasTestData = true;
 
-    size_t n = args[Y_SAMPLES].as<size_t>(Y_SAMPLE_DEFAULT);
-    size_t depth = args[Y_MANDLEDEPTH].as<size_t>(Y_MANDLEDEPTH_DEFAULT);
-    size_t fourier = args[Y_FOURIERSERIES].as<size_t>(Y_FOURIER_DEFAULT);
+    const size_t n = args[Y_SAMPLES].as<size_t>(Y_SAMPLE_DEFAULT);
+    const size_t depth = args[Y_MANDLE_DEPTH].as<size_t>(Y_MANDLEDEPTH_DEFAULT);
+    const size_t fourier = args[Y_FOURIER_SERIES].as<size_t>(Y_FOURIER_DEFAULT);
 
-    const size_t test_elements = 10000 > (n*0.1) ? 10000 : n*0.1;
+    const size_t img_width = args[Y_MANDLE_IMG_WIDTH].as<size_t>(Y_MANDLE_IMG_WIDTH_DEFAULT);
+    const size_t img_height = args[Y_MANDLE_IMG_HEIGHT].as<size_t>(Y_MANDLE_IMG_HEIGHT_DEFAULT);
+    test_dims = std::vector<size_t>(2); test_dims[0] = img_width; test_dims[1] = img_height;
+
+    const size_t test_elements = img_width*img_height;
+
 
     const double xMin = -2.5;
     const double xMax = 1.0;
@@ -134,17 +139,24 @@ void DataLoader::LoadMandlebrot() {
     }
 
     // build testing dataset
-    for (size_t i = 0; i < test_elements; i++) {
-        double x = xrand(gen);
-        double y = yrand(gen);
+    double scaleX = (std::abs(xMin-xMax)/((double)img_width-1.0));
+    double scaleY = (std::abs(yMin-yMax)/((double)img_height-1.0));
 
-        float m = InMandlebrot(x, y, depth);
+    for (size_t h = 0; h < img_height; h++) {
+        for (size_t w = 0; w < img_width; w++) {
+            const size_t i = h*img_width+w;
 
-        testData.data[i*testData.cols] = x;
-        testData.data[i*testData.cols+1] = y;
-        testLabels.data[i] = m;
+            double x = xMin+(double)w*scaleX;
+            double y = yMin+(double)h*scaleY;
 
-        ComputeFourier(&testData.data[i*testData.cols], fourier);
+            float m = InMandlebrot(x, y, depth);
+
+            testData.data[i*testData.cols] = x;
+            testData.data[i*testData.cols+1] = y;
+            testLabels.data[i] = m;
+
+            ComputeFourier(&testData.data[i*testData.cols], fourier);
+        }
     }
 
     #pragma omp parallel for
@@ -152,6 +164,8 @@ void DataLoader::LoadMandlebrot() {
         // find col min/max
         float min = trainData.data[c];
         float max = trainData.data[c];
+
+        #pragma omp simd
         for (size_t i = 1; i < trainData.rows; i++) {
             if (trainData.data[i*trainData.cols+c] > max) { max = trainData.data[i*trainData.cols+c]; }
             if (trainData.data[i*trainData.cols+c] < min) { min = trainData.data[i*trainData.cols+c]; }

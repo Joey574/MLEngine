@@ -24,8 +24,10 @@
 #define Y_SHEAR_VARIANTS "shear_variants"
 
 #define Y_SAMPLES "samples"
-#define Y_MANDLEDEPTH "mandledepth"
-#define Y_FOURIERSERIES "fourier_series"
+#define Y_MANDLE_DEPTH "mandledepth"
+#define Y_FOURIER_SERIES "fourier_series"
+#define Y_MANDLE_IMG_WIDTH "image_width"
+#define Y_MANDLE_IMG_HEIGHT "image_height"
 
 #define Y_ELASTIC_DEFORM "elastic_deform"
 #define Y_ELASTIC_ALPHA "alpha"

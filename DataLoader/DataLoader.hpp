@@ -22,6 +22,7 @@ public:
     Type type;
     std::string name;
     std::vector<size_t> dims;
+    std::vector<size_t> test_dims;
 
     size_t refresh_every;
     bool hasTestData;
@@ -43,7 +44,7 @@ public:
     void LoadFMNIST();
     void LoadMandlebrot();
 
-    void MakeMandlebrotImage(YAML::Node& config, size_t width, size_t height);
+    static void SaveMandleImage(const std::string& path, const float* points, size_t width, size_t height);
     static void VisualizeTerminalMNISTLike(const float* image, size_t width, size_t height);
     
 private:

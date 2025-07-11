@@ -15,12 +15,12 @@ layers:
   - type: input
 
   - type: hidden
-    nodes: 1024
+    nodes: 512
     dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
-    nodes: 1024
+    nodes: 512
     dropout: 0.2
     activation: leakyrelu
 
