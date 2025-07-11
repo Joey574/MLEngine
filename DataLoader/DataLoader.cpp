@@ -97,7 +97,6 @@ void DataLoader::LoadMandlebrot() {
 
     const size_t test_elements = img_width*img_height;
 
-
     const double xMin = -2.5;
     const double xMax = 1.0;
     const double yMin = -1.1;
@@ -134,14 +133,13 @@ void DataLoader::LoadMandlebrot() {
         trainData.data[i*trainData.cols] = x;
         trainData.data[i*trainData.cols+1] = y;
         trainLabels.data[i] = m;
-
-        ComputeFourier(&trainData.data[i*trainData.cols], fourier);
     }
 
     // build testing dataset
     double scaleX = (std::abs(xMin-xMax)/((double)img_width-1.0));
     double scaleY = (std::abs(yMin-yMax)/((double)img_height-1.0));
 
+    #pragma omp parallel for
     for (size_t h = 0; h < img_height; h++) {
         for (size_t w = 0; w < img_width; w++) {
             const size_t i = h*img_width+w;
@@ -154,40 +152,29 @@ void DataLoader::LoadMandlebrot() {
             testData.data[i*testData.cols] = x;
             testData.data[i*testData.cols+1] = y;
             testLabels.data[i] = m;
-
-            ComputeFourier(&testData.data[i*testData.cols], fourier);
         }
     }
 
+    float min;
+    float max;
+
+    // normalize to [-PI, PI]
+    std::tie(min, max) = MathUtils::ColMinMax(&trainData.data[0], trainData.rows, trainData.cols, 0);
+    MathUtils::NormalizeCol(&trainData.data[0], -M_PI, M_PI, min, max, trainData.rows, trainData.cols, 0);
+    MathUtils::NormalizeCol(&testData.data[0], -M_PI, M_PI, min, max, testData.rows, testData.cols, 0);
+
+    std::tie(min, max) = MathUtils::ColMinMax(&trainData.data[0], trainData.rows, trainData.cols, 1);
+    MathUtils::NormalizeCol(&trainData.data[0], -M_PI, M_PI, min, max, trainData.rows, trainData.cols, 1);
+    MathUtils::NormalizeCol(&testData.data[0], -M_PI, M_PI, min, max, testData.rows, testData.cols, 1);
+
     #pragma omp parallel for
-    for (size_t c = 0; c < trainData.cols; c++) {
-        // find col min/max
-        float min = trainData.data[c];
-        float max = trainData.data[c];
+    for (size_t i = 0; i < n; i++) {
+        ComputeFourier(&trainData.data[i*trainData.cols], fourier);
+    }
 
-        #pragma omp simd
-        for (size_t i = 1; i < trainData.rows; i++) {
-            if (trainData.data[i*trainData.cols+c] > max) { max = trainData.data[i*trainData.cols+c]; }
-            if (trainData.data[i*trainData.cols+c] < min) { min = trainData.data[i*trainData.cols+c]; }
-        }
-
-        if (max <= min) {
-            max = min + 1.0f;
-        }
-
-        const float range = max-min;
-
-        // normalize training col
-        for (size_t i = 0; i < trainData.rows; i++) {
-            const size_t idx = i*trainData.cols+c;
-            trainData.data[idx] = (trainData.data[idx] - min) / range;
-        }
-
-        // normalize testing col
-        for (size_t i = 0; i < testData.rows; i++) {
-            const size_t idx = i*testData.cols+c;
-            testData.data[idx] = (testData.data[idx] - min) / range;
-        }
+    #pragma omp parallel for
+    for (size_t i = 0; i < test_elements; i++) {
+        ComputeFourier(&testData.data[i*testData.cols], fourier);
     }
 }
 
@@ -362,10 +349,10 @@ float DataLoader::InMandlebrot(double x, double y, size_t it) {
         return 1.0f;
 }
 void DataLoader::ComputeFourier(float* x, size_t series) {
-    float xv = x[0];
-    float yv = x[1];
+    const float xv = x[0];
+    const float yv = x[1];
 
-    #pragma omp parallel for
+    #pragma omp parallel for simd
     for (size_t i = 0; i < series; i++) {
         x[2+(i*4)] = std::sin(std::pow(xv, i+2));
         x[2+(i*4)+1] = std::cos(std::pow(xv, i+2));

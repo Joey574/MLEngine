@@ -174,7 +174,7 @@ std::vector<float> MathUtils::MakeGaussianKernel2D(int rad, float sigma) {
         }
     }
 
-    Normalize(&k[0], sum, k.size());
+    Scale(&k[0], (1.0f/sum), k.size());
     return k;
 }
 std::vector<float> MathUtils::MakeGaussianKernel1D(int rad, float sigma) {
@@ -191,7 +191,7 @@ std::vector<float> MathUtils::MakeGaussianKernel1D(int rad, float sigma) {
         sum += v;
     }
 
-    Normalize(&k[0], sum, size);
+    Scale(&k[0], (1.0f/sum), size);
     return k;
 }
 

@@ -35,8 +35,12 @@ public:
     static __m256 Exp256(__m256 _x);
     static __m512 Exp512(__m512 _x);
 
-    static void Normalize(float* a, float sum, size_t n);
     static void Scale(float* a, float scale, size_t n);
+    static void Normalize(float* a, float lower, float upper, size_t n);
+
+    static std::pair<float,float> ColMinMax(float* a, size_t rows, size_t cols, size_t c);
+    static void NormalizeCol(float* a, float lower, float upper, size_t rows, size_t cols, size_t c);
+    static void NormalizeCol(float* a, float lower, float upper, float min, float max, size_t rows, size_t cols, size_t c);
 
     // rng utils
     static uint32_t xorshift32(uint32_t state);
