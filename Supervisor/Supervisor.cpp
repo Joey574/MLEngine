@@ -28,6 +28,9 @@ void Supervisor::Train() {
         }
     }
 
+    // ensure at least one test is ran
+    TestNetworks();
+
     // save optimizer state, model, etc
     EndNetworks();
     
