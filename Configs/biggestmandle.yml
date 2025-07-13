@@ -1,4 +1,4 @@
-name: biggest
+name: biggestmandle
 dataset: mandlebrot
 
 optimizer:

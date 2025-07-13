@@ -4,7 +4,6 @@ dataset: mandlebrot
 dataset_args:
   samples: 150000
   mandledepth: 500
-  fourier_series: 16
 
 optimizer:
   type: adam
