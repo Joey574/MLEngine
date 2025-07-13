@@ -8,7 +8,7 @@ dataset_args:
 
 optimizer:
   type: adam
-  learning_rate: 0.05
+  learning_rate: 0.01
 
 
 layers:
@@ -16,10 +16,12 @@ layers:
 
   - type: hidden
     nodes: 1024
+    dropout: 0.3
     activation: leakyrelu
 
   - type: hidden
     nodes: 1024
+    dropout: 0.3
     activation: leakyrelu
 
   - type: output
@@ -28,7 +30,9 @@ layers:
     loss: mse
     metric: mae
 
+seed: 2539531789
+
 weight: he
 epochs: 10000
 valid_freq: 1
-batch_size: 512
+batch_size: 1024

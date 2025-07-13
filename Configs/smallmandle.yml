@@ -16,12 +16,6 @@ layers:
 
   - type: hidden
     nodes: 512
-    dropout: 0.2
-    activation: leakyrelu
-
-  - type: hidden
-    nodes: 512
-    dropout: 0.2
     activation: leakyrelu
 
   - type: output
