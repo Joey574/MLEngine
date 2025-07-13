@@ -2,13 +2,13 @@ name: smallmandle
 dataset: mandlebrot
 
 dataset_args:
-  samples: 150000
+  samples: 200000
   mandledepth: 500
-  fourier_series: 64
+  fourier_series: 32
 
 optimizer:
   type: adam
-  learning_rate: 0.01
+  learning_rate: 0.1
 
 
 layers:
@@ -16,12 +16,12 @@ layers:
 
   - type: hidden
     nodes: 512
-    dropout: 0.1
+    dropout: 0.2
     activation: leakyrelu
 
   - type: hidden
     nodes: 512
-    dropout: 0.1
+    dropout: 0.2
     activation: leakyrelu
 
   - type: output
