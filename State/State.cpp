@@ -3,7 +3,7 @@
 void State::Init() {
     model = new NeuralNetwork();
     
-    p_workspace = ExpandPath("~/.local/share/ReconSuite/MLEngine");
+    p_workspace = ExpandPath("~/.local/share/MLEngine");
 
     // create / validate workspace for models
     p_models = p_workspace+"/Models";

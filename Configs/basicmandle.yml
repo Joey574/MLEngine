@@ -2,18 +2,19 @@ name: basicmandle
 dataset: mandlebrot
 
 dataset_args:
-  samples: 150000
+  samples: 250000
   mandledepth: 500
   fourier_series: 32
 
 optimizer:
   type: adam
-  learning_rate: 0.01
+  learning_rate: 0.005
 
 
 layers:
   - type: input
 
+
   - type: hidden
     nodes: 1024
     dropout: 0.3
@@ -23,6 +24,17 @@ layers:
     nodes: 1024
     dropout: 0.3
     activation: leakyrelu
+
+  - type: hidden
+    nodes: 1024
+    dropout: 0.3
+    activation: leakyrelu
+
+  - type: hidden
+    nodes: 1024
+    dropout: 0.3
+    activation: leakyrelu
+
 
   - type: output
     nodes: 1
@@ -33,6 +45,6 @@ layers:
 seed: 2539531789
 
 weight: he
-epochs: 10000
+epochs: 100000
 valid_freq: 1
 batch_size: 1024

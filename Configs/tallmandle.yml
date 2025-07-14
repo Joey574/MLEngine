@@ -1,8 +1,8 @@
-name: smallmandle
+name: tallmandle
 dataset: mandlebrot
 
 dataset_args:
-  samples: 600000
+  samples: 500000
   mandledepth: 1000
   fourier_series: 32
 
@@ -15,7 +15,8 @@ layers:
   - type: input
 
   - type: hidden
-    nodes: 512
+    nodes: 2048
+    dropout: 0.2
     activation: leakyrelu
 
   - type: output
@@ -24,8 +25,8 @@ layers:
     loss: mse
     metric: mae
 
-seed: 101
+seed: 13754265
 weight: he
 epochs: 10000
 valid_freq: 1
-batch_size: 512
+batch_size: 2048

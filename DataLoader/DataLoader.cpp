@@ -24,12 +24,12 @@ void DataLoader::LoadMNIST() {
     hasTestData = true;
 
     // training dataset path
-    std::string trainingImages = ExpandPath("~/.local/share/ReconSuite/MLEngine/Datasets/MNIST/TrainingData/train-images.idx3-ubyte");
-    std::string trainingLabels = ExpandPath("~/.local/share/ReconSuite/MLEngine/Datasets/MNIST/TrainingData/train-labels.idx1-ubyte");
+    std::string trainingImages = ExpandPath("~/.local/share/MLEngine/Datasets/MNIST/TrainingData/train-images.idx3-ubyte");
+    std::string trainingLabels = ExpandPath("~/.local/share/MLEngine/Datasets/MNIST/TrainingData/train-labels.idx1-ubyte");
 
     // testing dataset path
-    std::string testingImages = ExpandPath("~/.local/share/ReconSuite/MLEngine/Datasets/MNIST/TestingData/t10k-images.idx3-ubyte");
-    std::string testingLabels = ExpandPath("~/.local/share/ReconSuite/MLEngine/Datasets/MNIST/TestingData/t10k-labels.idx1-ubyte");
+    std::string testingImages = ExpandPath("~/.local/share/MLEngine/Datasets/MNIST/TestingData/t10k-images.idx3-ubyte");
+    std::string testingLabels = ExpandPath("~/.local/share/MLEngine/Datasets/MNIST/TestingData/t10k-labels.idx1-ubyte");
 
     // open files
     std::ifstream traind(trainingImages, std::ios::binary);
@@ -56,12 +56,12 @@ void DataLoader::LoadFMNIST() {
     hasTestData = true;
 
     // training dataset path
-    std::string trainingImages = ExpandPath("~/.local/share/ReconSuite/MLEngine/Datasets/FMNIST/TrainingData/train-images-idx3-ubyte");
-    std::string trainingLabels = ExpandPath("~/.local/share/ReconSuite/MLEngine/Datasets/FMNIST/TrainingData/train-labels-idx1-ubyte");
+    std::string trainingImages = ExpandPath("~/.local/share/MLEngine/Datasets/FMNIST/TrainingData/train-images-idx3-ubyte");
+    std::string trainingLabels = ExpandPath("~/.local/share/MLEngine/Datasets/FMNIST/TrainingData/train-labels-idx1-ubyte");
 
     // testing dataset path
-    std::string testingImages = ExpandPath("~/.local/share/ReconSuite/MLEngine/Datasets/FMNIST/TestingData/t10k-images-idx3-ubyte");
-    std::string testingLabels = ExpandPath("~/.local/share/ReconSuite/MLEngine/Datasets/FMNIST/TestingData/t10k-labels-idx1-ubyte");
+    std::string testingImages = ExpandPath("~/.local/share/MLEngine/Datasets/FMNIST/TestingData/t10k-images-idx3-ubyte");
+    std::string testingLabels = ExpandPath("~/.local/share/MLEngine/Datasets/FMNIST/TestingData/t10k-labels-idx1-ubyte");
 
     // open files
     std::ifstream traind(trainingImages, std::ios::binary);
