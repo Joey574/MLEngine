@@ -1,0 +1,64 @@
+name: testmandle
+dataset: mandlebrot
+
+dataset_args:
+  samples: 100000
+  mandledepth: 1000
+  fourier_series: 128
+
+optimizer:
+  type: adam
+  learning_rate: 0.0005
+
+
+layers:
+  - type: input
+
+
+  - type: hidden
+    nodes: 1024
+    activation: leakyrelu
+
+  - type: hidden
+    nodes: 1024
+    activation: leakyrelu
+
+  - type: hidden
+    nodes: 1024
+    activation: leakyrelu
+
+  - type: hidden
+    nodes: 1024
+    activation: leakyrelu
+
+  - type: hidden
+    nodes: 1024
+    activation: leakyrelu
+
+  - type: hidden
+    nodes: 1024
+    activation: leakyrelu
+
+  - type: hidden
+    nodes: 1024
+    activation: leakyrelu
+
+  - type: hidden
+    nodes: 1024
+    activation: leakyrelu
+
+  - type: hidden
+    nodes: 1024
+    activation: leakyrelu
+
+
+  - type: output
+    nodes: 1
+    activation: sigmoid
+    loss: mse
+    metric: mae
+
+weight: he
+epochs: 5000
+valid_freq: 1
+batch_size: 640
