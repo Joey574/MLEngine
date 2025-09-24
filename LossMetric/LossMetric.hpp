@@ -1,39 +1,35 @@
 #pragma once
 
-/* @brief
-
-*/
 struct LossMetric {
 public:
-    enum class Type {
-        none, mae, mse, accuracy, onehot
+    enum Type {
+        None, MAE, MSE, Accuracy, OneHot
     };
 
-    Type mtype;
-    bool highestIsBest;
-    float (*metric)(const float*, const float*, size_t, size_t);
+    void (*Loss)(const Tensor<float>&, const Tensor<float>&, Tensor<float>&);
+    float (*Score)(const Tensor<float>&, const Tensor<float>&);
 
-    Type ltype;
-    void (*loss)(const float*, const float*, float*, size_t, size_t);
+    LossMetric(Type lossType = Type::None, Type metricType = Type::None) {
+        this->lossType = lossType;
+        this->metricType = metricType;
+    }
 
-    LossMetric() { AssignPointers(Type::none, Type::none); };
-    LossMetric(Type l, Type m) { AssignPointers(l, m); };
+    inline Type LossType() const { return lossType; }
+    inline Type MetricType() const { return metricType; }
 
-    // parsing utils
     static Type ParseType(const std::string& name);
     static std::string ParseName(Type type);
 
-    void AssignPointers(Type l, Type m);
-
 private:
+    Type lossType;
+    Type metricType;
 
-    // loss functions
-    static void MaeLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols);
-    static void MseLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols);
-    static void OneHotLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols);
 
-    // metric functions
-    static float MaeScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols);
-    static float MseScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols);
-    static float AccuracyScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols);
+    static void MAELoss(const Tensor<float>& predicted, const Tensor<float>& truth, Tensor<float>& out);
+    static void MSELoss(const Tensor<float>& predicted, const Tensor<float>& truth, Tensor<float>& out);
+    static void OneHotLoss(const Tensor<float>& predicted, const Tensor<float>& truth, Tensor<float>& out);
+
+    static float MAEScore(const Tensor<float>& predicted, const Tensor<float>& truth);
+    static float MSEScore(const Tensor<float>& predicted, const Tensor<float>& truth);
+    static float AccuracyScore(const Tensor<float>& predicted, const Tensor<float>& truth);
 };

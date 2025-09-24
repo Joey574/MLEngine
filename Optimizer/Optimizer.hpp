@@ -1,88 +1,97 @@
 #pragma once
-#include "../MathUtils/MathUtils.hpp"
 
-/* @brief
-
-*/
-struct Optimizer {
+struct SGD {
 public:
-    using UpdateFn = void (Optimizer::*)(float*, float*, size_t, size_t, size_t);
+    void Define(YAML::Node& config);
+    void Update(size_t batchSize) const;
 
-    enum class Regularization {
-        none, l1, l2
-    };
+    static size_t SizeOfType(size_t weights, size_t biases);
+};
 
-    enum class Update {
-        none, sgd, momentumsgd, rmsprop, adam
-    };
+struct MomentumSGD {
+public:
+    void Define(YAML::Node& config);
+    void Update(size_t batchSize) const;
 
-    UpdateFn update;
-    
-    void Define(YAML::Node config);
-    void Initialize(float* dw, float* db, char* data, size_t wsize, size_t bsize);
-    size_t Size(size_t wsize, size_t bsize);
-
-    bool Save(std::ofstream& file) const;
-    bool Load(std::ifstream& file);
-
-    static std::string ParseRegName(Regularization reg);
-    static std::string ParseUpdName(Update upd);
-    static Regularization ParseRegType(const std::string& reg);
-    static Update ParseUpdType(const std::string& upd);
+    static size_t SizeOfType(size_t weights, size_t biases);
 
 private:
+    float momentumCoef;
 
-    void AssignPtr();
+    Tensor<float> momentumWeights;
+    Tensor<float> momentumBiases;
+};
 
-    // basic data
-    Update m_update;
-    float m_lr;
-    size_t wsize;
-    size_t bsize;
+struct RMSProp {
+public:
+    void Define(YAML::Node& config);
+    void Update(size_t batchSize) const;
 
-    // sgd data
-    float* m_s_dw;
-    float* m_s_db;
+    static size_t SizeOfType(size_t weights, size_t biases);
 
-    // momentum data
-    float m_m_coef;
-    float* m_m_vw;
-    float* m_m_vb;
+private:
+    float decay;
+    float epsl;
 
-    // rmsprop data
-    float m_r_decay;
-    float m_r_epsl;
-    float* m_r_gw;
-    float* m_r_gb;
+    Tensor<float> meanSquareWeights;
+    Tensor<float> meanSquareBiases;
+};
 
-    // adam data
-    float m_a_b1;
-    float m_a_b2;
-    float m_a_epsl;
-    size_t m_a_t;
-    float* m_a_mw;
-    float* m_a_vw;
-    float* m_a_mb;
-    float* m_a_vb;
+struct Adam {
+public:
+    void Define(YAML::Node& config);
+    void Update(size_t batchSize) const;
 
-    // regularization techniques
-    Regularization m_reg;
-    float m_reg_lambda;
+    static size_t SizeOfType(size_t weights, size_t biases);
 
-    template <Regularization reg> void SGD(float* w, float* b, size_t wsize, size_t bsize, size_t n);
-    template <Regularization reg> void MomentumSGD(float* w, float* b, size_t wsize, size_t bsize, size_t n);
-    void RMSProp(float* w, float* b, size_t wsize, size_t bsize, size_t n);
-    void Adam(float* w, float* b, size_t wsize, size_t bsize, size_t n);
+private:
+    float biasCorrection1;
+    float biasCorrection2;
+    float epsl;
 
-    static void SGDCompute(float* p, const float* d, size_t size, float lr, size_t n);
-    static void SGDL1Compute(float* p, const float* d, size_t size, float lr, size_t n, float lambda);
-    static void SGDL2Compute(float* p, const float* d, size_t size, float lr, size_t n, float lambda);
+    size_t timeStep;
 
-    static void MomentumSGDCompute(float* p, float* v, const float* d, size_t size, float lr, size_t n, float coef);
-    static void MomentumSGDL1Compute(float* p, float* v, const float* d, size_t size, float lr, size_t n, float lambda, float coef);
-    static void MomentumSGDL2Compute(float* p, float* v, const float* d, size_t size, float lr, size_t n, float lambda, float coef);
+    Tensor<float> firstMomentWeights;
+    Tensor<float> firstMomentBiases;
 
-    static void RMSPropCompute(float* p, float* g, const float* d, size_t size, float lr, size_t n, float decay, float epsl);
+    Tensor<float> secondMomentWeights;
+    Tensor<float> secondMomentBiases;
+};
 
-    static void AdamCompute(float* p, float* m, float* v, const float* d, size_t size, float lr, size_t n, float b1, float b2, float epsl, size_t t);
+struct Optimizer {
+public:
+    using OptimizerVariant = std::variant<SGD, MomentumSGD, RMSProp, Adam>;
+
+    enum Type {
+        None, SGD, MomentumSGD, RMSProp, Adam
+    };
+
+    Optimizer(Type type = Type::None) {
+        this->type = type;
+    }
+
+    void Define(YAML::Node& config);
+    void Update(size_t batchSize) const;
+
+    void Save(std::ofstream& file) const;
+    void Load(std::ifstream& file) const;
+
+    Type OptimizerType() const { return type; }
+
+    static size_t SizeOfType(Type type, size_t weights, size_t biases);
+
+    static Type ParseType(const std::string& name);
+    static std::string ParseName(Type type);
+    
+private:
+    Type type;
+    OptimizerVariant variant;
+
+    float learningRate;
+
+    Tensor<float>* weights;
+    Tensor<float>* biases;
+
+    Tensor<float>* derivativeWeights;
+    Tensor<float>* derivativeBiases;
 };

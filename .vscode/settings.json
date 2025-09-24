@@ -73,6 +73,15 @@
         "csignal": "cpp",
         "complex": "cpp",
         "*.tpp": "cpp",
-        "list": "cpp"
+        "list": "cpp",
+        "bitset": "cpp",
+        "__hash_table": "cpp",
+        "__split_buffer": "cpp",
+        "__tree": "cpp",
+        "queue": "cpp",
+        "stack": "cpp",
+        "condition_variable": "cpp",
+        "mutex": "cpp",
+        "__nullptr": "cpp"
     }
 }

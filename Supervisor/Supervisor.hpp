@@ -1,30 +1,31 @@
 #pragma once
 #include "../NeuralNetwork/NeuralNetwork.hpp"
-#include "../DataLoader/DataLoader.hpp"
+#include "../Dataset/Dataset.hpp"
 
-/* @brief
-
-*/
 struct Supervisor {
 public:
 
-    enum class EnsembleTechnique {
-        none, sum, average
-    };
+    Supervisor() {
+        model = new NeuralNetwork();
+        dataset = new Dataset();
+    }
+    ~Supervisor() {
+        delete model;
+        delete dataset;
+    }
 
-    void Train();
+    void Define(YAML::Node& config);
+
+    void Load(const std::string& path, const std::string& name);
+
+    nlohmann::json Train(nlohmann::json& history);
 
 private:
-    YAML::Node config;
-    nlohmann::json history;
 
-    std::vector<NeuralNetwork*> m_networks;
-    DataLoader m_dataset;
+    NeuralNetwork* model;
+    Dataset* dataset;
 
-    // network wrapper functions
-    void InitializeNetworks();
-    void StartNetworks();
-    void EndNetworks();
-    void AdvanceNetworks();
-    void TestNetworks();
+    YAML::Node* config;
+
+    void Save(const std::string& path, const std::string& name);
 };

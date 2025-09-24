@@ -1,51 +1,48 @@
 #pragma once
-#include "../NeuralNetwork/NeuralNetwork.hpp"
-#include "../DataLoader/DataLoader.hpp"
+#include "../Supervisor/Supervisor.hpp"
 
-/* @brief
-
-*/
 struct State {
 public:
 
-    std::string modelname;
+    State() {
+        supervisor = new Supervisor();
+
+        workspacePath = ExpandPath("~/.local/share/MLEngine");
+
+        modelPath = workspacePath+"/Models";
+        datasetPath = workspacePath+"/Datasets";
+    }
+    ~State() {
+        delete supervisor;
+    }
+
+    int Start(int argc, char* argv[]);
+
+private:
+    std::string name;
+    Supervisor* supervisor;
 
     YAML::Node config;
     nlohmann::json history;
 
-    State() {}
-    
-    void Init();
-    void SaveInit();
+    std::string workspacePath;
+    std::string datasetPath;
+    std::string modelPath;
+
+    std::string path;
 
     void Load();
+    void Build();
 
-    void Build(bool setweights);
-    void Start();
+    void Train();
 
-    std::string ModelMetadata() const;
-    std::string ModelHistory() const;
-    std::string DeleteModel() const;
-    std::string ResetModel() const;
-    std::string VisualizeModel();
-    
-    std::string AvailableModels() const;
+    void InitializeSaveLocation() const;
 
-    // static utils
+    bool ModelExists() const;
+    bool IsValid() const;
+
     static std::string ExpandPath(const std::string& path);
-    static bool CreateDir(const std::string& path);
-    static bool DirExists(const std::string& path);
-    static bool FileExists(const std::string& path); 
-
-    bool ModelExists();
-    bool IsValid();
-        
-private:
-
-    std::string p_workspace;
-    std::string p_datasets;
-    std::string p_models;
-
-    NeuralNetwork* model;
-    DataLoader dataset;
+    static bool CreateDirectory(const std::string& path);
+    static bool DirectoryExists(const std::string& path);
+    static bool FileExists(const std::string& path);
 };

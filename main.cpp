@@ -1,35 +1,7 @@
 #include <execinfo.h>
 #include <cxxabi.h>
-#include <yaml-cpp/yaml.h>
 
-#include "NeuralNetwork/NeuralNetwork.hpp"
 #include "State/State.hpp"
-#include "MathUtils/MathUtils.hpp"
-
-void displayMeta(State& state) {
-    std::cout << state.ModelMetadata() << "\n";
-    exit(0);
-}
-void displayHistory(State& state) {
-    std::cout << state.ModelHistory() << "\n";
-    exit(0);
-}
-void displayModels(State& state) {
-    std::cout << state.AvailableModels() << "\n";
-    exit(0);
-}
-void deleteModel(State& state) {
-    std::cout << state.DeleteModel() << "\n";
-    exit(0);
-}
-void resetModel(State& state) {
-    std::cout << state.ResetModel() << "\n";
-    exit(0);
-}
-void visualizeModel(State& state) {
-    std::cout << state.VisualizeModel() << "\n";
-    exit(0);
-}
 
 void handleInterupt(int signum) {
     std::cout << "\nProgram will exit after next epoch\n";
@@ -86,90 +58,5 @@ int main(int argc, char* argv[]) {
     DEBUG_LOG("Running in DEBUG mode");
     
     State state;
-    state.Init();
-    std::string config_file;
-
-    // flags
-    bool listhistory = false;
-    bool listmeta = false;
-    bool listmodels = false;
-    bool deletemodel = false;
-    bool resetmodel = false;
-    bool visualizemodel = false;
-
-    CLI::App app{"MLEngine (0.0)\nTrain and save various neural networks"};
-
-    app.add_option("-c,--config", config_file, "path to model's YAML config file");
-
-    app.add_flag("--meta", listmeta, "list model metadata");
-    app.add_flag("--history", listhistory, "list model history");
-    app.add_flag("--models", listmodels, "lists available models");
-    app.add_flag("--delete", deletemodel, "deletes a given model");
-    app.add_flag("--reset", resetmodel, "deletes model history and resets model weights");
-    app.add_flag("--visualize", visualizemodel, "visualize memory layout of the network");
-
-    CLI11_PARSE(app, argc, argv);
-
-    if (listmodels) {
-        displayModels(state);
-    }
-
-    // load configuration
-    state.config = YAML::LoadFile(config_file);
-    state.modelname = state.config[Y_MODELNAME].as<std::string>();
-
-    if (listmeta || listhistory || deletemodel || resetmodel || visualizemodel) {
-        if (!state.ModelExists()) {
-            std::cerr << "Model not found: " << state.config[Y_MODELNAME].as<std::string>("NULL") << "\n";
-            exit(1);
-        }
-
-        if (listmeta) { displayMeta(state); }
-        if (listhistory) { displayHistory(state); }      
-        if (deletemodel) { deleteModel(state); }
-        if (resetmodel) { resetModel(state); }  
-        if (visualizemodel) { visualizeModel(state); }
-    }
-
-
-    #if defined(__AVX512F__)
-        std::cout << "AVX512 Enabled\n";
-    #elif defined(__AVX2__) && defined(__FMA__)
-        std::cout << "AVX2 Enabled\n";
-    #else
-        std::cout << "Scalar Enabled\n";
-    #endif
-
-
-    // set global seed
-    if (state.config[Y_SEED]) {
-        SEED = state.config[Y_SEED].as<uint64_t>();
-    } else {
-        std::random_device rd;
-        SEED = rd();
-        std::cout << "Global Seed: " << SEED << "\n";
-    }
-    
-
-    if (state.ModelExists()) {
-        std::cout << "Loading existing model\n";
-        state.Load();
-    } else {
-
-        // build new model based on passed args
-        if (!state.IsValid()) {
-            std::cout << app.help();
-            exit(1);
-        }
-        
-        std::cout << "Creating new model\n";
-        state.Build(true);
-    }
-
-    // initialize save location and data
-    state.SaveInit();
-
-    // model built, start training
-    std::cout << "Training model...\n";
-    state.Start();
+    return state.Start(argc, argv);
 }
