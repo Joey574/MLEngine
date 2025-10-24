@@ -22,7 +22,9 @@ endif()
 set(GNU_RELEASE_FLAGS
   -march=native -mtune=native
   -flto=auto -fomit-frame-pointer -funroll-loops -fipa-pta
-  -fdevirtualize-speculatively
+  -fdevirtualize-speculatively 
+  -fno-unwind-tables -fno-asynchronous-unwind-tables
+  -fno-rtti -fvisibility=hidden -fvisibility-inlines-hidden
   -Ofast -fopenmp
   -fvect-cost-model=unlimited -DNDEBUG
   -falign-functions=32 -falign-loops=32
@@ -83,24 +85,12 @@ endif()
 
 
 # collect all cpp files
-file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS
-  "Activation/*.cpp"
-  "DataLoader/*.cpp"
-  "Layer/*.cpp"
-  "LossMetric/*.cpp"
-  "MathUtils/*.cpp"
-  "NeuralNetwork/*.cpp"
-  "State/*.cpp"
-  "Tensor/*.cpp"
-  "Optimizer/*.cpp"
-  "Scheduler/*.cpp"
-  "main.cpp"
-)
+file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS "src/*.cpp")
 
 
 # executable
 add_executable(MLEngine ${SOURCE_FILES})
-
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 
 # set flags
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
@@ -118,4 +108,4 @@ find_package(yaml-cpp REQUIRED)
 find_package(OpenMP REQUIRED)
 target_link_libraries(MLEngine PRIVATE OpenMP::OpenMP_CXX yaml-cpp)
 
-target_precompile_headers(MLEngine PRIVATE Dependencies/pch.h)
+target_precompile_headers(MLEngine PRIVATE src/Dependencies/pch.h)
