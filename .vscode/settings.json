@@ -82,6 +82,10 @@
         "stack": "cpp",
         "condition_variable": "cpp",
         "mutex": "cpp",
-        "__nullptr": "cpp"
+        "__nullptr": "cpp",
+        "unordered_set": "cpp",
+        "expected": "cpp",
+        "regex": "cpp",
+        "future": "cpp"
     }
 }

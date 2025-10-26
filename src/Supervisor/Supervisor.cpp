@@ -13,7 +13,7 @@ int Supervisor::Define(YAML::Node& config) {
     return code;
 }
 
-/// @brief Builds model based on internal data for members
+/// @brief Builds model based on internal data from members
 int Supervisor::Build() {
     assert(defined && !built);
 
@@ -40,10 +40,10 @@ nlohmann::json Supervisor::Train(nlohmann::json& history) {
         }
     }
 
-    nlohmann::json h;
-    return h;
+    return history;
 }
 
-void Supervisor::Load(const std::string& path, const std::string& name) {
+int Supervisor::Load(const std::string& path, const std::string& name) {
     std::string file = path+"/"+name+".model";
+    return 0;
 }

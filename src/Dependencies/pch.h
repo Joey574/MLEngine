@@ -19,5 +19,6 @@
 #include <cctype>
 #include <math.h>
 #include <complex>
+#include <cblas.h>
 
 #include "../Definitions/data.hpp"

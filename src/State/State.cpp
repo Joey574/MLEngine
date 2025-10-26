@@ -2,22 +2,24 @@
 
 int State::Load() {
     std::string file = path+"/"+name+"/.model";
-
-    if (FileExists(file)) {
-        supervisor->Load(path, name);
-    } else {
-        std::cerr << "Save not found\n";
+    if (!FileExists(file)) {
+        std::cerr << "Save file not found\n";
         return 1;
     }
 
-    return 0;
+    return supervisor->Load(path, name);
 }
 
 int State::Build() {
-    return 0;
+    int code = 0;
+    code += supervisor->Define(config);
+    code += supervisor->Build();
+
+    return code;
 }
 
 int State::Train() {
+    std::cout << "Beginning training\n";
     history = supervisor->Train(history);
 
     // update history

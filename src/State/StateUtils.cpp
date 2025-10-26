@@ -1,7 +1,7 @@
 #include "State.hpp"
 
 bool State::ModelExists() const {
-    return true;
+    return FileExists(path+"/"+name+".model");
 }
 
 bool State::IsValid() const {

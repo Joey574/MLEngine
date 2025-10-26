@@ -17,7 +17,7 @@ public:
     int Define(YAML::Node& config);
     int Build();
 
-    void Load(const std::string& path, const std::string& name);
+    int Load(const std::string& path, const std::string& name);
 
     nlohmann::json Train(nlohmann::json& history);
 

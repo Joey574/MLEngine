@@ -2,15 +2,11 @@
 
 /// @brief Handles loading and initializng data to / from disk and starts training process
 int State::Start(int argc, char* argv[]) {
-    if (argc < 2) {
-        std::cerr << "No arguments passed\n";
-        return 1;
-    }
 
     // parse arguments and return the passed config file path
     std::string configFile = ParseArgs(argc, argv);
     if (configFile.empty()) {
-        std::cerr << "No config found\n";
+        std::cerr << "No config passed / found\n";
         return 1;
     }
 
@@ -18,6 +14,7 @@ int State::Start(int argc, char* argv[]) {
     name = config[Y_MODELNAME].as<std::string>();
     SEED = config[Y_SEED].as<uint64_t>(std::random_device{}());
 
+    // create save directory for model
     path = modelPath+"/"+name;
     InitializeSaveLocation();
 

@@ -28,5 +28,17 @@ bool State::FileExists(const std::string& path) {
 }
 
 std::string State::ParseArgs(int argc, char* argv[]) {
-    return "";
+    if (argc < 2) {
+        return "";
+    }
+
+    std::string file = "";
+    for (int i = 1; i < argc-1; i++) {
+
+        if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--config") == 0) {
+            file = argv[i+1];
+        }
+    }
+
+    return file;
 }
