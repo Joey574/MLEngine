@@ -1,7 +1,7 @@
 #include "State.hpp"
 
 std::string State::ExpandPath(const std::string& path) {
-    if (path.empty() || path[0] != '~') {
+    if (path.empty() || path[0] != '~') [[unlikely]] {
         return path;
     }
 
@@ -28,7 +28,7 @@ bool State::FileExists(const std::string& path) {
 }
 
 std::string State::ParseArgs(int argc, char* argv[]) {
-    if (argc < 2) {
+    if (argc < 2) [[unlikely]] {
         return "";
     }
 

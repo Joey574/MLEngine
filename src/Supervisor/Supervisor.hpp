@@ -14,25 +14,29 @@ public:
         delete dataset;
     }
 
-    int Define(YAML::Node& config);
+    int Define(YAML::Node& config, std::string& path, std::string& name);
     int Build();
 
-    int Load(const std::string& path, const std::string& name);
+    int Load();
 
     nlohmann::json Train(nlohmann::json& history);
 
-    bool IsDefined() const { return defined; }
-    bool IsBuilt() const { return built; }
+    inline bool IsDefined() const { return defined; }
+    inline bool IsBuilt() const { return built; }
 
 private:
 
     bool defined = false;
     bool built = false;
 
+    std::string path;
+    std::string name;
+
+    Score bestScore;
     NeuralNetwork* model;
     Dataset* dataset;
 
     YAML::Node* config;
 
-    void Save(const std::string& path, const std::string& name);
+    void Save();
 };

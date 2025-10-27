@@ -13,16 +13,16 @@ int State::Start(int argc, char* argv[]) {
     config = YAML::LoadFile(configFile);
     name = config[Y_MODELNAME].as<std::string>();
     SEED = config[Y_SEED].as<uint64_t>(std::random_device{}());
+    path = modelPath+"/"+name;
 
     // create save directory for model
-    path = modelPath+"/"+name;
     InitializeSaveLocation();
 
     if (ModelExists()) {
         std::cout << "Loading existing model\n";
         Load();
     } else {
-        if (!IsValid()) {
+        if (!IsValid()) [[unlikely]] {
             std::cerr << "Invalid model passed\n";
             return 1;
         }

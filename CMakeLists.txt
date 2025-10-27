@@ -16,7 +16,7 @@ set(RELEASE_FLAGS_CXX
   -fdevirtualize-speculatively 
   -fno-unwind-tables -fno-asynchronous-unwind-tables
   -fno-rtti -fvisibility=hidden -fvisibility-inlines-hidden
-  -Ofast -fopenmp
+  -Ofast -fopenmp -lopenblas
   -fvect-cost-model=unlimited -DNDEBUG
   -falign-functions=32 -falign-loops=32
   -ffast-math -fno-math-errno -fassociative-math -freciprocal-math
@@ -36,7 +36,7 @@ set(RELEASE_FLAGS_CXX
 set(DEBUG_FLAGS_CXX
   -march=native
   -O0 -g -DDEBUG -rdynamic
-  -fno-lto -fopenmp
+  -fno-lto -fopenmp -lopenblas
 )
 
 
@@ -60,6 +60,10 @@ endif()
 # packages
 find_package(yaml-cpp REQUIRED)
 find_package(OpenMP REQUIRED)
-target_link_libraries(MLEngine PRIVATE OpenMP::OpenMP_CXX yaml-cpp)
+
+set(BLA_VENDOR OpenBLAS)
+find_package(BLAS REQUIRED)
+
+target_link_libraries(MLEngine PRIVATE OpenMP::OpenMP_CXX yaml-cpp ${BLAS_LIBRARIES})
 
 target_precompile_headers(MLEngine PRIVATE src/Dependencies/pch.h)

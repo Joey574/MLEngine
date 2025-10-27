@@ -2,17 +2,21 @@
 
 int State::Load() {
     std::string file = path+"/"+name+"/.model";
-    if (!FileExists(file)) {
+    if (!FileExists(file)) [[unlikely]] {
         std::cerr << "Save file not found\n";
         return 1;
     }
 
-    return supervisor->Load(path, name);
+    int code = 0;
+    code += supervisor->Define(config, path, name);
+    code += supervisor->Load();
+
+    return code;
 }
 
 int State::Build() {
     int code = 0;
-    code += supervisor->Define(config);
+    code += supervisor->Define(config, path, name);
     code += supervisor->Build();
 
     return code;
@@ -23,10 +27,11 @@ int State::Train() {
     history = supervisor->Train(history);
 
     // update history
-    std::ofstream file(path+"/history.meta", std::ios::trunc);
+    std::ofstream f(path+"/history.meta", std::ios::trunc);
+    assert(f.is_open());
     
-    file << history.dump(4) << "\n";
-    file.close();
+    f << history.dump(4) << "\n";
+    f.close();
 
     return 0;
 }
