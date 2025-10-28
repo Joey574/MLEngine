@@ -38,5 +38,5 @@ private:
 
     YAML::Node* config;
 
-    void Save();
+    void Save() const;
 };

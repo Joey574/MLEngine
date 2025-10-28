@@ -69,8 +69,9 @@ int Supervisor::Load() {
 }
 
 /// @brief Saves model
-void Supervisor::Save() {
+void Supervisor::Save() const {
     assert(!path.empty() && !name.empty());
+    assert(defined && built);
 
     std::string file = path+"/"+name+".model";
     std::ofstream f(file, std::ios::trunc);

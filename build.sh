@@ -12,8 +12,8 @@ while getopts ":d" opt; do
 done
 
 # build directory
-mkdir -p CMakeBuild
-cd CMakeBuild
+mkdir -p build
+cd build
 
 # configure
 export OMP_WAIT_POLICY=active
