@@ -37,6 +37,10 @@ template <bool acum> void MathUtils::DotProdTB(const float* a, const float* b, f
 void MathUtils::ScaleBy(float* a, float scalar, size_t n) {
     cblas_sscal(n, scalar, a, 1);
 }
+void MathUtils::ScaleBy(const float* a, float* b, size_t n) {
+    cblas_saxpy(n, 1.0f, a, 1, b, 1);
+}
+
 void MathUtils::Copy(const float* src, float* dest, size_t n) {
     cblas_scopy(n, src, 1, dest, 1);
 };

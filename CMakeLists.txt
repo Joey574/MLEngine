@@ -25,7 +25,6 @@ if(USE_CUDA)
   find_program(NVCC_FOUND nvcc)
   if(NVCC_FOUND)
     enable_language(CUDA)
-    set(CMAKE_CUDA_ARCHITECTURES 75)
     set(USE_CUDA_FOUND TRUE)
     message(STATUS "CUDA compiler found: ${NVCC_FOUND} -- enabling CUDA")
   else()
@@ -35,7 +34,6 @@ if(USE_CUDA)
 else()
   message(STATUS "USE_CUDA=OFF -> Building without CUDA support.")
 endif()
-
 
 # -----------------------
 # Optionally enable ccache
@@ -85,9 +83,9 @@ endif()
 # -----------------------
 # Required CPU packages
 # -----------------------
-find_package(yaml-cpp REQUIRED)
-find_package(OpenMP REQUIRED)
-find_package(BLAS REQUIRED)
+find_package(yaml-cpp QUIET)
+find_package(OpenMP QUIET)
+find_package(BLAS QUIET)
 target_link_libraries(MLEngine PRIVATE OpenMP::OpenMP_CXX yaml-cpp ${BLAS_LIBRARIES})
 
 # Precompiled header

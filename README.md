@@ -35,33 +35,3 @@ All specific YAML configurations and settings can be found in *DOCUMENTATION.md*
 
 ### How it works
 MLEngine uses a general top down framework to allow vast customizability and modification while maintaining performance through use of templates
-
-```mermaid
-flowchart TD
-    state["`**State:** Manages everything from the top down, specifically responsible for saving and loading configs`"]
-
-    nn["`**NeuralNetwork:** Manages the memory allocation of the network and training state`"]
-
-    layer["`**Layer:** Responsible for the exact mathematical implementations of forward and back prop, makes heavy use of templates to allow customization and improve performance`"]
-
-    dataload["`**DataLoader:** Responsible for loading datasets and mofifying them based on config settings`"]
-
-    actv["`**Activation:** Implements specific activation functions and their derivatives`"]
-
-    lossmetric["`**LossMetric:** Implements various loss and scoring functions`"]
-
-    optimizer["`**Optimizer:** Responsible for all things regarding parameter updates and different optimizer implementations`"]
-
-    mathutils["`**MathUtils:** More of its own thing, used by various classes/structs, implements various dot prods, and other specific math utils (shocking)`"]
-
-    state-->nn
-    state-->dataload
-
-    nn-->layer
-    nn-->dataload
-
-    layer-->actv
-    layer-->lossmetric
-    layer-->optimizer
-```
-
