@@ -8,8 +8,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
-# optionally enable cuda
+# Optionally enable cuda
 option(USE_CUDA "Enable CUDA support (if available)" ON)
+include(DetectCUDA)
 
 # -----------------------
 # Default to a release build
@@ -17,9 +18,6 @@ option(USE_CUDA "Enable CUDA support (if available)" ON)
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the build type (Release or Debug)" FORCE)
 endif()
-
-include(DetectCUDA)
-
 
 # -----------------------
 # Optionally enable ccache
@@ -83,4 +81,4 @@ include(FetchContent)
 include(OpenBLASFetch)
 include(YamlCppFetch)
 include(ParrotFetch)
-target_link_libraries(MLEngine PRIVATE OpenBLAS::OpenBLAS yaml-cpp::yaml-cpp)
+target_link_libraries(MLEngine PRIVATE ${BLAS_LIBRARIES} yaml-cpp::yaml-cpp)
