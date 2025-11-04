@@ -1,5 +1,6 @@
 #include "json.hpp"
 #include <yaml-cpp/yaml.h>
+#include <cblas.h>
 
 #include <chrono>
 #include <csignal>
@@ -19,6 +20,5 @@
 #include <cctype>
 #include <math.h>
 #include <complex>
-#include <cblas.h>
 
 #include "../Definitions/data.hpp"
