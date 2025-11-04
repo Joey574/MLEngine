@@ -1,20 +1,7 @@
 #pragma once
 
-// forward declare parrot fusion_array
-class fusion_array;
-
-using GPUArray = fusion_array&;
-using CPUArray = float*;
-using AnyArray = std::variant<CPUArray, GPUArray>;
-
 struct MathUtils {
 public:
-
-    using DotProdFn = void(*)(const AnyArray, const AnyArray, AnyArray);
-
-    
-
-    
 
     static void bindToCPU();
     static void bindToGPU();

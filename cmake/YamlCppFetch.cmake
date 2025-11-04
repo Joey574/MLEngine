@@ -12,4 +12,6 @@ if(NOT yaml-cpp_FOUND AND NOT TARGET yaml-cpp::yaml-cpp)
         GIT_SHALLOW TRUE
     )
     FetchContent_MakeAvailable(yaml-cpp)
+else()
+    message(STATUS "Using detected yaml-cpp")
 endif()

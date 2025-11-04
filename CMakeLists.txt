@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 4.1.2)
-project(MLEngine LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.28)
+project(MLEngine LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -25,6 +25,7 @@ endif()
 find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
   set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
+  set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
   set(CMAKE_CUDA_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
 endif()
 
