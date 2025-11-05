@@ -1,6 +1,7 @@
 #include "Supervisor.hpp"
 
 /// @brief Defines internal data for members, does not build model
+/// @return 0 for success
 int Supervisor::Define(YAML::Node& config, std::string& path, std::string& name) {
     assert(!(defined || built));
     this->config = &config;
@@ -16,6 +17,7 @@ int Supervisor::Define(YAML::Node& config, std::string& path, std::string& name)
 }
 
 /// @brief Builds model based on internal data from members
+/// @return 0 for success
 int Supervisor::Build() {
     assert(defined && !built);
 
@@ -27,6 +29,9 @@ int Supervisor::Build() {
     return code;
 }
 
+/// @brief Trains the model based on previously defined config
+/// @param history Existing model history
+/// @return Updated model history
 nlohmann::json Supervisor::Train(nlohmann::json& history) {
     assert(defined && built);
 
@@ -38,7 +43,7 @@ nlohmann::json Supervisor::Train(nlohmann::json& history) {
         model->Forward();
         model->Backward();
 
-        if (scoreFrequency != 0 && e % scoreFrequency == 0) {
+        if (scoreFrequency > 0 && e % scoreFrequency == 0) {
             Score score = model->Validate();
 
             if (score.IsBetterThan(bestScore)) {
@@ -73,7 +78,7 @@ void Supervisor::Save() const {
     assert(!path.empty() && !name.empty());
     assert(defined && built);
 
-    std::string file = path+"/"+name+".model";
+    const std::string file = path+"/"+name+".model";
     std::ofstream f(file, std::ios::trunc);
     assert(f.is_open());
 

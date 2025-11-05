@@ -6,7 +6,7 @@ int State::Start(int argc, char* argv[]) {
     // parse arguments and return the passed config file path
     std::string configFile = ParseArgs(argc, argv);
     if (configFile.empty()) {
-        std::cerr << "No config passed / found\n";
+        std::cerr << "[x] No config passed / found\n";
         return 1;
     }
 
@@ -19,15 +19,15 @@ int State::Start(int argc, char* argv[]) {
     InitializeSaveLocation();
 
     if (ModelExists()) {
-        std::cout << "Loading existing model\n";
+        std::cout << "[i] Loading existing model\n";
         Load();
     } else {
         if (!IsValid()) [[unlikely]] {
-            std::cerr << "Invalid model passed\n";
+            std::cerr << "[x] Invalid model passed\n";
             return 1;
         }
 
-        std::cout << "Creating new model\n";
+        std::cout << "[i] Creating new model\n";
         Build();
     }
 

@@ -32,7 +32,7 @@
 
 // layer defaults
 #define Y_DROPOUT_DEFAULT 0
-#define Y_ACTV_DEFAULT "none"
+#define Y_ACTV_DEFAULT "linear"
 #define Y_LOSS_DEFAULT "none"
 #define Y_METRIC_DEFAULT "none"
 

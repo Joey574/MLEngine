@@ -3,7 +3,7 @@
 int State::Load() {
     std::string file = path+"/"+name+"/.model";
     if (!FileExists(file)) [[unlikely]] {
-        std::cerr << "Save file not found\n";
+        std::cerr << "[x] Save file not found\n";
         return 1;
     }
 
@@ -23,7 +23,7 @@ int State::Build() {
 }
 
 int State::Train() {
-    std::cout << "Beginning training\n";
+    std::cout << "[i] Beginning training\n";
     history = supervisor->Train(history);
 
     // update history

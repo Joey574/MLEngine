@@ -16,7 +16,6 @@ mkdir -p build
 cd build
 
 # configure
-export OMP_WAIT_POLICY=active
 cmake .. -DCMAKE_BUILD_TYPE="$build_type" -G Ninja
 
 # build program
