@@ -1,5 +1,11 @@
 #include "LossMetric.hpp"
 
+/// @brief Computes the mean absolute error between x and y
+/// @param x Prediction matrix
+/// @param y Ground truth matrix
+/// @param rows Rows in the matrix
+/// @param cols Columns in the matrix
+/// @return The mean absolute error
 float LossMetric::MAEScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
     const size_t n = rows*cols;
     float error = 0.0f;
@@ -12,6 +18,12 @@ float LossMetric::MAEScore(const float* __restrict x, const float* __restrict y,
     return error / (float)n;
 }
 
+/// @brief Computes the mean squared error between x and y
+/// @param x Prediction matrix
+/// @param y Ground truth matrix
+/// @param rows Rows in the matrix
+/// @param cols Columns in the matrix
+/// @return The mean squared error
 float LossMetric::MSEScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
     const size_t n = rows*cols;
     float error = 0.0f;
@@ -24,6 +36,12 @@ float LossMetric::MSEScore(const float* __restrict x, const float* __restrict y,
     return error / (float)n;
 }
 
+/// @brief Computes the accuracy between x and y
+/// @param x Prediction matrix
+/// @param y Ground truth matrix
+/// @param rows Rows in the matrix
+/// @param cols Columns in the matrix
+/// @return Accuracy as a percentage
 float LossMetric::AccuracyScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
     size_t correct = 0;
 

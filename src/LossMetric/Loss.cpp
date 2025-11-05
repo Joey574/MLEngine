@@ -1,5 +1,11 @@
 #include "LossMetric.hpp"
 
+/// @brief Computes the mean absolute loss between x and y, and stores it in c
+/// @param x Prediction matrix
+/// @param y Ground truth matrix
+/// @param c Matrix to store loss in
+/// @param rows Rows in the matrix
+/// @param cols Columns in the matrix
 void LossMetric::MAELoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols) {
     const size_t n = rows*cols;
 
@@ -9,6 +15,12 @@ void LossMetric::MAELoss(const float* __restrict x, const float* __restrict y, f
     }
 }
 
+/// @brief Computes the mean squared loss between x and y, and stores it in c
+/// @param x Prediction matrix
+/// @param y Ground truth matrix
+/// @param c Matrix to store loss in
+/// @param rows Rows in the matrix
+/// @param cols Columns in the matrix
 void LossMetric::MSELoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols) {
     const size_t n = rows*cols;
 
@@ -18,6 +30,12 @@ void LossMetric::MSELoss(const float* __restrict x, const float* __restrict y, f
     }
 }
 
+/// @brief Computes the one hot loss between x and y, and stores it in c
+/// @param x Prediction matrix
+/// @param y Ground truth matrix
+/// @param c Matrix to store loss in
+/// @param rows Rows in the matrix
+/// @param cols Columns in the matrix
 void LossMetric::OneHotLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols) {
     const size_t n = rows*cols;
     cblas_scopy(n, x, 1, c, 1);

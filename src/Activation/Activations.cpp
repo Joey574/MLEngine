@@ -76,7 +76,7 @@ void Activation::Softmax(const float* __restrict x, float* __restrict y, size_t 
 
         // find max element in column
         float max = x[i*c+0];
-        #pragma omp simd reduction(max: max)
+        #pragma omp simd reduction(max:max)
         for (size_t j = 1; j < c; j++) {
             if (x[i*c+j] > max) {
                 max = x[i*c+j];
@@ -85,7 +85,7 @@ void Activation::Softmax(const float* __restrict x, float* __restrict y, size_t 
 
         // get row sum and store exp in y
         float sum = 0.0f;
-        #pragma omp simd reduction(+: sum)
+        #pragma omp simd reduction(+:sum)
         for (size_t j = 0; j < c; j++) {
             y[i*c+j] = std::exp(x[i*c+j]-max);
             sum += y[i*c+j];

@@ -48,6 +48,9 @@ public:
     void Forward();
     void Backward();
 
+    inline bool IsDefined() { return defined; }
+    inline bool IsBuilt() { return built; }
+
 private:
     bool defined = false;
     bool built = false;

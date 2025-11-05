@@ -2,6 +2,7 @@
 
 void Layer::Define(YAML::Node& layerConfig, YAML::Node& optimizerConfig, size_t in, size_t out) {
     assert(!(defined || built));
+    assert(!(optimizer.IsDefined() || optimizer.IsBuilt()));
     assert(layerConfig[Y_LAYERTYPE] && layerConfig[Y_NODES]);
 
     type = ParseType(layerConfig[Y_LAYERTYPE].as<std::string>());
@@ -20,10 +21,14 @@ void Layer::Define(YAML::Node& layerConfig, YAML::Node& optimizerConfig, size_t 
         layerConfig[Y_METRIC].as<std::string>(Y_METRIC_DEFAULT)
     );
 
+    optimizer.Define(optimizerConfig);
     defined = true;
 }
 
 void Layer::Build() {
     assert(defined && !built);
+    assert(optimizer.IsDefined() && !optiimzer.IsBuilt());
+
+    optimizer.Build();
     built = true;
 }
