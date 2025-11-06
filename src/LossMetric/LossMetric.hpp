@@ -1,7 +1,7 @@
 #pragma once
 
 struct LossMetric {
-public:
+    public:
     enum class Type {
         None, MAE, MSE, Accuracy, OneHot
     };
@@ -79,7 +79,7 @@ public:
     void (*loss)(const float*, const float*, float*, size_t, size_t);
     float (*metric)(const float*, const float*, size_t, size_t);
  
-private:
+    private:
     Type lossType;
     Type metricType;
 

@@ -1,7 +1,7 @@
 #pragma once
 
 struct Dataset {
-public:
+    public:
 
     int Define(YAML::Node& config);
     int Build();
@@ -9,7 +9,7 @@ public:
     inline bool IsDefined() const { return defined; }
     inline bool IsBuilt() const { return built; }
 
-private:
+    private:
     bool defined = false;
     bool built = false;
 };

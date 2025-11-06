@@ -3,7 +3,7 @@
 #include "../Dataset/Dataset.hpp"
 
 struct Supervisor {
-public:
+    public:
 
     Supervisor() {
         model = new NeuralNetwork();
@@ -24,8 +24,7 @@ public:
     inline bool IsDefined() const { return defined; }
     inline bool IsBuilt() const { return built; }
 
-private:
-
+    private:
     bool defined = false;
     bool built = false;
 

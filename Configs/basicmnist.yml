@@ -1,18 +1,13 @@
 name: basicmnist
 dataset: mnist
 
-dataset_args:
-  elastic_deform:
-    alpha: 34
-    sigma: 4
-    variants: 5
-
 optimizer:
   type: adam
   learning_rate: 0.1
 
 layers:
   - type: input
+    nodes: 784
 
   - type: hidden
     nodes: 256

@@ -3,7 +3,7 @@
 #include "../Dataset/Dataset.hpp"
 
 struct NeuralNetwork {
-public:
+    public:
 
     int Define(YAML::Node& config, Dataset& dataset);
     int Build();
@@ -20,8 +20,7 @@ public:
     inline bool IsDefined() const { return defined; }
     inline bool IsBuilt() const { return built; }
 
-private:
-
+    private:
     bool defined = false;
     bool built = false;
 

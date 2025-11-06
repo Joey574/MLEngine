@@ -1,7 +1,7 @@
 #pragma once
 
 struct MathUtils {
-public:
+    public:
     // CPU Math Utilities
     template <bool acum> static void DotProd(const float* a, const float* b, float* c, size_t ar, size_t ac, size_t br, size_t bc);
     template <bool acum> static void DotProdTA(const float* a, const float* b, float* c, size_t ar, size_t ac, size_t br, size_t bc);

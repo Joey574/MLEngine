@@ -27,7 +27,7 @@ void Layer::Define(YAML::Node& layerConfig, YAML::Node& optimizerConfig, size_t 
 
 void Layer::Build() {
     assert(defined && !built);
-    assert(optimizer.IsDefined() && !optiimzer.IsBuilt());
+    assert(optimizer.IsDefined() && !optimizer.IsBuilt());
 
     optimizer.Build();
     built = true;

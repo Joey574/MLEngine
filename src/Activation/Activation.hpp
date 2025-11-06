@@ -1,7 +1,7 @@
 #pragma once
 
 struct Activation {
-public:
+    public:
     enum class Type {
         None, Linear, Sigmoid, ReLU, LeakyReLU, ELU, Softmax
     };
@@ -89,7 +89,7 @@ public:
     void (*activation)(const float*, float*, size_t, size_t);
     void (*derivative)(const float*, float*, size_t, size_t);
 
-private:
+    private:
     Type type;
 
     /* ----------

@@ -1,7 +1,7 @@
 #pragma once
 
 struct Optimizer {
-public:
+    public:
     enum class Type {
         None, SGD, MomentumSGD, RMSProp, Adam
     };
@@ -11,7 +11,8 @@ public:
 
     inline bool IsDefined() const { return defined; }
     inline bool IsBuilt() const { return built; }
-private:
+    
+    private:
     bool defined = false;
     bool built = false;
 

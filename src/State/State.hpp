@@ -2,7 +2,7 @@
 #include "../Supervisor/Supervisor.hpp"
 
 struct State {
-public:
+    public:
 
     State() {
         supervisor = new Supervisor();
@@ -17,7 +17,7 @@ public:
 
     int Start(int argc, char* argv[]);
 
-private:
+    private:
     std::string name;
     Supervisor* supervisor;
 

@@ -4,7 +4,7 @@
 #include "../Optimizer/Optimizer.hpp"
 
 struct Layer {
-public:
+    public:
     enum class Type {
         None, Input, Hidden, Output
     };
@@ -51,7 +51,7 @@ public:
     inline bool IsDefined() { return defined; }
     inline bool IsBuilt() { return built; }
 
-private:
+    private:
     bool defined = false;
     bool built = false;
 

@@ -55,7 +55,9 @@ int main(int argc, char* argv[]) {
     signal(SIGINT, handleInterupt);
     signal(SIGSEGV, segv);
 
-    DEBUG_LOG("Running in DEBUG mode");
+    #ifdef DEBUG
+        std::cout << "[i] Running in DEBUG mode\n";
+    #endif
     
     State state;
     return state.Start(argc, argv);
