@@ -45,8 +45,26 @@ struct Layer {
     void Define(YAML::Node& layerConfig, YAML::Node& optimizerConfig, size_t in, size_t out);
     void Build();
 
-    void Forward();
-    void Backward();
+    void Forward(const float* __restrict input, size_t elements);
+    void InputForward(const float* __restrict input, size_t elements);
+    void HiddenForward(const float* __restrict input, size_t elements);
+
+    void Backward(const float* __restrict truth, const float* __restrict input, const float* __restrict nextWeights, size_t elements);
+    void InputBackward();
+    void HiddenBackward(const float* __restrict truth, const float* __restrict input, const float* __restrict nextWeights, size_t elements);
+    void OutputBackward(const float* __restrict truth, const float* __restrict input, size_t elements);
+    void ComputeBackward(const float* __restrict input, size_t elements);
+
+    void Update(size_t elements);
+
+    template <bool train> inline float* Output() {
+        if constexpr (train) {
+            return trainingActivations;
+        } else {
+            return testingActivations;
+        }
+    }
+    inline float* Weights() { return weights; }
 
     inline bool IsDefined() { return defined; }
     inline bool IsBuilt() { return built; }
@@ -62,15 +80,22 @@ struct Layer {
     Optimizer optimizer;
 
     size_t nodes;
-    size_t i_nodes;
-    size_t o_nodes;
+    size_t iNodes;
+    size_t oNodes;
     
 
     float* weights;
     float* biases;
     float* weightDerivatives;
     float* biasDerivatives;
+    float* totalDerivatives;
 
     size_t weightSize;
     size_t biasSize;
+
+
+    float* trainingTotals;
+    float* trainingActivations;
+    float* testingTotals;
+    float* testingActivations;
 };

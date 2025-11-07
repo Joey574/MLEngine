@@ -11,7 +11,6 @@ int NeuralNetwork::Define(YAML::Node& config, Dataset& dataset) {
 
     layers = std::vector<Layer>(layerConfigs.size());
 
-    #pragma omp parallel for
     for(size_t i = 0; i < layers.size(); i++) {
         auto layerConf = layerConfigs[i];
         size_t i_nodes = i == 0 ? 0 : layerConfigs[i-1][Y_NODES].as<size_t>();

@@ -9,8 +9,8 @@ void Layer::Define(YAML::Node& layerConfig, YAML::Node& optimizerConfig, size_t 
 
     // set nodes, input nodes, and output nodes sizes
     nodes = layerConfig[Y_NODES].as<size_t>();
-    i_nodes = in;
-    o_nodes = out;
+    iNodes = in;
+    oNodes = out;
 
     // set activation function, default to linear
     activation.AssignPointers(layerConfig[Y_ACTIVATION].as<std::string>(Y_ACTV_DEFAULT));
@@ -21,6 +21,18 @@ void Layer::Define(YAML::Node& layerConfig, YAML::Node& optimizerConfig, size_t 
         layerConfig[Y_METRIC].as<std::string>(Y_METRIC_DEFAULT)
     );
 
+    // set size values
+    switch (type) {
+        case Type::Input:
+            weightSize = 0;
+            biasSize = 0;
+            break;
+        case Type::Hidden: case Type::Output:
+            weightSize = iNodes*nodes;
+            biasSize = nodes;
+            break;
+    }
+
     optimizer.Define(optimizerConfig, weightSize, biasSize);
     defined = true;
 }
@@ -28,6 +40,12 @@ void Layer::Define(YAML::Node& layerConfig, YAML::Node& optimizerConfig, size_t 
 void Layer::Build() {
     assert(defined && !built);
     assert(optimizer.IsDefined() && !optimizer.IsBuilt());
+
+    // allocate internal memory
+    weights = (float*)MathUtils::Allocate(weightSize*sizeof(float));
+    biases = (float*)MathUtils::Allocate(biasSize*sizeof(float));
+    weightDerivatives = (float*)MathUtils::Allocate(weightSize*sizeof(float));
+    biasDerivatives = (float*)MathUtils::Allocate(biasSize*sizeof(float));
 
     optimizer.Build(weights, biases, weightDerivatives, biasDerivatives);
     built = true;
