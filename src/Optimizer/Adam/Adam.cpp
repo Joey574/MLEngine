@@ -2,11 +2,21 @@
 
 void Adam::Define(YAML::Node& config) {
     assert(!(defined || built));
+
+    iteration = 0;
+    b1 = config[Y_OPT_B1].as<float>(Y_B1_DEFAULT);
+    b2 = config[Y_OPT_B2].as<float>(Y_B2_DEFAULT);
+    epsilon = config[Y_OPT_EPSL].as<float>(Y_EPSL_DEFAULT);
     defined = true;
 }
 
-void Adam::Build() {
+void Adam::Build(size_t weightSize, size_t biasSize) {
     assert(defined && !built);
+
+    weightVelocity = (float*)MathUtils::Allocate(weightSize*sizeof(float));
+    biasVelocity = (float*)MathUtils::Allocate(biasSize*sizeof(float));
+    weightSquares = (float*)MathUtils::Allocate(weightSize*sizeof(float));
+    biasSquares = (float*)MathUtils::Allocate(biasSize*sizeof(float));
     built = true;
 }
 

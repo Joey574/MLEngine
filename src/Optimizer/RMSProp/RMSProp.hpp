@@ -1,11 +1,12 @@
 #pragma once
+#include "../../MathUtils/MathUtils.hpp"
 
 struct RMSProp {
     public:
     void Update(float* __restrict weights, float* __restrict biases, float* __restrict weightDerivatives, float* __restrict biasDerivatives, size_t weightSize, size_t biasSize, size_t elements, float learningRate);
 
     void Define(YAML::Node& config);
-    void Build();
+    void Build(size_t weightSize, size_t biasSize);
 
     inline bool IsDefined() const { return defined; }
     inline bool IsBuilt() const { return built; }

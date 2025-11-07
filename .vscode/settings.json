@@ -87,6 +87,7 @@
         "expected": "cpp",
         "regex": "cpp",
         "future": "cpp",
-        "cfenv": "cpp"
+        "cfenv": "cpp",
+        "inplace_vector": "cpp"
     }
 }

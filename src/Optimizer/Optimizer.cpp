@@ -45,7 +45,7 @@ void Optimizer::Build(float* __restrict weights, float* __restrict biases, float
 
     // build specific optimizer
     std::visit([&](auto& data) {
-        data.Build();
+        data.Build(weightSize, biasSize);
     }, data);
 
     built = true;

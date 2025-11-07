@@ -2,11 +2,16 @@
 
 void MomentumSGD::Define(YAML::Node& config) {
     assert(!(defined || built));
+
+    momentum = config[Y_OPT_MOMENTUM].as<float>(Y_MOMENTUM_DEFAULT);
     defined = true;
 }
 
-void MomentumSGD::Build() {
+void MomentumSGD::Build(size_t weightSize, size_t biasSize) {
     assert(defined && !built);
+
+    weightVelocity = (float*)MathUtils::Allocate(weightSize*sizeof(float));
+    biasVelocity = (float*)MathUtils::Allocate(biasSize*sizeof(float));
     built = true;
 }
 

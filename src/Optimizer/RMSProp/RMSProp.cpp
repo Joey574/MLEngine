@@ -2,11 +2,17 @@
 
 void RMSProp::Define(YAML::Node& config) {
     assert(!(defined || built));
+
+    decay = config[Y_OPT_DECAY].as<float>(Y_DECAY_DEFAULT);
+    epsilon = config[Y_OPT_EPSL].as<float>(Y_EPSL_DEFAULT);
     defined = true;
 }
 
-void RMSProp::Build() {
+void RMSProp::Build(size_t weightSize, size_t biasSize) {
     assert(defined && !built);
+
+    weightSquares = (float*)MathUtils::Allocate(weightSize*sizeof(float));
+    biasSquares = (float*)MathUtils::Allocate(biasSize*sizeof(float));
     built = true;
 }
 
