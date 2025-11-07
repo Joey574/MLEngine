@@ -1,5 +1,9 @@
 #include "Optimizer.hpp"
 
+/// @brief Defines the specific optimizer implementation
+/// @param config The config specifying the optimizer
+/// @param weightSize Number of weights in the layer
+/// @param biasSize Number of biases in the layer
 void Optimizer::Define(YAML::Node& config, size_t weightSize, size_t biasSize) {
     assert(!(defined || built));
     this->weightSize = weightSize;
@@ -27,6 +31,11 @@ void Optimizer::Define(YAML::Node& config, size_t weightSize, size_t biasSize) {
     defined = true;
 }
 
+/// @brief Builds the optimizer
+/// @param weights Pointer to the layer weights
+/// @param biases Pointer to the layer biases
+/// @param weightDerivatives Pointer to the derivatives of the weights
+/// @param biasDerivatives Pointer to the derivatives of the biases
 void Optimizer::Build(float* __restrict weights, float* __restrict biases, float* __restrict weightDerivatives, float* __restrict biasDerivatives) {
     assert(defined && !built);
     this->weights = weights;
@@ -42,6 +51,8 @@ void Optimizer::Build(float* __restrict weights, float* __restrict biases, float
     built = true;
 }
 
+/// @brief Updates the weights using the previously specified optimizer 
+/// @param elements Numebr of training elements used
 void Optimizer::Update(size_t elements) {
     assert(defined && built);
 
