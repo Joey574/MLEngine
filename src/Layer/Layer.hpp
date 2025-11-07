@@ -64,4 +64,13 @@ struct Layer {
     size_t nodes;
     size_t i_nodes;
     size_t o_nodes;
+    
+
+    float* weights;
+    float* biases;
+    float* weightDerivatives;
+    float* biasDerivatives;
+
+    size_t weightSize;
+    size_t biasSize;
 };

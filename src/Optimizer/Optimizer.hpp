@@ -11,10 +11,10 @@ struct Optimizer {
         None, SGD, MomentumSGD, RMSProp, Adam
     };
 
-    void Define(YAML::Node& config);
-    void Build();
+    void Define(YAML::Node& config, size_t weightSize, size_t biasSize);
+    void Build(float* __restrict weights, float* __restrict biases, float* __restrict weightDerivatives, float* __restrict biasDerivatives);
 
-    void Compute();
+    void Update(size_t elements);
 
     static inline Type ParseType(const std::string& name) {
         auto lower = std::string(name.size(), ' ');
@@ -49,8 +49,8 @@ struct Optimizer {
         }
     }
 
-    inline bool IsDefined() const { return std::visit([](auto& data){ return data.IsDefined(); } , data); }
-    inline bool IsBuilt() const { return std::visit([](auto& data){ return data.IsBuilt(); } , data); }
+    inline bool IsDefined() const { return defined; }
+    inline bool IsBuilt() const { return built; }
     inline Type GetType() const { return type; }
     
     private:
@@ -58,4 +58,17 @@ struct Optimizer {
 
     Type type;
     Data data;
+
+    // data needed by all optimizer implementations
+    bool defined = false;
+    bool built = false;
+
+    float learningRate;
+    size_t weightSize;
+    size_t biasSize;
+
+    float* weights;
+    float* biases;
+    float* weightDerivatives;
+    float* biasDerivatives;
 };
