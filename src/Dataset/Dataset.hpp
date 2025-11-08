@@ -1,4 +1,5 @@
 #pragma once
+#include "../MathUtils/MathUtils.hpp"
 
 struct Dataset {
     public:
@@ -71,5 +72,15 @@ struct Dataset {
 
         const char* home = getenv("HOME");
         return home + path.substr(1);
+    }
+    static inline int ReadBigInt(std::ifstream* f) {
+        int lint;
+        f->read(reinterpret_cast<char*>(&lint), sizeof(int));
+
+        unsigned char* bytes = reinterpret_cast<unsigned char*>(&lint);
+        std::swap(bytes[0], bytes[3]);
+        std::swap(bytes[1], bytes[2]);
+
+        return lint;
     }
 };

@@ -1,4 +1,5 @@
 #pragma once
+#include "../Tensor/Tensor.hpp"
 
 struct MathUtils {
     public:

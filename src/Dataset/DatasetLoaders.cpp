@@ -5,7 +5,7 @@ int Dataset::LoadMNISTStyle(const std::string& name) {
     const std::string trainingImages = ExpandPath("~/.local/share/MLEngine/Datasets/"+name+"/TrainingData/train-images.idx3-ubyte");
     const std::string trainingLabels = ExpandPath("~/.local/share/MLEngine/Datasets/"+name+"/TrainingData/train-labels.idx1-ubyte");
 
-    // testing dataset pat
+    // testing dataset path
     const std::string testingImages = ExpandPath("~/.local/share/MLEngine/Datasets/"+name+"/TestingData/t10k-images.idx3-ubyte");
     const std::string testingLabels = ExpandPath("~/.local/share/MLEngine/Datasets/"+name+"/TestingData/t10k-labels.idx1-ubyte");
 
@@ -18,6 +18,16 @@ int Dataset::LoadMNISTStyle(const std::string& name) {
         return 1;
     }
 
+    // discard magic number and other irelevant data
+    ReadBigInt(&trainl);
+    ReadBigInt(&trainl);
+    ReadBigInt(&traind);
+    elements = ReadBigInt(&traind);
+    size_t width = ReadBigInt(&traind);
+    size_t height = ReadBigInt(&traind);
+
+    data = (float*)MathUtils::Allocate(elements*width*height);
+    labels = (float*)MathUtils::Allocate(elements);
 
     traind.close();
     trainl.close();

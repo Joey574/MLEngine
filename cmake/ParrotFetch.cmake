@@ -1,5 +1,8 @@
 # ParrotFetch.cmake
+include(FetchContent)
+
 if(USE_CUDA_FOUND)
+
   # Fetch the official parrot library from NVlabs/parrot
   FetchContent_Declare(
     parrot
@@ -7,7 +10,7 @@ if(USE_CUDA_FOUND)
     GIT_TAG main
     GIT_SHALLOW TRUE
   )
-
+  
   # Make parrot available
   FetchContent_MakeAvailable(parrot)
 

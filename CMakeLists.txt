@@ -11,6 +11,9 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 # Optionally enable cuda
 option(USE_CUDA "Enable CUDA support (if available)" ON)
 include(DetectCUDA)
+if(USE_CUDA_FOUND)
+  add_compile_definitions(USE_PARROT=1)
+endif()
 
 # -----------------------
 # Default to a release build
