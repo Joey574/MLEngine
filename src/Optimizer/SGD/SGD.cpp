@@ -24,7 +24,7 @@ void SGD::Build(size_t weightSize, size_t biasSize) {
 /// @param biasSize 
 /// @param elements 
 /// @param learningRate 
-void SGD::Update(float* __restrict weights, float* __restrict biases, float* __restrict weightDerivatives, float* __restrict biasDerivatives, size_t weightSize, size_t biasSize, size_t elements, float learningRate) {
+void SGD::Update(Tensor<float>& weights, Tensor<float>& biases, Tensor<float>& weightDerivatives, Tensor<float>& biasDerivatives, size_t weightSize, size_t biasSize, size_t elements, float learningRate) {
     assert(defined && built);
 
     Compute(weights, weightDerivatives, weightSize, elements, learningRate);
@@ -37,12 +37,12 @@ void SGD::Update(float* __restrict weights, float* __restrict biases, float* __r
 /// @param numParameters Number of parameters
 /// @param elements Number of training samples used
 /// @param learningRate Learning rate value to use
-void SGD::Compute(float* __restrict parameters, const float* __restrict derivatives, size_t numParameters, size_t elements, float learningRate) {
+void SGD::Compute(Tensor<float>& parameters, const Tensor<float>& derivatives, size_t numParameters, size_t elements, float learningRate) {
     assert(defined && built);
     const float factor = learningRate / (float)elements;
 
     #pragma omp parallel for simd schedule(static)
     for (size_t i = 0; i < numParameters; i++) {
-        parameters[i] -= derivatives[i]*factor;
+        parameters.Data()[i] -= derivatives.Data()[i]*factor;
     }
 }

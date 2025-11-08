@@ -11,19 +11,19 @@ void RMSProp::Define(YAML::Node& config) {
 void RMSProp::Build(size_t weightSize, size_t biasSize) {
     assert(defined && !built);
 
-    weightSquares = (float*)MathUtils::Allocate(weightSize*sizeof(float));
-    biasSquares = (float*)MathUtils::Allocate(biasSize*sizeof(float));
+    weightSquares = Tensor<float>(weightSize);
+    biasSquares = Tensor<float>(biasSize);
     built = true;
 }
 
-void RMSProp::Update(float* __restrict weights, float* __restrict biases, float* __restrict weightDerivatives, float* __restrict biasDerivatives, size_t weightSize, size_t biasSize, size_t elements, float learningRate) {
+void RMSProp::Update(Tensor<float>& weights, Tensor<float>& biases, Tensor<float>& weightDerivatives, Tensor<float>& biasDerivatives, size_t weightSize, size_t biasSize, size_t elements, float learningRate) {
     assert(defined && built);
 
     Compute(weights, weightDerivatives, weightSquares, weightSize, elements, learningRate);
     Compute(biases, biasDerivatives, biasSquares, biasSize, elements, learningRate);
 }
 
-void RMSProp::Compute(float* __restrict parameters, float* __restrict derivatives, float* __restrict squares, size_t numParameters, size_t elements, float learningRate) {
+void RMSProp::Compute(Tensor<float>& parameters, Tensor<float>& derivatives, Tensor<float>& squares, size_t numParameters, size_t elements, float learningRate) {
     assert(defined && built);
     
     const float factor = learningRate / (float)elements;
@@ -31,7 +31,7 @@ void RMSProp::Compute(float* __restrict parameters, float* __restrict derivative
 
     #pragma omp parallel for simd schedule(static)
     for (size_t i = 0; i < numParameters; i++) {
-        squares[i] = (decay*squares[i])+(decayRate*squares[i]*squares[i]);
-        parameters[i] -= (factor /(std::sqrt(squares[i]+epsilon)))*squares[i];
+        squares.Data()[i] = (decay*squares.Data()[i])+(decayRate*squares.Data()[i]*squares.Data()[i]);
+        parameters.Data()[i] -= (factor /(std::sqrt(squares.Data()[i]+epsilon)))*squares.Data()[i];
     }
 }

@@ -5,7 +5,7 @@
 /// @param y The matrix to be scaled by the derivative
 /// @param r Rows in the matrix
 /// @param c Columns in the matrix
-void Activation::LinearDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
+void Activation::LinearDerivative(const Tensor<float>& x, Tensor<float>& y) {
     return;
 }
 
@@ -14,7 +14,7 @@ void Activation::LinearDerivative(const float* __restrict x, float* __restrict y
 /// @param y The matrix to be scaled by the derivative
 /// @param r Rows in the matrix
 /// @param c Columns in the matrix
-void Activation::SigmoidDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
+void Activation::SigmoidDerivative(const Tensor<float>& x, Tensor<float>& y) {
     const size_t n = r*c;
 
     #pragma omp parallel for simd schedule(static)
@@ -29,7 +29,7 @@ void Activation::SigmoidDerivative(const float* __restrict x, float* __restrict 
 /// @param y The matrix to be scaled by the derivative
 /// @param r Rows in the matrix
 /// @param c Columns in the matrix
-void Activation::ReLUDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
+void Activation::ReLUDerivative(const Tensor<float>& x, Tensor<float>& y) {
     const size_t n = r*c;
 
     #pragma omp parallel for simd schedule(static)
@@ -43,7 +43,7 @@ void Activation::ReLUDerivative(const float* __restrict x, float* __restrict y, 
 /// @param y The matrix to be scaled by the derivative
 /// @param r Rows in the matrix
 /// @param c Columns in the matrix
-void Activation::LeakyReLUDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
+void Activation::LeakyReLUDerivative(const Tensor<float>& x, Tensor<float>& y) {
     const size_t n = r*c;
 
     #pragma omp parallel for simd schedule(static)
@@ -57,7 +57,7 @@ void Activation::LeakyReLUDerivative(const float* __restrict x, float* __restric
 /// @param y The matrix to be scaled by the derivative
 /// @param r Rows in the matrix
 /// @param c Columns in the matrix
-void Activation::ELUDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
+void Activation::ELUDerivative(const Tensor<float>& x, Tensor<float>& y) {
     const size_t n = r*c;
 
     #pragma omp parallel for simd schedule(static)

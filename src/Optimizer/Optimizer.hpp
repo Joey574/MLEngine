@@ -12,7 +12,7 @@ struct Optimizer {
     };
 
     void Define(YAML::Node& config, size_t weightSize, size_t biasSize);
-    void Build(float* __restrict weights, float* __restrict biases, float* __restrict weightDerivatives, float* __restrict biasDerivatives);
+    void Build(Tensor<float>& weights, Tensor<float>& biases, Tensor<float>& weightDerivatives, Tensor<float>& biasDerivatives);
 
     void Update(size_t elements);
 
@@ -67,8 +67,8 @@ struct Optimizer {
     size_t weightSize;
     size_t biasSize;
 
-    float* weights;
-    float* biases;
-    float* weightDerivatives;
-    float* biasDerivatives;
+    Tensor<float> weights;
+    Tensor<float> biases;
+    Tensor<float> weightDerivatives;
+    Tensor<float> biasDerivatives;
 };

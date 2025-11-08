@@ -20,5 +20,10 @@
 #include <cctype>
 #include <math.h>
 #include <complex>
+#include <execution>
+#include <functional>
+#include <numeric>
 
 #include "../Definitions/data.hpp"
+#include "../MathUtils/MathUtils.hpp"
+#include "../Tensor/Tensor.hpp"

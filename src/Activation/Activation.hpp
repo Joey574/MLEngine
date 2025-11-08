@@ -86,8 +86,8 @@ struct Activation {
         }
     }
     
-    void (*activation)(const float*, float*, size_t, size_t);
-    void (*derivative)(const float*, float*, size_t, size_t);
+    void (*activation)(const Tensor<float>&, Tensor<float>&);
+    void (*derivative)(const Tensor<float>&, Tensor<float>&);
 
     private:
     Type type;
@@ -95,19 +95,19 @@ struct Activation {
     /* ----------
     activation functions
     ---------- */
-    static void Linear(const float* __restrict x, float* __restrict y, size_t r, size_t c);
-    static void Sigmoid(const float* __restrict x, float* __restrict y, size_t r, size_t c);
-    static void ReLU(const float* __restrict x, float* __restrict y, size_t r, size_t c);
-    static void LeakyReLU(const float* __restrict x, float* __restrict y, size_t r, size_t c);
-    static void ELU(const float* __restrict x, float* __restrict y, size_t r, size_t c);
-    static void Softmax(const float* __restrict x, float* __restrict y, size_t r, size_t c);
+    static void Linear(const Tensor<float>& x, Tensor<float>& y);
+    static void Sigmoid(const Tensor<float>& x, Tensor<float>& y);
+    static void ReLU(const Tensor<float>& x, Tensor<float>& y);
+    static void LeakyReLU(const Tensor<float>& x, Tensor<float>& y);
+    static void ELU(const Tensor<float>& x, Tensor<float>& y);
+    static void Softmax(const Tensor<float>& x, Tensor<float>& y);
 
     /* ----------
     derivative functions
     ---------- */
-    static void LinearDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c);
-    static void SigmoidDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c);
-    static void ReLUDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c);
-    static void LeakyReLUDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c);
-    static void ELUDerivative(const float* __restrict x, float* __restrict y, size_t r, size_t c);
+    static void LinearDerivative(const Tensor<float>& x, Tensor<float>& y);
+    static void SigmoidDerivative(const Tensor<float>& x, Tensor<float>& y);
+    static void ReLUDerivative(const Tensor<float>& x, Tensor<float>& y);
+    static void LeakyReLUDerivative(const Tensor<float>& x, Tensor<float>& y);
+    static void ELUDerivative(const Tensor<float>& x, Tensor<float>& y);
 };

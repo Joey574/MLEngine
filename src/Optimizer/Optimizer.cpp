@@ -32,16 +32,16 @@ void Optimizer::Define(YAML::Node& config, size_t weightSize, size_t biasSize) {
 }
 
 /// @brief Builds the optimizer
-/// @param weights Pointer to the layer weights
-/// @param biases Pointer to the layer biases
-/// @param weightDerivatives Pointer to the derivatives of the weights
-/// @param biasDerivatives Pointer to the derivatives of the biases
-void Optimizer::Build(float* __restrict weights, float* __restrict biases, float* __restrict weightDerivatives, float* __restrict biasDerivatives) {
+/// @param weights Layer's weight tensor
+/// @param biases Layer's bias tensor
+/// @param weightDerivatives Layer's weight derivative tensor
+/// @param biasDerivatives Layer's bias derivative tensor
+void Optimizer::Build(Tensor<float>& weights, Tensor<float>& biases, Tensor<float>& weightDerivatives, Tensor<float>& biasDerivatives) {
     assert(defined && !built);
-    this->weights = weights;
-    this->biases = biases;
-    this->weightDerivatives = weightDerivatives;
-    this->biasDerivatives = biasDerivatives;
+    this->weights = &weights;
+    this->biases = &biases;
+    this->weightDerivatives = &weightDerivatives;
+    this->biasDerivatives = &biasDerivatives;
 
     // build specific optimizer
     std::visit([&](auto& data) {

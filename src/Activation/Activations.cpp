@@ -3,19 +3,17 @@
 /// @brief Stores the linear activation of x in y
 /// @param x The matrix to apply the activation to
 /// @param y The matrix to store the activation in
-/// @param r Rows in the matrix
-/// @param c Columns in the matrix
-void Activation::Linear(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
-    cblas_scopy(r*c, x, 1, y, 1);
+void Activation::Linear(const Tensor<float>& x, Tensor<float>& y) {
+    assert(x.Size() == y.Size());
+    cblas_scopy(x.Size(), x.Data(), 1, y.Data(), 1);
 }
 
 /// @brief Stores the sigmoid activation of x in y
 /// @param x The matrix to apply the activation to
 /// @param y The matrix to store the activation in
-/// @param r Rows in the matrix
-/// @param c Columns in the matrix
-void Activation::Sigmoid(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
-    const size_t n = r*c;
+void Activation::Sigmoid(const Tensor<float>& x, Tensor<float>& y) {
+    assert(x.Size() == y.Size());
+    const size_t n = x.Size();
 
     #pragma omp parallel for simd schedule(static)
     for (size_t i = 0; i < n; i++) {
@@ -26,10 +24,9 @@ void Activation::Sigmoid(const float* __restrict x, float* __restrict y, size_t 
 /// @brief Stores the relu activation of x in y
 /// @param x The matrix to apply the activation to
 /// @param y The matrix to store the activation in
-/// @param r Rows in the matrix
-/// @param c Columns in the matrix
-void Activation::ReLU(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
-    const size_t n = r*c;
+void Activation::ReLU(const Tensor<float>& x, Tensor<float>& y) {
+    assert(x.Size() == y.Size());
+    const size_t n = x.Size();
 
     #pragma omp parallel for simd schedule(static)
     for (size_t i = 0; i < n; i++) {
@@ -40,10 +37,9 @@ void Activation::ReLU(const float* __restrict x, float* __restrict y, size_t r, 
 /// @brief Stores the leaky relu activation of x in y
 /// @param x The matrix to apply the activation to
 /// @param y The matrix to store the activation in
-/// @param r Rows in the matrix
-/// @param c Columns in the matrix
-void Activation::LeakyReLU(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
-    const size_t n = r*c;
+void Activation::LeakyReLU(const Tensor<float>& x, Tensor<float>& y) {
+    assert(x.Size() == y.Size());
+    const size_t n = x.Size();
 
     #pragma omp parallel for simd schedule(static)
     for (size_t i = 0; i < n; i++) {
@@ -54,10 +50,9 @@ void Activation::LeakyReLU(const float* __restrict x, float* __restrict y, size_
 /// @brief Stores the elu activation of x in y
 /// @param x The matrix to apply the activation to
 /// @param y The matrix to store the activation in
-/// @param r Rows in the matrix
-/// @param c Columns in the matrix
-void Activation::ELU(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
-    const size_t n = r*c;
+void Activation::ELU(const Tensor<float>& x, Tensor<float>& y) {
+    assert(x.Size() == y.Size());
+    const size_t n = x.Size();
 
     #pragma omp parallel for simd schedule(static)
     for (size_t i = 0; i < n; i++) {
@@ -68,9 +63,7 @@ void Activation::ELU(const float* __restrict x, float* __restrict y, size_t r, s
 /// @brief Stores the softmax activation of x in y
 /// @param x The matrix to apply the activation to
 /// @param y The matrix to store the activation in
-/// @param r Rows in the matrix
-/// @param c Columns in the matrix
-void Activation::Softmax(const float* __restrict x, float* __restrict y, size_t r, size_t c) {
+void Activation::Softmax(const Tensor<float>& x, Tensor<float>& y) {
     #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < r; i++) {
 

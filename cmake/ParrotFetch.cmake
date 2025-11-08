@@ -2,6 +2,7 @@
 include(FetchContent)
 
 if(USE_CUDA_FOUND)
+  find_package(CUDAToolkit REQUIRED)
 
   # Fetch the official parrot library from NVlabs/parrot
   FetchContent_Declare(

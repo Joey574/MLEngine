@@ -1,10 +1,13 @@
 #include "MathUtils.tpp"
 
-template void MathUtils::DotProd<true>(const float* a, const float* b, float* c, size_t ar, size_t ac, size_t br, size_t bc);
-template void MathUtils::DotProd<false>(const float* a, const float* b, float* c, size_t ar, size_t ac, size_t br, size_t bc);
+template void MathUtils::DotProd<true>(const Tensor<float>& a, const Tensor<float>& b, Tensor<float>& c);
+template void MathUtils::DotProd<false>(const Tensor<float>& a, const Tensor<float>& b, Tensor<float>& c);
 
-template void MathUtils::DotProdTA<true>(const float* a, const float* b, float* c, size_t ar, size_t ac, size_t br, size_t bc);
-template void MathUtils::DotProdTA<false>(const float* a, const float* b, float* c, size_t ar, size_t ac, size_t br, size_t bc);
+template void MathUtils::DotProdTA<true>(const Tensor<float>& a, const Tensor<float>& b, Tensor<float>& c);
+template void MathUtils::DotProdTA<false>(const Tensor<float>& a, const Tensor<float>& b, Tensor<float>& c);
 
-template void MathUtils::DotProdTB<true>(const float* a, const float* b, float* c, size_t ar, size_t ac, size_t br, size_t bc);
-template void MathUtils::DotProdTB<false>(const float* a, const float* b, float* c, size_t ar, size_t ac, size_t br, size_t bc);
+template void MathUtils::DotProdTB<true>(const Tensor<float>& a, const Tensor<float>& b, Tensor<float>& c);
+template void MathUtils::DotProdTB<false>(const Tensor<float>& a, const Tensor<float>& b, Tensor<float>& c);
+
+template void MathUtils::SumColumns<true>(const Tensor<float>& a, Tensor<float>& b);
+template void MathUtils::SumColumns<false>(const Tensor<float>& a, Tensor<float>& b);

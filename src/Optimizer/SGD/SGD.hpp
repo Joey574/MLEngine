@@ -1,9 +1,8 @@
 #pragma once
-#include "../../MathUtils/MathUtils.hpp"
 
 struct SGD {
     public:
-    void Update(float* __restrict weights, float* __restrict biases, float* __restrict weightDerivatives, float* __restrict biasDerivatives, size_t weightSize, size_t biasSize, size_t elements, float learningRate);
+    void Update(Tensor<float>& weights, Tensor<float>& biases, Tensor<float>& weightDerivatives, Tensor<float>& biasDerivatives, size_t weightSize, size_t biasSize, size_t elements, float learningRate);
 
     void Define(YAML::Node& config);
     void Build(size_t weightSize, size_t biasSize);
@@ -15,5 +14,5 @@ struct SGD {
     bool defined = false;
     bool built = false;
 
-    void Compute(float* __restrict parameters, const float* __restrict derivatives, size_t numParameters, size_t elements, float learningRate);
+    void Compute(Tensor<float>& parameters, const Tensor<float>& derivatives, size_t numParameters, size_t elements, float learningRate);
 };

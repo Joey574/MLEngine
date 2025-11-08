@@ -13,14 +13,14 @@ void Adam::Define(YAML::Node& config) {
 void Adam::Build(size_t weightSize, size_t biasSize) {
     assert(defined && !built);
 
-    weightVelocity = (float*)MathUtils::Allocate(weightSize*sizeof(float));
-    biasVelocity = (float*)MathUtils::Allocate(biasSize*sizeof(float));
-    weightSquares = (float*)MathUtils::Allocate(weightSize*sizeof(float));
-    biasSquares = (float*)MathUtils::Allocate(biasSize*sizeof(float));
+    weightVelocity = Tensor<float>(weightSize);
+    biasVelocity = Tensor<float>(biasSize);
+    weightSquares = Tensor<float>(weightSize);
+    biasSquares = Tensor<float>(biasSize);
     built = true;
 }
 
-void Adam::Update(float* __restrict weights, float* __restrict biases, float* __restrict weightDerivatives, float* __restrict biasDerivatives, size_t weightSize, size_t biasSize, size_t elements, float learningRate) {
+void Adam::Update(Tensor<float>& weights, Tensor<float>& biases, Tensor<float>& weightDerivatives, Tensor<float>& biasDerivatives, size_t weightSize, size_t biasSize, size_t elements, float learningRate) {
     assert(defined && built);
 
     Compute(weights, weightDerivatives, weightVelocity, weightSquares, weightSize, elements, learningRate);
@@ -28,7 +28,7 @@ void Adam::Update(float* __restrict weights, float* __restrict biases, float* __
     iteration++;
 }
 
-void Adam::Compute(float* __restrict parameters, float* __restrict derivatives, float* __restrict velocity, float* __restrict squares, size_t numParameters, size_t elements, float learningRate) {
+void Adam::Compute(Tensor<float>& parameters, Tensor<float>& derivatives, Tensor<float>& velocity, Tensor<float>& squares, size_t numParameters, size_t elements, float learningRate) {
     assert(defined && built);
 
     const float factor = learningRate / (float)elements;
@@ -40,12 +40,12 @@ void Adam::Compute(float* __restrict parameters, float* __restrict derivatives, 
 
     #pragma omp parallel for simd schedule(static)
     for (size_t i = 0; i < numParameters; i++) {
-        velocity[i] = (velocity[i]*b1)+b1Rate*derivatives[i];
-        squares[i] = (squares[i]*b2)+b2Rate*derivatives[i]*derivatives[i];
+        velocity.Data()[i] = (velocity.Data()[i]*b1)+b1Rate*derivatives.Data()[i];
+        squares.Data()[i] = (squares.Data()[i]*b2)+b2Rate*derivatives.Data()[i]*derivatives.Data()[i];
 
-        const float mh = velocity[i]/b1Denominator;
-        const float vh = squares[i]/b2Denominator;
+        const float mh = velocity.Data()[i]/b1Denominator;
+        const float vh = squares.Data()[i]/b2Denominator;
 
-        parameters[i] -= factor*(mh/std::sqrt(vh+epsilon));
+        parameters.Data()[i] -= factor*(mh/std::sqrt(vh+epsilon));
     }
 }

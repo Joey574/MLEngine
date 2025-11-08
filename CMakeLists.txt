@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
-project(MLEngine LANGUAGES C CXX)
+project(MLEngine LANGUAGES C CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -44,7 +44,15 @@ if(USE_CUDA_FOUND)
 endif()
 
 # -----------------------
-# Create executable
+# Fetch and build dependencies
+# -----------------------
+include(FetchContent)
+include(OpenBLASFetch)
+include(YamlCppFetch)
+include(ParrotFetch)
+
+# -----------------------
+# Add executable
 # -----------------------
 add_executable(MLEngine ${SOURCE_FILES})
 
@@ -55,7 +63,7 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
   set(DEBUG_FLAGS_CXX -march=native -O0 -g -DDEBUG -rdynamic)
   set(DEBUG_FLAGS_CUDA -march=native -O0 --extended-lambda)
 
-  target_compile_options(MLEngine PRIVATE 
+  target_compile_options(MLEngine PRIVATE
     $<$<COMPILE_LANGUAGE:CXX>:${DEBUG_FLAGS_CXX}>
     $<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<BOOL:${USE_CUDA_FOUND}>>:${DEBUG_FLAGS_CUDA}>
   )
@@ -69,20 +77,11 @@ else()
   )
 endif()
 
-# -----------------------
-# Required CPU packages
-# -----------------------
-find_package(OpenMP REQUIRED)
-target_link_libraries(MLEngine PRIVATE OpenMP::OpenMP_CXX)
-
 # Precompiled header
 target_precompile_headers(MLEngine PRIVATE src/Dependencies/pch.h)
 
 # -----------------------
-# Fetch and build other dependencies
+# Link libraries
 # -----------------------
-include(FetchContent)
-include(OpenBLASFetch)
-include(YamlCppFetch)
-include(ParrotFetch)
-target_link_libraries(MLEngine PRIVATE ${BLAS_LIBRARIES} yaml-cpp::yaml-cpp)
+find_package(OpenMP REQUIRED)
+target_link_libraries(MLEngine PRIVATE ${BLAS_LIBRARIES} yaml-cpp::yaml-cpp OpenMP::OpenMP_CXX)

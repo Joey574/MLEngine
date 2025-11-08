@@ -1,9 +1,8 @@
 #pragma once
-#include "../../MathUtils/MathUtils.hpp"
 
 struct Adam {
     public:
-    void Update(float* __restrict weights, float* __restrict biases, float* __restrict weightDerivatives, float* __restrict biasDerivatives, size_t weightSize, size_t biasSize, size_t elements, float learningRate);
+    void Update(Tensor<float>& weights, Tensor<float>& biases, Tensor<float>& weightDerivatives, Tensor<float>& biasDerivatives, size_t weightSize, size_t biasSize, size_t elements, float learningRate);
 
     void Define(YAML::Node& config);
     void Build(size_t weightSize, size_t biasSize);
@@ -20,10 +19,10 @@ struct Adam {
     float b2;
     float epsilon;
 
-    float* weightVelocity;
-    float* biasVelocity;
-    float* weightSquares;
-    float* biasSquares;
+    Tensor<float> weightVelocity;
+    Tensor<float> biasVelocity;
+    Tensor<float> weightSquares;
+    Tensor<float> biasSquares;
     
-    void Compute(float* __restrict parameters, float* __restrict derivatives, float* __restrict velocity, float* __restrict squares, size_t numParameters, size_t elements, float learningRate);
+    void Compute(Tensor<float>& parameters, Tensor<float>& derivatives, Tensor<float>& velocity, Tensor<float>& squares, size_t numParameters, size_t elements, float learningRate);
 };
