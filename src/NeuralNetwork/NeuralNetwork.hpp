@@ -13,8 +13,8 @@ struct NeuralNetwork {
     void LoadOptimizers(std::ifstream& file);
     void SaveOptimizers(std::ofstream& file) const;
 
-    void Forward(size_t elements);
-    void Backward(size_t elements);
+    void Forward(size_t startElement, size_t numElements);
+    void Backward(size_t startElement, size_t numElements);
     Score Validate();
 
     inline bool IsDefined() const { return defined; }

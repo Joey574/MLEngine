@@ -36,12 +36,16 @@ nlohmann::json Supervisor::Train(nlohmann::json& history) {
     assert(defined && built);
 
     size_t epochs = (*config)[Y_EPOCHS].as<size_t>(Y_EPOCH_DEFAULT);
+    size_t batchSize = (*config)[Y_BATCHSIZE].as<size_t>(Y_BATCH_DEFAULT);
     int scoreFrequency = (*config)[Y_VALIDFREQ].as<int>(Y_VALID_DEFAULT);
 
 
     for (size_t e = 0; e < epochs; e++) {
-        model->Forward();
-        model->Backward();
+        size_t startElement = e*batchSize;
+        size_t numElements = std::min((*dataset).Samples()-startElement, batchSize);
+
+        model->Forward(startElement, numElements);
+        model->Backward(startElement, numElements);
 
         if (scoreFrequency > 0 && e % scoreFrequency == 0) {
             Score score = model->Validate();
@@ -57,6 +61,7 @@ nlohmann::json Supervisor::Train(nlohmann::json& history) {
 }
 
 /// @brief Tries to load model
+/// @return 0 for success
 int Supervisor::Load() {
     assert(!path.empty() && !name.empty());
     assert(defined && !built);
