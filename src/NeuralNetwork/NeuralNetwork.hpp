@@ -5,7 +5,7 @@
 struct NeuralNetwork {
     public:
 
-    int Define(YAML::Node& config, Dataset& dataset);
+    int Define(YAML::Node& config, Dataset& dataset, const TrainingConfig& trainingConfig);
     int Build();
 
     int Load(std::ifstream& file);

@@ -13,8 +13,8 @@ struct Dataset {
     inline bool IsDefined() const { return defined; }
     inline bool IsBuilt() const { return built; }
 
-    inline float* Data(size_t element) { return &data[element*dataRows*dataColumns]; }
-    inline float* Labels(size_t element) { return &labels[element*labelRows*labelColumns]; }
+    inline Tensor<float>& Data(size_t element) { return data.ViewFrom(element); }
+    inline Tensor<float>& Labels(size_t element) { return labels.ViewFrom(element); }
     inline size_t Samples() { return elements; }
 
     inline static Type ParseType(const std::string& name) {
@@ -54,13 +54,8 @@ struct Dataset {
     size_t elements;
     YAML::Node* config;
 
-    float* data;
-    size_t dataRows;
-    size_t dataColumns;
-    
-    float* labels;
-    size_t labelRows;
-    size_t labelColumns;
+    Tensor<float> data;
+    Tensor<float> labels;    
 
     int LoadMNISTStyle(const std::string& name);
     int LoadMandlebrot();

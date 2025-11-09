@@ -11,7 +11,7 @@ struct Optimizer {
         None, SGD, MomentumSGD, RMSProp, Adam
     };
 
-    void Define(YAML::Node& config, size_t weightSize, size_t biasSize);
+    void Define(const YAML::Node& config, size_t weightSize, size_t biasSize);
     void Build(Tensor<float>& weights, Tensor<float>& biases, Tensor<float>& weightDerivatives, Tensor<float>& biasDerivatives);
 
     void Update(size_t elements);
@@ -67,8 +67,8 @@ struct Optimizer {
     size_t weightSize;
     size_t biasSize;
 
-    Tensor<float> weights;
-    Tensor<float> biases;
-    Tensor<float> weightDerivatives;
-    Tensor<float> biasDerivatives;
+    Tensor<float>* weights;
+    Tensor<float>* biases;
+    Tensor<float>* weightDerivatives;
+    Tensor<float>* biasDerivatives;
 };

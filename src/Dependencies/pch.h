@@ -1,7 +1,4 @@
-#include "json.hpp"
-#include <yaml-cpp/yaml.h>
-#include <cblas.h>
-
+// Standard libraries
 #include <chrono>
 #include <csignal>
 #include <vector>
@@ -24,6 +21,12 @@
 #include <functional>
 #include <numeric>
 
+// External libraries
+#include "json.hpp"
+#include <yaml-cpp/yaml.h>
+#include <cblas.h>
+
+// Internal librarie esq things
+#include "../Tensor/Tensor.hpp"
 #include "../Definitions/data.hpp"
 #include "../MathUtils/MathUtils.hpp"
-#include "../Tensor/Tensor.hpp"

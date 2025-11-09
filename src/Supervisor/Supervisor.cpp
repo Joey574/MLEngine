@@ -8,9 +8,14 @@ int Supervisor::Define(YAML::Node& config, std::string& path, std::string& name)
     this->path = path;
     this->name = name;
 
+    // Store basic training configuration data
+    trainingConfig.epochs = (config)[Y_EPOCHS].as<size_t>(Y_EPOCH_DEFAULT);
+    trainingConfig.batchSize = (config)[Y_BATCHSIZE].as<size_t>(Y_BATCH_DEFAULT);
+    trainingConfig.scoreFrequency = (config)[Y_VALIDFREQ].as<int>(Y_VALID_DEFAULT);
+
     int code = 0;
     code += dataset->Define(config);
-    code += model->Define(config, *dataset);
+    code += model->Define(config, *dataset, trainingConfig);
 
     defined = true;
     return code;
@@ -35,19 +40,15 @@ int Supervisor::Build() {
 nlohmann::json Supervisor::Train(nlohmann::json& history) {
     assert(defined && built);
 
-    size_t epochs = (*config)[Y_EPOCHS].as<size_t>(Y_EPOCH_DEFAULT);
-    size_t batchSize = (*config)[Y_BATCHSIZE].as<size_t>(Y_BATCH_DEFAULT);
-    int scoreFrequency = (*config)[Y_VALIDFREQ].as<int>(Y_VALID_DEFAULT);
+    for (size_t e = 0; e < trainingConfig.epochs; e++) {
+        size_t startElement = e*trainingConfig.batchSize;
+        size_t numElements = std::min((*dataset).Samples()-startElement, trainingConfig.batchSize);
 
-
-    for (size_t e = 0; e < epochs; e++) {
-        size_t startElement = e*batchSize;
-        size_t numElements = std::min((*dataset).Samples()-startElement, batchSize);
-
+        std::cout << "[i] " << e << "\n";
         model->Forward(startElement, numElements);
         model->Backward(startElement, numElements);
 
-        if (scoreFrequency > 0 && e % scoreFrequency == 0) {
+        if (trainingConfig.scoreFrequency > 0 && e % trainingConfig.scoreFrequency == 0) {
             Score score = model->Validate();
 
             if (score.IsBetterThan(bestScore)) {

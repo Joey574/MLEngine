@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
-project(MLEngine LANGUAGES C CXX CUDA)
+project(MLEngine LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -13,6 +13,7 @@ option(USE_CUDA "Enable CUDA support (if available)" ON)
 include(DetectCUDA)
 if(USE_CUDA_FOUND)
   add_compile_definitions(USE_PARROT=1)
+  enable_language(CUDA)
 endif()
 
 # -----------------------

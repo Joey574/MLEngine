@@ -36,6 +36,7 @@ struct Supervisor {
     Dataset* dataset;
 
     YAML::Node* config;
+    TrainingConfig trainingConfig;
 
     void Save() const;
 };

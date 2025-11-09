@@ -10,9 +10,9 @@ struct MathUtils {
     template <bool acum> static void DotProdTA(const Tensor<float>& a, const Tensor<float>& b, Tensor<float>& c);
     template <bool acum> static void DotProdTB(const Tensor<float>& a, const Tensor<float>& b, Tensor<float>& c);
 
-    static void ScaleBy(Tensor<float>& a, float scalar);
-    static void ScaleBy(const Tensor<float>& a, Tensor<float>& b);
     static void Copy(const Tensor<float>& src, Tensor<float>& dest);
+    static void CopyByRow(const Tensor<float>& src, Tensor<float>& dest);
+
     static float Sum(const Tensor<float>& a);
     template <bool acum> static void SumColumns(const Tensor<float>& a, Tensor<float>& b);
 };

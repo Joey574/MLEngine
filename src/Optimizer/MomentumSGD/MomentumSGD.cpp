@@ -1,6 +1,6 @@
 #include "MomentumSGD.hpp"
 
-void MomentumSGD::Define(YAML::Node& config) {
+void MomentumSGD::Define(const YAML::Node& config) {
     assert(!(defined || built));
 
     momentum = config[Y_OPT_MOMENTUM].as<float>(Y_MOMENTUM_DEFAULT);

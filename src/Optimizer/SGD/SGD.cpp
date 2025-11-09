@@ -2,7 +2,7 @@
 
 /// @brief Defines internal sgd information based on config (literally nothing)
 /// @param config Optimizer config information
-void SGD::Define(YAML::Node& config) {
+void SGD::Define(const YAML::Node& config) {
     assert(!(defined || built));
     defined = true;
 }

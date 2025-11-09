@@ -4,7 +4,7 @@
 /// @param config The config specifying the optimizer
 /// @param weightSize Number of weights in the layer
 /// @param biasSize Number of biases in the layer
-void Optimizer::Define(YAML::Node& config, size_t weightSize, size_t biasSize) {
+void Optimizer::Define(const YAML::Node& config, size_t weightSize, size_t biasSize) {
     assert(!(defined || built));
     this->weightSize = weightSize;
     this->biasSize = biasSize;
@@ -14,13 +14,17 @@ void Optimizer::Define(YAML::Node& config, size_t weightSize, size_t biasSize) {
 
     switch (type) {
         case Type::SGD:
-            data = SGD{};
+            data.emplace<SGD>();
+            break;
         case Type::MomentumSGD:
-            data = MomentumSGD{};
+            data.emplace<MomentumSGD>();
+            break;
         case Type::RMSProp:
-            data = RMSProp{};
+            data.emplace<RMSProp>();
+            break;
         case Type::Adam:
-            data = Adam{};
+            data.emplace<Adam>();
+            break;
     }
 
     // define specific optimizer
@@ -58,6 +62,6 @@ void Optimizer::Update(size_t elements) {
 
     // calls the proper optimizer's update function
     std::visit([&](auto& data) {
-        data.Update(weights, biases, weightDerivatives, biasDerivatives, weightSize, biasSize, elements, learningRate);
+        data.Update(*weights, *biases, *weightDerivatives, *biasDerivatives, weightSize, biasSize, elements, learningRate);
     }, data);
 }

@@ -42,22 +42,22 @@ struct Layer {
         }
     }
 
-    void Define(YAML::Node& layerConfig, YAML::Node& optimizerConfig, size_t in, size_t out);
+    void Define(const YAML::Node& layerConfig, const YAML::Node& optimizerConfig, const TrainingConfig& trainingConfig, size_t in, size_t out);
     void Build();
 
-    void Forward(const Tensor<float> input, size_t elements);
-    void InputForward(const Tensor<float> input, size_t elements);
-    void HiddenForward(const Tensor<float> input, size_t elements);
+    template <bool training> void Forward(const Tensor<float>& input, size_t elements);
+    template <bool training> void InputForward(const Tensor<float>& input, size_t elements);
+    template <bool training> void HiddenForward(const Tensor<float>& input, size_t elements);
 
-    void Backward(const Tensor<float> truth, const Tensor<float> input, const Tensor<float> nextWeights, size_t elements);
+    void Backward(const Tensor<float>& truth, const Tensor<float>& input, const Tensor<float>& nextWeights, size_t elements);
     void InputBackward();
-    void HiddenBackward(const Tensor<float> truth, const Tensor<float> input, const Tensor<float> nextWeights, size_t elements);
-    void OutputBackward(const Tensor<float> truth, const Tensor<float> input, size_t elements);
-    void ComputeBackward(const Tensor<float> input, size_t elements);
+    void HiddenBackward(const Tensor<float>& truth, const Tensor<float>& input, const Tensor<float>& nextWeights, size_t elements);
+    void OutputBackward(const Tensor<float>& truth, const Tensor<float>& input, size_t elements);
+    void ComputeBackward(const Tensor<float>& input, size_t elements);
 
     void Update(size_t elements);
 
-    template <bool train> inline float* Output() {
+    template <bool train> inline Tensor<float>& Output() {
         if constexpr (train) {
             return trainingActivations;
         } else {

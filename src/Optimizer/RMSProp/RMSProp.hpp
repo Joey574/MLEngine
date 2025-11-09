@@ -4,7 +4,7 @@ struct RMSProp {
     public:
     void Update(Tensor<float>& weights, Tensor<float>& biases, Tensor<float>& weightDerivatives, Tensor<float>& biasDerivatives, size_t weightSize, size_t biasSize, size_t elements, float learningRate);
 
-    void Define(YAML::Node& config);
+    void Define(const YAML::Node& config);
     void Build(size_t weightSize, size_t biasSize);
 
     inline bool IsDefined() const { return defined; }

@@ -1,6 +1,6 @@
 #include "Layer.hpp"
 
-void Layer::Define(YAML::Node& layerConfig, YAML::Node& optimizerConfig, size_t in, size_t out) {
+void Layer::Define(const YAML::Node& layerConfig, const YAML::Node& optimizerConfig, const TrainingConfig& trainingConfig, size_t in, size_t out) {
     assert(!(defined || built));
     assert(!(optimizer.IsDefined() || optimizer.IsBuilt()));
     assert(layerConfig[Y_LAYERTYPE] && layerConfig[Y_NODES]);
@@ -21,31 +21,33 @@ void Layer::Define(YAML::Node& layerConfig, YAML::Node& optimizerConfig, size_t 
         layerConfig[Y_METRIC].as<std::string>(Y_METRIC_DEFAULT)
     );
 
-    // set size values
+    // allocate tensors
     switch (type) {
         case Type::Input:
-            weightSize = 0;
-            biasSize = 0;
+            weights = Tensor<float>(0);
+            biases = Tensor<float>(0);
+            weightDerivatives = Tensor<float>(0);
+            biasDerivatives = Tensor<float>(0);
             break;
         case Type::Hidden: case Type::Output:
-            weightSize = iNodes*nodes;
-            biasSize = nodes;
+            weights = Tensor<float>(iNodes, nodes);
+            weightDerivatives = Tensor<float>(iNodes, nodes);
+            biases = Tensor<float>(nodes);
+            biasDerivatives = Tensor<float>(nodes);
             break;
     }
 
-    optimizer.Define(optimizerConfig, weightSize, biasSize);
+    // allocate training tensors
+    trainingActivations = Tensor<float>(nodes, trainingConfig.batchSize);
+    trainingTotals = Tensor<float>(nodes, trainingConfig.batchSize);
+
+    optimizer.Define(optimizerConfig, weights.Size(), biases.Size());
     defined = true;
 }
 
 void Layer::Build() {
     assert(defined && !built);
     assert(optimizer.IsDefined() && !optimizer.IsBuilt());
-
-    // allocate internal memory
-    weights = (float*)MathUtils::Allocate(weightSize*sizeof(float));
-    biases = (float*)MathUtils::Allocate(biasSize*sizeof(float));
-    weightDerivatives = (float*)MathUtils::Allocate(weightSize*sizeof(float));
-    biasDerivatives = (float*)MathUtils::Allocate(biasSize*sizeof(float));
 
     optimizer.Build(weights, biases, weightDerivatives, biasDerivatives);
     built = true;

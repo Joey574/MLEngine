@@ -1,6 +1,6 @@
 #include "Adam.hpp"
 
-void Adam::Define(YAML::Node& config) {
+void Adam::Define(const YAML::Node& config) {
     assert(!(defined || built));
 
     iteration = 0;

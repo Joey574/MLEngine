@@ -1,6 +1,6 @@
 #include "RMSProp.hpp"
 
-void RMSProp::Define(YAML::Node& config) {
+void RMSProp::Define(const YAML::Node& config) {
     assert(!(defined || built));
 
     decay = config[Y_OPT_DECAY].as<float>(Y_DECAY_DEFAULT);

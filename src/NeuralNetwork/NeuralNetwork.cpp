@@ -1,6 +1,6 @@
 #include "NeuralNetwork.hpp"
 
-int NeuralNetwork::Define(YAML::Node& config, Dataset& dataset) {
+int NeuralNetwork::Define(YAML::Node& config, Dataset& dataset, const TrainingConfig& trainingConfig) {
     assert(!(defined || built));
     assert(dataset.IsDefined());
     this->config = &config;
@@ -16,7 +16,7 @@ int NeuralNetwork::Define(YAML::Node& config, Dataset& dataset) {
         size_t i_nodes = i == 0 ? 0 : layerConfigs[i-1][Y_NODES].as<size_t>();
         size_t n_nodes = i == layers.size()-1 ? 0 : layerConfigs[i+1][Y_NODES].as<size_t>();
 
-        layers[i].Define(layerConf, optimizerConfig, i_nodes, n_nodes);
+        layers[i].Define(layerConf, optimizerConfig, trainingConfig, i_nodes, n_nodes);
     }
 
     defined = true;
