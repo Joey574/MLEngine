@@ -76,8 +76,8 @@ struct LossMetric {
         }
     }
 
-    void (*loss)(const float*, const float*, float*, size_t, size_t);
-    float (*metric)(const float*, const float*, size_t, size_t);
+    void (*loss)(const Tensor<float>&, const Tensor<float>&, Tensor<float>&);
+    float (*metric)(const Tensor<float>&, const Tensor<float>&);
  
     private:
     Type lossType;
@@ -86,14 +86,14 @@ struct LossMetric {
     /* ----------
     loss functions
     ---------- */
-    static void MAELoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols);
-    static void MSELoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols);
-    static void OneHotLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols);
+    static void MAELoss(const Tensor<float>& x, const Tensor<float>& y, Tensor<float>& c);
+    static void MSELoss(const Tensor<float>& x, const Tensor<float>& y, Tensor<float>& c);
+    static void OneHotLoss(const Tensor<float>& x, const Tensor<float>& y, Tensor<float>& c);
 
    /* ----------
     metric functions
     ---------- */
-    static float MAEScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols);
-    static float MSEScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols);
-    static float AccuracyScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols);
+    static float MAEScore(const Tensor<float>& x, const Tensor<float>& y);
+    static float MSEScore(const Tensor<float>& x, const Tensor<float>& y);
+    static float AccuracyScore(const Tensor<float>& x, const Tensor<float>& y);
 };

@@ -45,15 +45,15 @@ struct Layer {
     void Define(YAML::Node& layerConfig, YAML::Node& optimizerConfig, size_t in, size_t out);
     void Build();
 
-    void Forward(const float* __restrict input, size_t elements);
-    void InputForward(const float* __restrict input, size_t elements);
-    void HiddenForward(const float* __restrict input, size_t elements);
+    void Forward(const Tensor<float> input, size_t elements);
+    void InputForward(const Tensor<float> input, size_t elements);
+    void HiddenForward(const Tensor<float> input, size_t elements);
 
-    void Backward(const float* __restrict truth, const float* __restrict input, const float* __restrict nextWeights, size_t elements);
+    void Backward(const Tensor<float> truth, const Tensor<float> input, const Tensor<float> nextWeights, size_t elements);
     void InputBackward();
-    void HiddenBackward(const float* __restrict truth, const float* __restrict input, const float* __restrict nextWeights, size_t elements);
-    void OutputBackward(const float* __restrict truth, const float* __restrict input, size_t elements);
-    void ComputeBackward(const float* __restrict input, size_t elements);
+    void HiddenBackward(const Tensor<float> truth, const Tensor<float> input, const Tensor<float> nextWeights, size_t elements);
+    void OutputBackward(const Tensor<float> truth, const Tensor<float> input, size_t elements);
+    void ComputeBackward(const Tensor<float> input, size_t elements);
 
     void Update(size_t elements);
 
@@ -64,7 +64,7 @@ struct Layer {
             return testingActivations;
         }
     }
-    inline float* Weights() { return weights; }
+    inline Tensor<float>& Weights() { return weights; }
 
     inline bool IsDefined() { return defined; }
     inline bool IsBuilt() { return built; }
@@ -83,19 +83,15 @@ struct Layer {
     size_t iNodes;
     size_t oNodes;
     
+    Tensor<float> weights;
+    Tensor<float> biases;
 
-    float* weights;
-    float* biases;
-    float* weightDerivatives;
-    float* biasDerivatives;
-    float* totalDerivatives;
+    Tensor<float> totalDerivatives;
+    Tensor<float> weightDerivatives;
+    Tensor<float> biasDerivatives;
 
-    size_t weightSize;
-    size_t biasSize;
-
-
-    float* trainingTotals;
-    float* trainingActivations;
-    float* testingTotals;
-    float* testingActivations;
+    Tensor<float> trainingTotals;
+    Tensor<float> trainingActivations;
+    Tensor<float> testingTotals;
+    Tensor<float> testingActivations;
 };

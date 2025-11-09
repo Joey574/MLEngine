@@ -1,6 +1,6 @@
 #include "Layer.hpp"
 
-void Layer::Forward(const float* __restrict input, size_t elements) {
+void Layer::Forward(const Tensor<float> input, size_t elements) {
     if (type == Type::Input) {
         InputForward(input, elements);
     } else {
@@ -8,20 +8,20 @@ void Layer::Forward(const float* __restrict input, size_t elements) {
     }
 }
 
-void Layer::InputForward(const float* __restrict input, size_t elements) {
-    float* __restrict a;
-    MathUtils::Copy(input, a, elements*nodes);
+void Layer::InputForward(const Tensor<float> input, size_t elements) {
+    Tensor<float> a;
+    MathUtils::Copy(input, a);
 }
-void Layer::HiddenForward(const float* __restrict input, size_t elements) {
-    const float* __restrict w = weights;
-    const float* __restrict b = biases;
+void Layer::HiddenForward(const Tensor<float> input, size_t elements) {
+    const Tensor<float> w = weights;
+    const Tensor<float> b = biases;
 
-    float* __restrict z;
-    float* __restrict a;
+    Tensor<float> z;
+    Tensor<float> a;
 
     // copy biases into output, clearing old values
     for (size_t i = 0; i < elements; i++) {
-        MathUtils::Copy(b, &z[i*biasSize], biasSize);
+        MathUtils::Copy(b, &z.Data()[i*b.Size()]);
     }
 
     // compute dot prod between input and weights, and apply activation
@@ -29,7 +29,7 @@ void Layer::HiddenForward(const float* __restrict input, size_t elements) {
     activation.activation(z, a, elements, nodes);
 }
 
-void Layer::Backward(const float* __restrict truth, const float* __restrict input, const float* __restrict nextWeights, size_t elements) {
+void Layer::Backward(const Tensor<float> truth, const Tensor<float> input, const Tensor<float> nextWeights, size_t elements) {
     if (type == Type::Input) { InputBackward(); }
     if (type == Type::Hidden) { HiddenBackward(truth, input, nextWeights, elements); }
     if (type == Type::Output) { OutputBackward(truth, input, elements); }
@@ -38,28 +38,28 @@ void Layer::Backward(const float* __restrict truth, const float* __restrict inpu
 void Layer::InputBackward() {
     return;
 }
-void Layer::HiddenBackward(const float* __restrict truth, const float* __restrict input, const float* __restrict nextWeights, size_t elements) {
-    const float* __restrict nw = nextWeights;
-    const float* __restrict z = trainingTotals;
-    float* __restrict dt = totalDerivatives;
+void Layer::HiddenBackward(const Tensor<float> truth, const Tensor<float> input, const Tensor<float> nextWeights, size_t elements) {
+    const Tensor<float> nw = nextWeights;
+    const Tensor<float> z = trainingTotals;
+    Tensor<float> dt = totalDerivatives;
 
     MathUtils::DotProdTB<false>(truth, nw, dt, elements, oNodes, nodes, oNodes);
     (activation.derivative)(z, dt, elements, nodes);
     
     ComputeBackward(input, elements);
 }
-void Layer::OutputBackward(const float* __restrict truth, const float* __restrict input, size_t elements) {
-    const float* __restrict a;
-    float* __restrict dt;
+void Layer::OutputBackward(const Tensor<float> truth, const Tensor<float> input, size_t elements) {
+    const Tensor<float> a;
+    Tensor<float> dt;
 
     (*lossMetric.loss)(a, truth, dt, elements, nodes);
     ComputeBackward(input, elements);
 }
 
-void Layer::ComputeBackward(const float* __restrict input, size_t elements) {
-    float* __restrict dt = totalDerivatives;
-    float* __restrict dw = weightDerivatives;
-    float* __restrict db = biasDerivatives;
+void Layer::ComputeBackward(const Tensor<float> input, size_t elements) {
+    Tensor<float> dt = totalDerivatives;
+    Tensor<float> dw = weightDerivatives;
+    Tensor<float> db = biasDerivatives;
 
     // compute dw
     MathUtils::DotProdTA<false>(input, dt, dw, elements, iNodes, elements, nodes);

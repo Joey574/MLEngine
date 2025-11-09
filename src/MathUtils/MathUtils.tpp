@@ -3,8 +3,8 @@
 template <bool acum> void MathUtils::DotProd(const Tensor<float>& a, const Tensor<float>& b, Tensor<float>& c) {
     assert(a.Dimensionality == 2 && b.Dimensionality == 2 && c.Dimensionality == 2);
 
-    auto aDims = a.Dimensions();
-    auto bDims = b.Dimensions();
+    const auto aDims = a.Dimensions();
+    const auto bDims = b.Dimensions();
 
     const size_t ar = aDims[0];
     const size_t ac = aDims[1];
@@ -24,8 +24,8 @@ template <bool acum> void MathUtils::DotProd(const Tensor<float>& a, const Tenso
 template <bool acum> void MathUtils::DotProdTA(const Tensor<float>& a, const Tensor<float>& b, Tensor<float>& c) {
     assert(a.Dimensionality == 2 && b.Dimensionality == 2 && c.Dimensionality == 2);
 
-    auto aDims = a.Dimensions();
-    auto bDims = b.Dimensions();
+    const auto aDims = a.Dimensions();
+    const auto bDims = b.Dimensions();
 
     const size_t ar = aDims[0];
     const size_t ac = aDims[1];
@@ -45,8 +45,8 @@ template <bool acum> void MathUtils::DotProdTA(const Tensor<float>& a, const Ten
 template <bool acum> void MathUtils::DotProdTB(const Tensor<float>& a, const Tensor<float>& b, Tensor<float>& c) {
     assert(a.Dimensionality == 2 && b.Dimensionality == 2 && c.Dimensionality == 2);
 
-    auto aDims = a.Dimensions();
-    auto bDims = b.Dimensions();
+    const auto aDims = a.Dimensions();
+    const auto bDims = b.Dimensions();
 
     const size_t ar = aDims[0];
     const size_t ac = aDims[1];
@@ -83,7 +83,7 @@ float MathUtils::Sum(const Tensor<float>& a) {
 template <bool acum> void MathUtils::SumColumns(const Tensor<float>& a, Tensor<float>& b) {
     assert(a.Dimensionality() == 2 && b.Dimensionality() == 2);
 
-    auto aDims = a.Dimensions();
+    const auto aDims = a.Dimensions();
     const size_t ar = aDims[0];
     const size_t ac = aDims[1];
 

@@ -17,7 +17,7 @@ void Activation::Sigmoid(const Tensor<float>& x, Tensor<float>& y) {
 
     #pragma omp parallel for simd schedule(static)
     for (size_t i = 0; i < n; i++) {
-        y[i] = 1.0f / (1.0f + std::exp(-x[i]));
+        y.Data()[i] = 1.0f / (1.0f + std::exp(-x.Data()[i]));
     }
 }
 
@@ -30,7 +30,7 @@ void Activation::ReLU(const Tensor<float>& x, Tensor<float>& y) {
 
     #pragma omp parallel for simd schedule(static)
     for (size_t i = 0; i < n; i++) {
-        y[i] = x[i] > 0.0f ? x[i] : 0.0f;
+        y.Data()[i] = x.Data()[i] > 0.0f ? x.Data()[i] : 0.0f;
     }
 }
 
@@ -43,7 +43,7 @@ void Activation::LeakyReLU(const Tensor<float>& x, Tensor<float>& y) {
 
     #pragma omp parallel for simd schedule(static)
     for (size_t i = 0; i < n; i++) {
-        y[i] = x[i] > 0.0f ? x[i] : (x[i] * 0.1f);
+        y.Data()[i] = x.Data()[i] > 0.0f ? x.Data()[i] : (x.Data()[i] * 0.1f);
     }
 }
 
@@ -56,7 +56,7 @@ void Activation::ELU(const Tensor<float>& x, Tensor<float>& y) {
 
     #pragma omp parallel for simd schedule(static)
     for (size_t i = 0; i < n; i++) {
-        y[i] = x[i] > 0.0f ? x[i] : (std::exp(x[i] - 1.0f));
+        y.Data()[i] = x.Data()[i] > 0.0f ? x.Data()[i] : (std::exp(x.Data()[i] - 1.0f));
     }
 }
 
@@ -64,15 +64,22 @@ void Activation::ELU(const Tensor<float>& x, Tensor<float>& y) {
 /// @param x The matrix to apply the activation to
 /// @param y The matrix to store the activation in
 void Activation::Softmax(const Tensor<float>& x, Tensor<float>& y) {
+    assert(x.Dimensionality() == 2 && y.Dimensionality() == 2);
+    assert(x.Size() == y.Size());
+
+    const auto dims = x.Dimensions();
+    const size_t r = dims[0];
+    const size_t c = dims[1];
+
     #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < r; i++) {
 
         // find max element in column
-        float max = x[i*c+0];
+        float max = x.Data()[i*c+0];
         #pragma omp simd reduction(max:max)
         for (size_t j = 1; j < c; j++) {
-            if (x[i*c+j] > max) {
-                max = x[i*c+j];
+            if (x.Data()[i*c+j] > max) {
+                max = x.Data()[i*c+j];
             }
         }
 
@@ -80,15 +87,15 @@ void Activation::Softmax(const Tensor<float>& x, Tensor<float>& y) {
         float sum = 0.0f;
         #pragma omp simd reduction(+:sum)
         for (size_t j = 0; j < c; j++) {
-            y[i*c+j] = std::exp(x[i*c+j]-max);
-            sum += y[i*c+j];
+            y.Data()[i*c+j] = std::exp(x.Data()[i*c+j]-max);
+            sum += y.Data()[i*c+j];
         }
 
         // normalize
         const float inv = 1.0f / sum;
         #pragma omp simd
         for (size_t j = 0; j < c; j++) {
-            y[i*c+j] *= inv;
+            y.Data()[i*c+j] *= inv;
         }
     }
 }

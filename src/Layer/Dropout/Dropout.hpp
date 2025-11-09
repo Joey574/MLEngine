@@ -12,6 +12,6 @@ struct Dropout {
 
     float rate;
     size_t bytes;
-    uint8_t* mask;
+    Tensor<uint8_t> mask;
     std::bernoulli_distribution dist;
 };
