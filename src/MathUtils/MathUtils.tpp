@@ -66,9 +66,6 @@ template <bool acum> void MathUtils::DotProdTB(const Tensor<float>& a, const Ten
 
 void MathUtils::Copy(const Tensor<float>& src, Tensor<float>& dest) {
     assert(src.Size() == dest.Size());
-
-    std::cout << src.Dimensionality() << "\n" << dest.Dimensionality() << "\n";
-
     cblas_scopy(dest.Size(), src.Data(), 1, dest.Data(), 1);
 }
 void MathUtils::CopyByRow(const Tensor<float>& src, Tensor<float>& dest) {

@@ -19,17 +19,23 @@ struct Tensor {
     /// @brief Move constructor
     Tensor(Tensor&& other) noexcept : data(other.data), dimensions(std::move(other.dimensions)), owner(true) { other.data = nullptr; }
 
+
     /// @brief Copy constructor
     Tensor(const Tensor& other) : dimensions(other.dimensions), owner(true) {
         size_t size = Size();
-        std::cout << "[-] Tensor copy constructor (" << size*sizeof(T) << " bytes)\n";
+
+        #ifdef DEBUG
+            std::cout << "[-] Tensor copy constructor (" << size*sizeof(T) << " bytes)\n";
+        #endif
 
         data = (T*)aligned_alloc(32, size*sizeof(T));
         std::memcpy(other.data, data, size*sizeof(T));
     }
 
+
     /// @brief Deconstructor
     ~Tensor() { if (data && owner) { std::free(data); } }
+
 
     /// @brief Move operator
     Tensor& operator = (Tensor&& other) noexcept {
@@ -42,13 +48,17 @@ struct Tensor {
         return *this;
     }
 
+
     /// @brief Copy operator
     Tensor& operator = (const Tensor& other) {
         if (data && owner && this != &other) { free(data); }
         dimensions = other.dimensions;
 
         size_t size = Size();
-        std::cout << "[-] Tensor copy assignment (" << size*sizeof(T) << " bytes)\n";
+
+        #ifdef DEBUG
+            std::cout << "[-] Tensor copy assignment (" << size*sizeof(T) << " bytes)\n";
+        #endif
 
         data = (T*)aligned_alloc(32, size*sizeof(T));
         std::memcpy(data, other.data, size*sizeof(T));
@@ -58,15 +68,23 @@ struct Tensor {
 
 
     /// @return Const pointer to raw data 
-    inline const T* Data() const { return data; }
+    inline const T* Data() const {
+        assert(data != nullptr);
+        return data; 
+    }
 
 
     /// @return Pointer to raw data
-    inline T* Data() { return data; }
+    inline T* Data() {
+        assert(data != nullptr);
+        return data; 
+    }
 
 
     /// @return The dimensionality of the tensor
-    inline size_t Dimensionality() const { return dimensions.size(); }
+    inline size_t Dimensionality() const {
+        return dimensions.size(); 
+    }
 
 
     /// @return vector of dimensions
@@ -75,6 +93,7 @@ struct Tensor {
 
     /// @return The number of elements in the tensor
     inline const size_t Size() const {
+        if (dimensions.empty()) { return 0; }
         return std::reduce(std::execution::unseq, dimensions.begin(), dimensions.end(), 1, std::multiplies<size_t>());
     }
 
@@ -83,15 +102,20 @@ struct Tensor {
     /// @param start The element the view should start at
     /// @param n The number of elements to include
     /// @return A new non-owning tensor from start
-    inline Tensor& ViewFrom(size_t start, size_t n) {
-        size_t size = std::reduce(std::execution::unseq, dimensions.begin(), dimensions.end()-1, 1, std::multiplies<size_t>());
-        float* offsetData = &data[size*start];
+    inline Tensor ViewFrom(size_t start, size_t n) {
+        assert(!dimensions.empty());
+        assert(Size() != 0);
 
-        auto d = std::vector<size_t>(dimensions.begin(), dimensions.end()-1);
-        d.push_back(n);
-        
-        Tensor<T> t(offsetData, d, false);
-        return t;
+        size_t stride = 1;
+        if (dimensions.size() > 1) {
+            stride = std::reduce(std::execution::unseq, dimensions.begin(), dimensions.end()-1, 1, std::multiplies<size_t>());
+        }
+
+        T* offsetData = data + stride*start;
+        auto d = dimensions;
+        d[d.size()-1] = n;
+
+        return Tensor(offsetData, d, false);
     }
 
     private:
