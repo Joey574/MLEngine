@@ -20,5 +20,6 @@ struct TrainingConfig {
 
     size_t epochs;
     size_t batchSize;
+    size_t testSize;
     int scoreFrequency;
 };

@@ -26,7 +26,7 @@ int Dataset::LoadMNISTStyle(const std::string& name) {
     size_t width = ReadBigInt(&traind);
     size_t height = ReadBigInt(&traind);
 
-    data = Tensor<float>(elements, width*height);
+    data = Tensor<float>(width, height, elements);
     labels = Tensor<float>(elements);
 
     traind.close();

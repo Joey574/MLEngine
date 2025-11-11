@@ -15,6 +15,8 @@ int Supervisor::Define(YAML::Node& config, std::string& path, std::string& name)
 
     int code = 0;
     code += dataset->Define(config);
+    trainingConfig.testSize = dataset->Samples();
+
     code += model->Define(config, *dataset, trainingConfig);
 
     defined = true;

@@ -13,8 +13,8 @@ struct Dataset {
     inline bool IsDefined() const { return defined; }
     inline bool IsBuilt() const { return built; }
 
-    inline Tensor<float>& Data(size_t element) { return data.ViewFrom(element); }
-    inline Tensor<float>& Labels(size_t element) { return labels.ViewFrom(element); }
+    inline Tensor<float>& Data(size_t start, size_t n) { return data.ViewFrom(start, n); }
+    inline Tensor<float>& Labels(size_t start, size_t n) { return labels.ViewFrom(start, n); }
     inline size_t Samples() { return elements; }
 
     inline static Type ParseType(const std::string& name) {

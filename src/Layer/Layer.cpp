@@ -37,9 +37,11 @@ void Layer::Define(const YAML::Node& layerConfig, const YAML::Node& optimizerCon
             break;
     }
 
-    // allocate training tensors
-    trainingActivations = Tensor<float>(nodes, trainingConfig.batchSize);
+    // allocate training and testing tensors
+    testingTotals = Tensor<float>(nodes, trainingConfig.testSize);
     trainingTotals = Tensor<float>(nodes, trainingConfig.batchSize);
+    testingActivations = Tensor<float>(nodes, trainingConfig.testSize);
+    trainingActivations = Tensor<float>(nodes, trainingConfig.batchSize);
 
     optimizer.Define(optimizerConfig, weights.Size(), biases.Size());
     defined = true;
