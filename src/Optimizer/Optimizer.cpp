@@ -62,6 +62,6 @@ void Optimizer::Update(size_t elements) {
 
     // calls the proper optimizer's update function
     std::visit([&](auto& data) {
-        data.Update(*weights, *biases, *weightDerivatives, *biasDerivatives, weightSize, biasSize, elements, learningRate);
+        data.Update(*weights, *biases, *weightDerivatives, *biasDerivatives, elements, learningRate);
     }, data);
 }

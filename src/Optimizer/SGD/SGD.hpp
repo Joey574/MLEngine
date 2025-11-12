@@ -2,7 +2,7 @@
 
 struct SGD {
     public:
-    void Update(Tensor<float>& weights, Tensor<float>& biases, Tensor<float>& weightDerivatives, Tensor<float>& biasDerivatives, size_t weightSize, size_t biasSize, size_t elements, float learningRate);
+    void Update(Tensor<float>& weights, Tensor<float>& biases, Tensor<float>& weightDerivatives, Tensor<float>& biasDerivatives, size_t elements, float learningRate);
 
     void Define(const YAML::Node& config);
     void Build(size_t weightSize, size_t biasSize);
@@ -14,5 +14,5 @@ struct SGD {
     bool defined = false;
     bool built = false;
 
-    void Compute(Tensor<float>& parameters, const Tensor<float>& derivatives, size_t numParameters, size_t elements, float learningRate);
+    void Compute(Tensor<float>& parameters, const Tensor<float>& derivatives, size_t elements, float learningRate);
 };

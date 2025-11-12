@@ -20,15 +20,16 @@ void Adam::Build(size_t weightSize, size_t biasSize) {
     built = true;
 }
 
-void Adam::Update(Tensor<float>& weights, Tensor<float>& biases, Tensor<float>& weightDerivatives, Tensor<float>& biasDerivatives, size_t weightSize, size_t biasSize, size_t elements, float learningRate) {
+void Adam::Update(Tensor<float>& weights, Tensor<float>& biases, Tensor<float>& weightDerivatives, Tensor<float>& biasDerivatives, size_t elements, float learningRate) {
     assert(defined && built);
 
-    Compute(weights, weightDerivatives, weightVelocity, weightSquares, weightSize, elements, learningRate);
-    Compute(biases, biasDerivatives, biasVelocity, biasSquares, biasSize, elements, learningRate);
+    Compute(weights, weightDerivatives, weightVelocity, weightSquares, elements, learningRate);
+    Compute(biases, biasDerivatives, biasVelocity, biasSquares, elements, learningRate);
     iteration++;
 }
 
-void Adam::Compute(Tensor<float>& parameters, Tensor<float>& derivatives, Tensor<float>& velocity, Tensor<float>& squares, size_t numParameters, size_t elements, float learningRate) {
+void Adam::Compute(Tensor<float>& parameters, Tensor<float>& derivatives, Tensor<float>& velocity, Tensor<float>& squares, size_t elements, float learningRate) {
+    assert(parameters.Size() == derivatives.Size());
     assert(defined && built);
 
     const float factor = learningRate / (float)elements;
@@ -37,6 +38,8 @@ void Adam::Compute(Tensor<float>& parameters, Tensor<float>& derivatives, Tensor
 
     const float b1Denominator = (1.0f-std::pow(b1, (float)iteration));
     const float b2Denominator = (1.0f-std::pow(b2, (float)iteration));
+
+    const size_t numParameters = parameters.Size();
 
     #pragma omp parallel for simd schedule(static)
     for (size_t i = 0; i < numParameters; i++) {

@@ -2,15 +2,7 @@
 
 struct Adam {
     public:
-
-    Adam() {
-        weightVelocity = Tensor<float>(0);
-        biasVelocity = Tensor<float>(0);
-        weightSquares = Tensor<float>(0);
-        biasSquares = Tensor<float>(0);
-    }
-
-    void Update(Tensor<float>& weights, Tensor<float>& biases, Tensor<float>& weightDerivatives, Tensor<float>& biasDerivatives, size_t weightSize, size_t biasSize, size_t elements, float learningRate);
+    void Update(Tensor<float>& weights, Tensor<float>& biases, Tensor<float>& weightDerivatives, Tensor<float>& biasDerivatives, size_t elements, float learningRate);
 
     void Define(const YAML::Node& config);
     void Build(size_t weightSize, size_t biasSize);
@@ -32,5 +24,5 @@ struct Adam {
     Tensor<float> weightSquares;
     Tensor<float> biasSquares;
     
-    void Compute(Tensor<float>& parameters, Tensor<float>& derivatives, Tensor<float>& velocity, Tensor<float>& squares, size_t numParameters, size_t elements, float learningRate);
+    void Compute(Tensor<float>& parameters, Tensor<float>& derivatives, Tensor<float>& velocity, Tensor<float>& squares, size_t elements, float learningRate);
 };
