@@ -19,10 +19,7 @@ void NeuralNetwork::Backward(size_t startElement, size_t numElements) {
     assert(defined && built);
     assert(dataset->IsBuilt() && dataset->IsDefined());
 
-    std::cout << "Layers: " << layers.size() << "\n";
-
     for (ssize_t i = layers.size()-1; i > -1; i--) {
-        std::cout << i << "\n";
 
         // if this is the first layer, input would've been the dataset, else it was last layer's output
         Tensor<float>* input = i == 0 ?

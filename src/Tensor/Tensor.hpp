@@ -17,11 +17,11 @@ struct Tensor {
 
 
     /// @brief Move constructor
-    Tensor(Tensor&& other) noexcept : data(other.data), dimensions(std::move(other.dimensions)), owner(true) { other.data = nullptr; }
+    Tensor(Tensor&& other) noexcept : data(other.Data()), dimensions(std::move(other.Dimensions())), owner(other.owner) { other.Data() = nullptr; }
 
 
     /// @brief Copy constructor
-    Tensor(const Tensor& other) : dimensions(other.dimensions), owner(true) {
+    Tensor(const Tensor& other) : dimensions(other.Dimensions()), owner(other.owner) {
         size_t size = Size();
 
         #ifdef DEBUG
@@ -29,7 +29,7 @@ struct Tensor {
         #endif
 
         data = (T*)aligned_alloc(32, size*sizeof(T));
-        std::memcpy(other.data, data, size*sizeof(T));
+        std::memcpy(data, other.Data(), size*sizeof(T));
     }
 
 
@@ -41,10 +41,10 @@ struct Tensor {
     Tensor& operator = (Tensor&& other) noexcept {
         if (data && owner && this != &other) { std::free(data); }
 
-        data = other.data;
+        data = other.Data();
         dimensions = std::move(other.dimensions);
         other.data = nullptr;
-        owner = true;
+        owner = other.owner;
         return *this;
     }
 
@@ -61,8 +61,8 @@ struct Tensor {
         #endif
 
         data = (T*)aligned_alloc(32, size*sizeof(T));
-        std::memcpy(data, other.data, size*sizeof(T));
-        owner = true;
+        std::memcpy(data, other.Data(), size*sizeof(T));
+        owner = other.owner;
         return *this;
     }
 
@@ -88,7 +88,7 @@ struct Tensor {
 
 
     /// @return vector of dimensions
-    inline const std::vector<size_t>& Dimensions() const { return dimensions; }
+    inline constexpr const std::vector<size_t>& Dimensions() const { return dimensions; }
 
 
     /// @return The number of elements in the tensor
