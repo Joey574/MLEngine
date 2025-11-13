@@ -56,11 +56,7 @@ void Layer::OutputBackward(const Tensor<float>& truth, const Tensor<float>& inpu
 }
 
 void Layer::ComputeBackward(const Tensor<float>& input, size_t elements) {
-    // compute dw
     MathUtils::DotProdTA<false>(input, totalDerivatives, weightDerivatives);
-
-    // TODO : Implement copy as first iteration to clear junk data
-    // compute db, copy clears junk values and sets to first value
     MathUtils::SumColumns<false>(totalDerivatives, biasDerivatives);
 }
 

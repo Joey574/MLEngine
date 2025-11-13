@@ -33,7 +33,7 @@ void LossMetric::MSELoss(const Tensor<float>& x, const Tensor<float>& y, Tensor<
 /// @param y Truth tensor
 /// @param c Tensor to store loss in
 void LossMetric::OneHotLoss(const Tensor<float>& x, const Tensor<float>& y, Tensor<float>& c) {
-    assert(x.Size() == y.Size() && y.Size() == c.Size());
+    assert(x.Size() == c.Size());
     const size_t n = x.Size();
 
     const auto dims = x.Dimensions();

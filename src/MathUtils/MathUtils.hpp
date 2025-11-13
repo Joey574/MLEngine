@@ -1,5 +1,6 @@
 #pragma once
 
+/// @brief Provides various high performance math utilities for Tensors
 struct MathUtils {
     public:
 

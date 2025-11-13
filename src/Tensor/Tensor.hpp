@@ -99,10 +99,10 @@ struct Tensor {
 
 
     /// @brief Creates a tensor of 1 less dimensionality
-    /// @param start The element the view should start at
+    /// @param start The element the slice should start at
     /// @param n The number of elements to include
-    /// @return A new non-owning tensor from start
-    inline Tensor ViewFrom(size_t start, size_t n) {
+    /// @return A new non-owning tensor slice
+    inline Tensor Slice(size_t start, size_t n) {
         assert(!dimensions.empty());
         assert(Size() != 0);
 

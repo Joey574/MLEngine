@@ -14,11 +14,11 @@ struct Dataset {
     inline bool IsBuilt() const { return built; }
 
     inline Tensor<float>& Data(size_t start, size_t n) {
-        dataView = data.ViewFrom(start, n);
+        dataView = data.Slice(start, n);
         return dataView;
     }
     inline Tensor<float>& Labels(size_t start, size_t n) {
-        labelView = labels.ViewFrom(start, n);
+        labelView = labels.Slice(start, n);
         return labelView;
     }
     inline size_t Samples() { return elements; }

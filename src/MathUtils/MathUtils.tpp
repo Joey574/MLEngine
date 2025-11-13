@@ -2,6 +2,7 @@
 
 template <bool acum> void MathUtils::DotProd(const Tensor<float>& a, const Tensor<float>& b, Tensor<float>& c) {
     assert(a.Dimensionality() == 2 && b.Dimensionality() == 2 && c.Dimensionality() == 2);
+    assert(a.Data() != nullptr && b.Data() != nullptr && c.Data() != nullptr);
 
     const auto aDims = a.Dimensions();
     const auto bDims = b.Dimensions();
@@ -10,6 +11,8 @@ template <bool acum> void MathUtils::DotProd(const Tensor<float>& a, const Tenso
     const size_t ac = aDims[1];
     const size_t br = bDims[0];
     const size_t bc = bDims[1];
+
+    assert(c.Dimensions()[0] == ar && c.Dimensions()[1] == bc);
     assert(br == ac);
 
     constexpr float beta = acum ? 1.0f : 0.0f;
@@ -23,6 +26,7 @@ template <bool acum> void MathUtils::DotProd(const Tensor<float>& a, const Tenso
 }
 template <bool acum> void MathUtils::DotProdTA(const Tensor<float>& a, const Tensor<float>& b, Tensor<float>& c) {
     assert(a.Dimensionality() == 2 && b.Dimensionality() == 2 && c.Dimensionality() == 2);
+    assert(a.Data() != nullptr && b.Data() != nullptr && c.Data() != nullptr);
 
     const auto aDims = a.Dimensions();
     const auto bDims = b.Dimensions();
@@ -31,9 +35,15 @@ template <bool acum> void MathUtils::DotProdTA(const Tensor<float>& a, const Ten
     const size_t ac = aDims[1];
     const size_t br = bDims[0];
     const size_t bc = bDims[1];
+
+    assert(c.Dimensions()[0] == ac && c.Dimensions()[1] == bc);
     assert(br == ar);
 
     constexpr float beta = acum ? 1.0f : 0.0f;
+
+    std::cout << "a\n";
+    std::cout << a.Data() << " | " << b.Data() << " | " << c.Data() << "\n";
+    std::cout << ar << "x" << ac << " | " << br << "x" << bc << "\n";
 
     cblas_sgemm(
         CblasRowMajor, CblasTrans, CblasNoTrans,
@@ -41,9 +51,12 @@ template <bool acum> void MathUtils::DotProdTA(const Tensor<float>& a, const Ten
         1.0f, a.Data(), ac, b.Data(), bc,
         beta, c.Data(), bc
     );
+
+    std::cout << "b\n";
 }
 template <bool acum> void MathUtils::DotProdTB(const Tensor<float>& a, const Tensor<float>& b, Tensor<float>& c) {
     assert(a.Dimensionality() == 2 && b.Dimensionality() == 2 && c.Dimensionality() == 2);
+    assert(a.Data() != nullptr && b.Data() != nullptr && c.Data() != nullptr);
 
     const auto aDims = a.Dimensions();
     const auto bDims = b.Dimensions();
@@ -52,6 +65,8 @@ template <bool acum> void MathUtils::DotProdTB(const Tensor<float>& a, const Ten
     const size_t ac = aDims[1];
     const size_t br = bDims[0];
     const size_t bc = bDims[1];
+
+    assert(c.Dimensions()[0] == ar && c.Dimensions()[1] == br);
     assert(bc == ac);
 
     constexpr float beta = acum ? 1.0f : 0.0f;
@@ -85,6 +100,7 @@ float MathUtils::Sum(const Tensor<float>& a) {
 
 template <bool acum> void MathUtils::SumColumns(const Tensor<float>& a, Tensor<float>& b) {
     assert(a.Dimensionality() == 2 && b.Dimensionality() == 1);
+    assert(a.Data() != nullptr && b.Data() != nullptr);
     
     constexpr const size_t BLOCK_SIZE = 64;
 

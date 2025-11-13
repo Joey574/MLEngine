@@ -53,6 +53,7 @@ float LossMetric::AccuracyScore(const Tensor<float>& x, const Tensor<float>& y) 
         // find max element and its index in column
         size_t midx = 0;
         float max = x.Data()[r*cols+0];
+        
         #pragma omp simd reduction(max:max)
         for (size_t c = 1; c < cols; c++) {
             if (x.Data()[r*cols+c] > max) {

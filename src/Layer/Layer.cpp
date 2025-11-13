@@ -31,17 +31,19 @@ void Layer::Define(const YAML::Node& layerConfig, const YAML::Node& optimizerCon
             break;
         case Type::Hidden: case Type::Output:
             weights = Tensor<float>(iNodes, nodes);
-            weightDerivatives = Tensor<float>(iNodes, nodes);
             biases = Tensor<float>(nodes);
+            
+            weightDerivatives = Tensor<float>(iNodes, nodes);
             biasDerivatives = Tensor<float>(nodes);
+            totalDerivatives = Tensor<float>(trainingConfig.batchSize, nodes);
             break;
     }
 
     // allocate training and testing tensors
-    testingTotals = Tensor<float>(nodes, trainingConfig.testSize);
-    trainingTotals = Tensor<float>(nodes, trainingConfig.batchSize);
-    testingActivations = Tensor<float>(nodes, trainingConfig.testSize);
-    trainingActivations = Tensor<float>(nodes, trainingConfig.batchSize);
+    testingTotals = Tensor<float>(trainingConfig.testSize, nodes);
+    trainingTotals = Tensor<float>(trainingConfig.batchSize, nodes);
+    testingActivations = Tensor<float>(trainingConfig.testSize, nodes);
+    trainingActivations = Tensor<float>(trainingConfig.batchSize, nodes);
 
     optimizer.Define(optimizerConfig, weights.Size(), biases.Size());
     defined = true;
