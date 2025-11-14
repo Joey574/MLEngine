@@ -8,7 +8,7 @@ struct Layer {
     enum class Type {
         None, Input, Hidden, Output
     };
-    enum class WeightInitialization {
+    enum class WeightType {
         None, He, Normalize, Xavier
     };
 
@@ -41,6 +41,34 @@ struct Layer {
                 return "";
         }
     }
+    static inline WeightType ParseWeightType(const std::string& name) {
+        std::string lower(name.size(), ' ');
+        std::transform(name.begin(), name.end(), lower.begin(), tolower);
+
+        if (lower == "he") {
+            return WeightType::He;
+        } else if (lower == "normalize") {
+            return WeightType::Normalize;
+        } else if (lower == "xavier") {
+            return WeightType::Xavier;
+        } else {
+            return WeightType::None;
+        }
+    }
+    static inline std::string ParseWeightName(const WeightType type) {
+        switch (type) {
+            case WeightType::None:
+                return "None";
+            case WeightType::He:
+                return "He";
+            case WeightType::Normalize:
+                return "Normalize";
+            case WeightType::Xavier:
+                return "Xavier";
+            default:
+                return "";
+        }
+    }
 
     void Define(const YAML::Node& layerConfig, const YAML::Node& optimizerConfig, const TrainingConfig& trainingConfig, size_t in, size_t out);
     void Build();
@@ -56,6 +84,10 @@ struct Layer {
     void ComputeBackward(const Tensor<float>& input, size_t elements);
 
     void Update(size_t elements);
+    
+    inline float Score(const Tensor<float>& truth) const {
+        return (*lossMetric.metric)(testingActivations, truth);
+    }
 
     template <bool train> inline Tensor<float>& Output() {
         if constexpr (train) {
@@ -66,14 +98,15 @@ struct Layer {
     }
     inline Tensor<float>& Weights() { return weights; }
 
-    inline bool IsDefined() { return defined; }
-    inline bool IsBuilt() { return built; }
+    inline bool IsDefined() const { return defined; }
+    inline bool IsBuilt() const { return built; }
 
     private:
     bool defined = false;
     bool built = false;
 
     Type type;
+    WeightType weightType;
 
     Activation activation;
     LossMetric lossMetric;
@@ -94,4 +127,6 @@ struct Layer {
     Tensor<float> trainingActivations;
     Tensor<float> testingTotals;
     Tensor<float> testingActivations;
+
+    void InitializeParameters();
 };

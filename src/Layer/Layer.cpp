@@ -6,6 +6,7 @@ void Layer::Define(const YAML::Node& layerConfig, const YAML::Node& optimizerCon
     assert(layerConfig[Y_LAYERTYPE] && layerConfig[Y_NODES]);
 
     type = ParseType(layerConfig[Y_LAYERTYPE].as<std::string>());
+    weightType = ParseWeightType(layerConfig[Y_WEIGHT].as<std::string>(Y_WEIGHT_DEFAULT));
 
     // set nodes, input nodes, and output nodes sizes
     nodes = layerConfig[Y_NODES].as<size_t>();
@@ -53,6 +54,49 @@ void Layer::Build() {
     assert(defined && !built);
     assert(optimizer.IsDefined() && !optimizer.IsBuilt());
 
+    InitializeParameters();
+
     optimizer.Build(weights, biases, weightDerivatives, biasDerivatives);
     built = true;
+}
+
+void Layer::InitializeParameters() {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    biases.Zero();
+    const size_t n = weights.Size();
+
+    if (weightType == WeightType::He) {
+        float lower = 0.0f;
+        float upper = std::sqrt(2.0f / nodes);
+        std::normal_distribution<float> dist(lower, upper);
+
+        #pragma omp simd
+        for (size_t i = 0; i < n; i++) {
+            weights.Data()[i] = dist(gen);
+        }
+    } else if (weightType == WeightType::Normalize) {
+        float lower = -0.5f;
+        float upper = 0.5f;
+        std::uniform_real_distribution<float> dist(lower, upper);
+
+        #pragma omp simd
+        for (size_t i = 0; i < n; i++) {
+            weights.Data()[i] = dist(gen) * std::sqrt(1.0f / nodes);
+        }
+
+    } else if (weightType == WeightType::Xavier) {
+        float lower = (-1.0f / std::sqrt(nodes));
+        float upper = 1.0f / std::sqrt(nodes);
+        std::uniform_real_distribution<float> dist(lower, upper);
+
+        #pragma omp simd
+        for (size_t i = 0; i < n; i++) {
+            weights.Data()[i] = dist(gen);
+        }
+
+    } else {
+        weights.Zero();
+    }
 }

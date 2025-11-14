@@ -14,6 +14,7 @@ struct MathUtils {
     template <bool acum, bool transA, bool transB> static inline void Sgemm(const Tensor<float>& a, const Tensor<float>& b, Tensor<float>& c) {
         assert(a.Dimensionality() == 2 && b.Dimensionality() == 2 && c.Dimensionality() == 2);
         assert(a.Data() != nullptr && b.Data() != nullptr && c.Data() != nullptr);
+        assert(!a.HasNan() && !b.HasNan());
 
         const auto aDims = a.Dimensions();
         const auto bDims = b.Dimensions();
@@ -47,6 +48,5 @@ struct MathUtils {
     static void Copy(const Tensor<float>& src, Tensor<float>& dest);
     static void CopyByRow(const Tensor<float>& src, Tensor<float>& dest);
 
-    static float Sum(const Tensor<float>& a);
     template <bool acum> static void SumColumns(const Tensor<float>& a, Tensor<float>& b);
 };

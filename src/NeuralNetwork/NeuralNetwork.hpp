@@ -24,6 +24,7 @@ struct NeuralNetwork {
     bool defined = false;
     bool built = false;
 
+    const TrainingConfig* trainingConfig;
     YAML::Node* config;
     Dataset* dataset;
 

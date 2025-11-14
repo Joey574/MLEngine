@@ -20,6 +20,7 @@
 #include <execution>
 #include <functional>
 #include <numeric>
+#include <cmath>
 
 // External libraries
 #include "json.hpp"

@@ -37,8 +37,8 @@ template<bool training> void Layer::HiddenForward(const Tensor<float>& input, si
 
 void Layer::Backward(const Tensor<float>& truth, const Tensor<float>& input, const Tensor<float>& nextWeights, size_t elements) {
     if (type == Type::Input) { InputBackward(); }
-    if (type == Type::Hidden) { HiddenBackward(truth, input, nextWeights, elements); }
-    if (type == Type::Output) { OutputBackward(truth, input, elements); }
+    else if (type == Type::Hidden) { HiddenBackward(truth, input, nextWeights, elements); }
+    else if (type == Type::Output) { OutputBackward(truth, input, elements); }
 }
 
 void Layer::InputBackward() {

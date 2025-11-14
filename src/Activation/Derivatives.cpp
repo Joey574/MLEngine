@@ -12,7 +12,10 @@ void Activation::LinearDerivative(const Tensor<float>& x, Tensor<float>& y) {
 /// @param x The matrix to use to find the derivative
 /// @param y The matrix to be scaled by the derivative
 void Activation::SigmoidDerivative(const Tensor<float>& x, Tensor<float>& y) {
+    assert(x.Data() != nullptr && y.Data() != nullptr);
+    assert(!x.HasNan() && !y.HasNan());
     assert(x.Size() == y.Size());
+
     const size_t n = x.Size();
 
     #pragma omp parallel for simd schedule(static)
@@ -26,7 +29,10 @@ void Activation::SigmoidDerivative(const Tensor<float>& x, Tensor<float>& y) {
 /// @param x The matrix to use to find the derivative
 /// @param y The matrix to be scaled by the derivative
 void Activation::ReLUDerivative(const Tensor<float>& x, Tensor<float>& y) {
+    assert(x.Data() != nullptr && y.Data() != nullptr);
+    assert(!x.HasNan() && !y.HasNan());
     assert(x.Size() == y.Size());
+
     const size_t n = x.Size();
 
     #pragma omp parallel for simd schedule(static)
@@ -39,7 +45,10 @@ void Activation::ReLUDerivative(const Tensor<float>& x, Tensor<float>& y) {
 /// @param x The matrix to use to find the derivative
 /// @param y The matrix to be scaled by the derivative
 void Activation::LeakyReLUDerivative(const Tensor<float>& x, Tensor<float>& y) {
+    assert(x.Data() != nullptr && y.Data() != nullptr);
+    assert(!x.HasNan() && !y.HasNan());
     assert(x.Size() == y.Size());
+
     const size_t n = x.Size();
 
     #pragma omp parallel for simd schedule(static)
@@ -52,7 +61,10 @@ void Activation::LeakyReLUDerivative(const Tensor<float>& x, Tensor<float>& y) {
 /// @param x The matrix to use to find the derivative
 /// @param y The matrix to be scaled by the derivative
 void Activation::ELUDerivative(const Tensor<float>& x, Tensor<float>& y) {
+    assert(x.Data() != nullptr && y.Data() != nullptr);
+    assert(!x.HasNan() && !y.HasNan());
     assert(x.Size() == y.Size());
+    
     const size_t n = x.Size();
 
     #pragma omp parallel for simd schedule(static)

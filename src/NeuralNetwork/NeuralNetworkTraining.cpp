@@ -4,7 +4,7 @@ void NeuralNetwork::Forward(size_t startElement, size_t numElements) {
     assert(defined && built);
     assert(dataset->IsBuilt() && dataset->IsDefined());
 
-    for (size_t i = 0; i < layers.size(); i++) {
+    for (size_t i = 0; i < layers.size() && KEEPRUNNING; i++) {
 
         // if this is the first layer, input is the dataset, else it is the last layer's output
         Tensor<float>* input = i == 0 ? 
@@ -19,7 +19,7 @@ void NeuralNetwork::Backward(size_t startElement, size_t numElements) {
     assert(defined && built);
     assert(dataset->IsBuilt() && dataset->IsDefined());
 
-    for (ssize_t i = layers.size()-1; i > -1; i--) {
+    for (ssize_t i = layers.size()-1; i > -1 && KEEPRUNNING; i--) {
 
         // if this is the first layer, input would've been the dataset, else it was last layer's output
         Tensor<float>* input = i == 0 ?
@@ -37,12 +37,26 @@ void NeuralNetwork::Backward(size_t startElement, size_t numElements) {
             &layers[i+1].Weights();
 
         layers[i].Backward(*truth, *input, *nextWeights, numElements);
+    }
+
+    for (size_t i = 0; i < layers.size() && KEEPRUNNING; i++) {
         layers[i].Update(numElements);
     }
 }
 Score NeuralNetwork::Validate() {
     assert(defined && built);
     assert(dataset->IsBuilt() && dataset->IsDefined());
-    
-    return Score(0.0f, true);
+
+    for (size_t i = 0; i < layers.size(); i++) {
+
+        // if this is the first layer, input is the dataset, else it is the last layer's output
+        Tensor<float>* input = i == 0 ? 
+            &(*dataset).TestingData() :
+            &layers[i-1].Output<false>();
+
+        layers[i].Forward<false>(*input, (*trainingConfig).testSize);
+    }
+
+    float score = layers.back().Score((*dataset).TestingLabels());
+    return Score(score, true);
 }

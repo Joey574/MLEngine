@@ -69,7 +69,7 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     $<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<BOOL:${USE_CUDA_FOUND}>>:${DEBUG_FLAGS_CUDA}>
   )
 else()
-  set(RELEASE_FLAGS_CXX -march=native -mtune=native -DNDEBUG -Ofast)
+  set(RELEASE_FLAGS_CXX -march=native -mtune=native -DNDEBUG -Ofast -O3)
   set(RELEASE_FLAGS_CUDA -march=native -mtune=native -O3 --extended-lambda)
 
   target_compile_options(MLEngine PRIVATE 

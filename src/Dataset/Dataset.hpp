@@ -31,6 +31,8 @@ struct Dataset {
         labelView = testingLabels.Slice(start, n);
         return labelView;
     }
+    inline Tensor<float>& TestingData() { return testingData; }
+    inline Tensor<float>& TestingLabels() { return testingLabels; }
     inline size_t TestingSamples() { return testingData.Dimensions()[testingData.Dimensionality()-1]; }
 
     inline static Type ParseType(const std::string& name) {
@@ -79,7 +81,10 @@ struct Dataset {
     Tensor<float> dataView;
     Tensor<float> labelView;
 
-    int LoadMNISTStyle(const std::string& name);
+    int LoadMNIST();
+    int LoadFMNIST();
+    int LoadMNISTStyle(std::ifstream& traind, std::ifstream& trainl, std::ifstream& testd, std::ifstream& testl);
+
     int LoadMandlebrot();
 
     static inline std::string ExpandPath(const std::string& path) {

@@ -3,7 +3,7 @@
 void Adam::Define(const YAML::Node& config) {
     assert(!(defined || built));
 
-    iteration = 0;
+    iteration = 1;
     b1 = config[Y_OPT_B1].as<float>(Y_B1_DEFAULT);
     b2 = config[Y_OPT_B2].as<float>(Y_B2_DEFAULT);
     epsilon = config[Y_OPT_EPSL].as<float>(Y_EPSL_DEFAULT);
@@ -22,6 +22,8 @@ void Adam::Build(size_t weightSize, size_t biasSize) {
 
 void Adam::Update(Tensor<float>& weights, Tensor<float>& biases, Tensor<float>& weightDerivatives, Tensor<float>& biasDerivatives, size_t elements, float learningRate) {
     assert(defined && built);
+    assert(iteration > 0);
+    assert(epsilon > 0.0f);
 
     Compute(weights, weightDerivatives, weightVelocity, weightSquares, elements, learningRate);
     Compute(biases, biasDerivatives, biasVelocity, biasSquares, elements, learningRate);
@@ -29,15 +31,19 @@ void Adam::Update(Tensor<float>& weights, Tensor<float>& biases, Tensor<float>& 
 }
 
 void Adam::Compute(Tensor<float>& parameters, Tensor<float>& derivatives, Tensor<float>& velocity, Tensor<float>& squares, size_t elements, float learningRate) {
+    assert(parameters.Data() != nullptr && derivatives.Data() != nullptr);
+    assert(!parameters.HasNan() && !derivatives.HasNan());
     assert(parameters.Size() == derivatives.Size());
     assert(defined && built);
+    assert(iteration > 0);
+    assert(epsilon > 0.0f);
 
     const float factor = learningRate / (float)elements;
     const float b1Rate = 1.0f-b1;
     const float b2Rate = 1.0f-b2;
 
-    const float b1Denominator = (1.0f-std::pow(b1, (float)iteration));
-    const float b2Denominator = (1.0f-std::pow(b2, (float)iteration));
+    const float b1InvDenominator = 1.0f/(1.0f-powf(b1, (float)iteration));
+    const float b2InvDenominator = 1.0f/(1.0f-powf(b2, (float)iteration));
 
     const size_t numParameters = parameters.Size();
 
@@ -46,9 +52,11 @@ void Adam::Compute(Tensor<float>& parameters, Tensor<float>& derivatives, Tensor
         velocity.Data()[i] = (velocity.Data()[i]*b1)+b1Rate*derivatives.Data()[i];
         squares.Data()[i] = (squares.Data()[i]*b2)+b2Rate*derivatives.Data()[i]*derivatives.Data()[i];
 
-        const float mh = velocity.Data()[i]/b1Denominator;
-        const float vh = squares.Data()[i]/b2Denominator;
+        const float mh = velocity.Data()[i]*b1InvDenominator;
+        const float vh = squares.Data()[i]*b2InvDenominator;
 
-        parameters.Data()[i] -= factor*(mh/std::sqrt(vh+epsilon));
+        parameters.Data()[i] -= factor*(mh/sqrtf(vh+epsilon));
     }
+
+    assert(!parameters.HasNan());
 }

@@ -5,7 +5,10 @@
 /// @param y Ground truth matrix
 /// @return The mean absolute error
 float LossMetric::MAEScore(const Tensor<float>& x, const Tensor<float>& y) {
+    assert(x.Data() != nullptr && y.Data() != nullptr);
+    assert(!x.HasNan() && !y.HasNan());
     assert(x.Size() == y.Size());
+
     const size_t n = x.Size();
     float error = 0.0f;
 
@@ -22,7 +25,10 @@ float LossMetric::MAEScore(const Tensor<float>& x, const Tensor<float>& y) {
 /// @param y Ground truth matrix
 /// @return The mean squared error
 float LossMetric::MSEScore(const Tensor<float>& x, const Tensor<float>& y) {
+    assert(x.Data() != nullptr && y.Data() != nullptr);
+    assert(!x.HasNan() && !y.HasNan());
     assert(x.Size() == y.Size());
+    
     const size_t n = x.Size();
     float error = 0.0f;
 
@@ -39,11 +45,12 @@ float LossMetric::MSEScore(const Tensor<float>& x, const Tensor<float>& y) {
 /// @param y Ground truth matrix
 /// @return Accuracy as a percentage
 float LossMetric::AccuracyScore(const Tensor<float>& x, const Tensor<float>& y) {
-    assert(x.Size() == y.Size());
+    assert(x.Data() != nullptr && y.Data() != nullptr);
+    assert(!x.HasNan() && !y.HasNan());
 
-    const auto dims = x.Dimensions();
-    const size_t rows = dims[0];
-    const size_t cols = dims[1];
+    const auto xDims = x.Dimensions();
+    const size_t rows = xDims[0];
+    const size_t cols = xDims[1];
 
     size_t correct = 0;
 
@@ -54,7 +61,6 @@ float LossMetric::AccuracyScore(const Tensor<float>& x, const Tensor<float>& y) 
         size_t midx = 0;
         float max = x.Data()[r*cols+0];
         
-        #pragma omp simd reduction(max:max)
         for (size_t c = 1; c < cols; c++) {
             if (x.Data()[r*cols+c] > max) {
                 max = x.Data()[r*cols+c];

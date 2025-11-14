@@ -8,7 +8,6 @@ struct Tensor {
     template <typename... Dims> Tensor(Dims... dims) : dimensions{dims...}, owner(true) {
         size_t size = Size();
         data = (T*)aligned_alloc(32, size*sizeof(T));
-        std::memset(data, 0, size*sizeof(T));
     }
 
 
@@ -116,6 +115,29 @@ struct Tensor {
         d[d.size()-1] = n;
 
         return Tensor(offsetData, d, false);
+    }
+
+
+    /// @brief Checks tensor for any nan values
+    /// @return True if tensor has a nan value 
+    inline bool HasNan() const {
+        if constexpr (std::is_floating_point_v<T>) {
+            const size_t n = Size();
+
+            for (size_t i = 0; i < n; i++) {
+                if (std::isnan(data[i])) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+
+    /// @brief Zeroes out all tensor elements
+    inline void Zero() {
+        std::memset(data, 0, Size()*sizeof(T));
     }
 
     private:

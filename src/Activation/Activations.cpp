@@ -5,6 +5,8 @@
 /// @param y The matrix to store the activation in
 void Activation::Linear(const Tensor<float>& x, Tensor<float>& y) {
     assert(x.Size() == y.Size());
+    assert(!x.HasNan());
+
     cblas_scopy(x.Size(), x.Data(), 1, y.Data(), 1);
 }
 
@@ -12,12 +14,15 @@ void Activation::Linear(const Tensor<float>& x, Tensor<float>& y) {
 /// @param x The matrix to apply the activation to
 /// @param y The matrix to store the activation in
 void Activation::Sigmoid(const Tensor<float>& x, Tensor<float>& y) {
+    assert(x.Data() != nullptr && y.Data() != nullptr);
     assert(x.Size() == y.Size());
+    assert(!x.HasNan());
+
     const size_t n = x.Size();
 
     #pragma omp parallel for simd schedule(static)
     for (size_t i = 0; i < n; i++) {
-        y.Data()[i] = 1.0f / (1.0f + std::exp(-x.Data()[i]));
+        y.Data()[i] = 1.0f / (1.0f + expf(-x.Data()[i]));
     }
 }
 
@@ -25,7 +30,10 @@ void Activation::Sigmoid(const Tensor<float>& x, Tensor<float>& y) {
 /// @param x The matrix to apply the activation to
 /// @param y The matrix to store the activation in
 void Activation::ReLU(const Tensor<float>& x, Tensor<float>& y) {
+    assert(x.Data() != nullptr && y.Data() != nullptr);
     assert(x.Size() == y.Size());
+    assert(!x.HasNan());
+
     const size_t n = x.Size();
 
     #pragma omp parallel for simd schedule(static)
@@ -38,7 +46,10 @@ void Activation::ReLU(const Tensor<float>& x, Tensor<float>& y) {
 /// @param x The matrix to apply the activation to
 /// @param y The matrix to store the activation in
 void Activation::LeakyReLU(const Tensor<float>& x, Tensor<float>& y) {
+    assert(x.Data() != nullptr && y.Data() != nullptr);
     assert(x.Size() == y.Size());
+    assert(!x.HasNan());
+
     const size_t n = x.Size();
 
     #pragma omp parallel for simd schedule(static)
@@ -51,12 +62,15 @@ void Activation::LeakyReLU(const Tensor<float>& x, Tensor<float>& y) {
 /// @param x The matrix to apply the activation to
 /// @param y The matrix to store the activation in
 void Activation::ELU(const Tensor<float>& x, Tensor<float>& y) {
+    assert(x.Data() != nullptr && y.Data() != nullptr);
     assert(x.Size() == y.Size());
+    assert(!x.HasNan());
+
     const size_t n = x.Size();
 
     #pragma omp parallel for simd schedule(static)
     for (size_t i = 0; i < n; i++) {
-        y.Data()[i] = x.Data()[i] > 0.0f ? x.Data()[i] : (std::exp(x.Data()[i] - 1.0f));
+        y.Data()[i] = x.Data()[i] > 0.0f ? x.Data()[i] : (expf(x.Data()[i]) - 1.0f);
     }
 }
 
@@ -65,11 +79,13 @@ void Activation::ELU(const Tensor<float>& x, Tensor<float>& y) {
 /// @param y The matrix to store the activation in
 void Activation::Softmax(const Tensor<float>& x, Tensor<float>& y) {
     assert(x.Dimensionality() == 2 && y.Dimensionality() == 2);
+    assert(x.Data() != nullptr && y.Data() != nullptr);
     assert(x.Size() == y.Size());
+    assert(!x.HasNan());
 
-    const auto dims = x.Dimensions();
-    const size_t r = dims[0];
-    const size_t c = dims[1];
+    const auto xDims = x.Dimensions();
+    const size_t r = xDims[0];
+    const size_t c = xDims[1];
 
     #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < r; i++) {
@@ -87,7 +103,7 @@ void Activation::Softmax(const Tensor<float>& x, Tensor<float>& y) {
         float sum = 0.0f;
         #pragma omp simd reduction(+:sum)
         for (size_t j = 0; j < c; j++) {
-            y.Data()[i*c+j] = std::exp(x.Data()[i*c+j]-max);
+            y.Data()[i*c+j] = expf(x.Data()[i*c+j]-max);
             sum += y.Data()[i*c+j];
         }
 

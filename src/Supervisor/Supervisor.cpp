@@ -42,22 +42,24 @@ int Supervisor::Build() {
 nlohmann::json Supervisor::Train(nlohmann::json& history) {
     assert(defined && built);
 
-    for (size_t e = 0; e < trainingConfig.epochs; e++) {
+    for (size_t e = 0; e < trainingConfig.epochs && KEEPRUNNING; e++) {
         size_t startElement = e*trainingConfig.batchSize;
         size_t numElements = std::min((*dataset).TrainingSamples()-startElement, trainingConfig.batchSize);
 
-        std::cout << "[i] " << e << "\n";
+        std::cout << "[i] " << e;
         model->Forward(startElement, numElements);
         model->Backward(startElement, numElements);
 
         if (trainingConfig.scoreFrequency > 0 && e % trainingConfig.scoreFrequency == 0) {
             Score score = model->Validate();
+            std::cout << ": " << score.GetScore();
 
             if (score.IsBetterThan(bestScore)) {
                 bestScore = score;
                 Save();
             }
         }
+        std::cout << "\n";
     }
 
     return history;

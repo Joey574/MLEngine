@@ -1,11 +1,16 @@
 #include "MathUtils.hpp"
 
 void MathUtils::Copy(const Tensor<float>& src, Tensor<float>& dest) {
+    assert(src.Data() != nullptr && dest.Data() != nullptr);
     assert(src.Size() == dest.Size());
+    assert(!src.HasNan());
+
     cblas_scopy(dest.Size(), src.Data(), 1, dest.Data(), 1);
 }
 void MathUtils::CopyByRow(const Tensor<float>& src, Tensor<float>& dest) {
+    assert(src.Data() != nullptr && dest.Data() != nullptr);
     assert(dest.Size() % src.Size() == 0);
+    assert(!src.HasNan());
 
     const size_t srcSize = src.Size();
     const size_t n = dest.Size() / srcSize;
@@ -15,19 +20,20 @@ void MathUtils::CopyByRow(const Tensor<float>& src, Tensor<float>& dest) {
     }
 }
 
-float MathUtils::Sum(const Tensor<float>& a) {
-    return cblas_ssum(a.Size(), a.Data(), 1);
-}
-
 template <bool acum> void MathUtils::SumColumns(const Tensor<float>& a, Tensor<float>& b) {
-    assert(a.Dimensionality() == 2 && b.Dimensionality() == 1);
+    assert(a.Dimensionality() == b.Dimensionality()+1);
     assert(a.Data() != nullptr && b.Data() != nullptr);
+    assert(!a.HasNan() && !b.HasNan());
     
     constexpr const size_t BLOCK_SIZE = 64;
 
     const auto aDims = a.Dimensions();
     const size_t ar = aDims[0];
     const size_t ac = aDims[1];
+
+    if constexpr (!acum) {
+        b.Zero();
+    }
 
     // TODO : find a way to optimally parallelize
     for (size_t r = 0; r < ar; r += BLOCK_SIZE) {

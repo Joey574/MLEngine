@@ -66,10 +66,13 @@ struct LossMetric {
         switch (metricType) { 
             case Type::MAE:
                 metric = MAEScore;
+                break;
             case Type::MSE:
                 metric = MSEScore;
+                break;
             case Type::Accuracy:
                 metric = AccuracyScore;
+                break;
             default:
                 metric = nullptr;
                 break;

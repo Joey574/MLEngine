@@ -9,21 +9,21 @@ int Dataset::Define(YAML::Node& config) {
 
     std::cout << "[i] Building dataset\n";
 
+    int code = 0;
     switch (type) {
         case Type::MNIST: 
-            LoadMNISTStyle("MNIST");
+            code = LoadMNIST();
             break;
         case Type::FMNIST:
-            LoadMNISTStyle("FMNIST");
-            break;
+            code = LoadFMNIST();
             break;
         case Type::Mandlebrot:
-            LoadMandlebrot();
+            code = LoadMandlebrot();
             break;
     }
 
     defined = true;
-    return 0;
+    return code;
 }
 
 int Dataset::Build() {

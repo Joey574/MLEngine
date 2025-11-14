@@ -5,6 +5,7 @@ int NeuralNetwork::Define(YAML::Node& config, Dataset& dataset, const TrainingCo
     assert(dataset.IsDefined());
     this->config = &config;
     this->dataset = &dataset;
+    this->trainingConfig = &trainingConfig;
 
     auto layerConfigs = config[Y_LAYERS];
     auto optimizerConfig = config[Y_OPT_OPTIMIZER];
@@ -28,7 +29,6 @@ int NeuralNetwork::Build() {
     assert(dataset->IsBuilt());
     std::cout << "[i] Building neural network\n";
 
-    #pragma omp parallel for
     for (size_t i = 0; i < layers.size(); i++) {
         layers[i].Build();
     }

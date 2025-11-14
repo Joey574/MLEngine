@@ -3,18 +3,21 @@ dataset: mnist
 
 optimizer:
   type: adam
-  learning_rate: 0.1
+  learning_rate: 0.001
 
 layers:
   - type: input
+    weight: he
     nodes: 784
 
   - type: hidden
+    weight: he
     nodes: 256
     dropout: 0.2
     activation: leakyrelu
 
   - type: output
+    weight: he
     nodes: 10
     activation: softmax
     loss: onehot
@@ -22,7 +25,6 @@ layers:
 
 seed: 42
 
-weight: he
 epochs: 50
 valid_freq: 1
 batch_size: 512
