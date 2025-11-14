@@ -13,15 +13,25 @@ struct Dataset {
     inline bool IsDefined() const { return defined; }
     inline bool IsBuilt() const { return built; }
 
-    inline Tensor<float>& Data(size_t start, size_t n) {
-        dataView = data.Slice(start, n);
+    inline Tensor<float>& TrainingData(size_t start, size_t n) {
+        dataView = trainingData.Slice(start, n);
         return dataView;
     }
-    inline Tensor<float>& Labels(size_t start, size_t n) {
-        labelView = labels.Slice(start, n);
+    inline Tensor<float>& TrainingLabels(size_t start, size_t n) {
+        labelView = trainingLabels.Slice(start, n);
         return labelView;
     }
-    inline size_t Samples() { return elements; }
+    inline size_t TrainingSamples() { return trainingData.Dimensions()[trainingData.Dimensionality()-1]; }
+
+    inline Tensor<float>& TestingData(size_t start, size_t n) {
+        dataView = testingData.Slice(start, n);
+        return dataView;
+    }
+    inline Tensor<float>& TestingLabels(size_t start, size_t n) {
+        labelView = testingLabels.Slice(start, n);
+        return labelView;
+    }
+    inline size_t TestingSamples() { return testingData.Dimensions()[testingData.Dimensionality()-1]; }
 
     inline static Type ParseType(const std::string& name) {
         auto lower = std::string(name.size(), ' ');
@@ -60,8 +70,11 @@ struct Dataset {
     size_t elements;
     YAML::Node* config;
 
-    Tensor<float> data;
-    Tensor<float> labels;
+    Tensor<float> trainingData;
+    Tensor<float> trainingLabels;
+
+    Tensor<float> testingData;
+    Tensor<float> testingLabels;
 
     Tensor<float> dataView;
     Tensor<float> labelView;

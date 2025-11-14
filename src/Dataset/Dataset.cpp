@@ -7,13 +7,6 @@ int Dataset::Define(YAML::Node& config) {
     
     type = ParseType(config[Y_DATASET].as<std::string>());
 
-    defined = true;
-    return 0;
-}
-
-int Dataset::Build() {
-    assert(defined && !built);
-    assert(type != Type::None);
     std::cout << "[i] Building dataset\n";
 
     switch (type) {
@@ -28,6 +21,15 @@ int Dataset::Build() {
             LoadMandlebrot();
             break;
     }
+
+    defined = true;
+    return 0;
+}
+
+int Dataset::Build() {
+    assert(defined && !built);
+    assert(type != Type::None);
+    
 
     built = true;
     return 0;

@@ -15,7 +15,7 @@ int Supervisor::Define(YAML::Node& config, std::string& path, std::string& name)
 
     int code = 0;
     code += dataset->Define(config);
-    trainingConfig.testSize = dataset->Samples();
+    trainingConfig.testSize = dataset->TestingSamples();
 
     code += model->Define(config, *dataset, trainingConfig);
 
@@ -44,7 +44,7 @@ nlohmann::json Supervisor::Train(nlohmann::json& history) {
 
     for (size_t e = 0; e < trainingConfig.epochs; e++) {
         size_t startElement = e*trainingConfig.batchSize;
-        size_t numElements = std::min((*dataset).Samples()-startElement, trainingConfig.batchSize);
+        size_t numElements = std::min((*dataset).TrainingSamples()-startElement, trainingConfig.batchSize);
 
         std::cout << "[i] " << e << "\n";
         model->Forward(startElement, numElements);
