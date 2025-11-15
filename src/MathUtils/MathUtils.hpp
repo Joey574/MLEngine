@@ -45,7 +45,28 @@ struct MathUtils {
         );
     }
 
-    static void Copy(const Tensor<float>& src, Tensor<float>& dest);
+    static inline void Copy(const Tensor<float>& src, Tensor<float>& dest) {
+        assert(src.Data() != nullptr && dest.Data() != nullptr);
+        assert(src.Size() == dest.Size());
+        assert(!src.HasNan());
+
+        cblas_scopy(dest.Size(), src.Data(), 1, dest.Data(), 1);
+    }
+    static inline void PartialCopy(const Tensor<float>& src, Tensor<float>& dest) {
+        assert(src.Data() != nullptr && dest.Data() != nullptr);
+        assert(dest.Size() >= src.Size());
+        assert(!src.HasNan());
+
+        cblas_scopy(src.Size(), src.Data(), 1, dest.Data(), 1);
+
+        // zero out remaining elements
+        const size_t destSize = dest.Size();
+        size_t remaining = destSize - src.Size();
+        if (remaining > 0) {
+            std::memset(&dest.Data()[destSize-remaining], 0, remaining*sizeof(float));
+        }
+    }
+
     static void CopyByRow(const Tensor<float>& src, Tensor<float>& dest);
 
     template <bool acum> static void SumColumns(const Tensor<float>& a, Tensor<float>& b);

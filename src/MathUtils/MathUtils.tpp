@@ -1,12 +1,5 @@
 #include "MathUtils.hpp"
 
-void MathUtils::Copy(const Tensor<float>& src, Tensor<float>& dest) {
-    assert(src.Data() != nullptr && dest.Data() != nullptr);
-    assert(src.Size() == dest.Size());
-    assert(!src.HasNan());
-
-    cblas_scopy(dest.Size(), src.Data(), 1, dest.Data(), 1);
-}
 void MathUtils::CopyByRow(const Tensor<float>& src, Tensor<float>& dest) {
     assert(src.Data() != nullptr && dest.Data() != nullptr);
     assert(dest.Size() % src.Size() == 0);
@@ -14,6 +7,21 @@ void MathUtils::CopyByRow(const Tensor<float>& src, Tensor<float>& dest) {
 
     const size_t srcSize = src.Size();
     const size_t n = dest.Size() / srcSize;
+
+    /* TODO : verify Optimization Idea
+
+    // copies first row in
+    cblas_scopy(srcSize, src.Data(), 1, dest.Data(), 1);
+
+    // maybe some better cache ussage? keeping things close? 
+    // maybe just more confusing for prefetch though :/ -> experiment!
+    // also try using #pragma omp parallel for
+    for (size_t i = i; i < n; i++) {
+        cblas_scopy(srcSize, dest.Data()[(i-1)*srcSize], 1, &dest.Data()[i*srcSize], 1);
+    }
+    
+    
+    */
 
     for (size_t i = 0; i < n; i++) {
         cblas_scopy(srcSize, src.Data(), 1, &dest.Data()[i*srcSize], 1);

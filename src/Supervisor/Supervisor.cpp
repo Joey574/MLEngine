@@ -42,14 +42,19 @@ int Supervisor::Build() {
 nlohmann::json Supervisor::Train(nlohmann::json& history) {
     assert(defined && built);
 
+    const size_t iterations = ((*dataset).TrainingSamples()+trainingConfig.batchSize-1) / trainingConfig.batchSize;
+
     // TODO : Implement iterations, major problem
     for (size_t e = 0; e < trainingConfig.epochs && KEEPRUNNING; e++) {
-        size_t startElement = e*trainingConfig.batchSize;
-        size_t numElements = std::min((*dataset).TrainingSamples()-startElement, trainingConfig.batchSize);
 
         std::cout << "[i] " << e;
-        model->Forward(startElement, numElements);
-        model->Backward(startElement, numElements);
+        for (size_t i = 0; i < iterations && KEEPRUNNING; i++) {
+            size_t startElement = i*trainingConfig.batchSize;
+            size_t numElements = std::min((*dataset).TrainingSamples()-startElement, trainingConfig.batchSize);
+
+            model->Forward(startElement, numElements);
+            model->Backward(startElement, numElements);
+        }
 
         if (trainingConfig.scoreFrequency > 0 && e % trainingConfig.scoreFrequency == 0) {
             Score score = model->Validate();

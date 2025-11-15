@@ -21,7 +21,7 @@ struct Dataset {
         labelView = trainingLabels.Slice(start, n);
         return labelView;
     }
-    inline size_t TrainingSamples() { return trainingData.Dimensions()[trainingData.Dimensionality()-1]; }
+    inline size_t TrainingSamples() const { return trainingData.Dimensions()[trainingData.Dimensionality()-1]; }
 
     inline Tensor<float>& TestingData(size_t start, size_t n) {
         dataView = testingData.Slice(start, n);
@@ -33,7 +33,7 @@ struct Dataset {
     }
     inline Tensor<float>& TestingData() { return testingData; }
     inline Tensor<float>& TestingLabels() { return testingLabels; }
-    inline size_t TestingSamples() { return testingData.Dimensions()[testingData.Dimensionality()-1]; }
+    inline size_t TestingSamples() const { return testingData.Dimensions()[testingData.Dimensionality()-1]; }
 
     inline static Type ParseType(const std::string& name) {
         auto lower = std::string(name.size(), ' ');
