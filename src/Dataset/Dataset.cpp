@@ -29,7 +29,9 @@ int Dataset::Define(YAML::Node& config) {
 int Dataset::Build() {
     assert(defined && !built);
     assert(type != Type::None);
-    
+
+    assert(!trainingData.HasNan() && !trainingLabels.HasNan());
+    assert(!testingData.HasNan() && !testingLabels.HasNan());   
 
     built = true;
     return 0;

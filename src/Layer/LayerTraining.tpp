@@ -10,9 +10,9 @@ template<bool training> void Layer::Forward(const Tensor<float>& input, size_t e
 
 template<bool training> void Layer::InputForward(const Tensor<float>& input, size_t elements) {
     if constexpr (training) {
-        MathUtils::PartialCopy(input, trainingActivations);
+        MathUtils::PartialCopy<true>(input, trainingActivations);
     } else {
-        MathUtils::PartialCopy(input, testingActivations);
+        MathUtils::PartialCopy<true>(input, testingActivations);
     }
 }
 template<bool training> void Layer::HiddenForward(const Tensor<float>& input, size_t elements) {

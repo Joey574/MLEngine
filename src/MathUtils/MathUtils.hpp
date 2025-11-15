@@ -13,7 +13,7 @@ struct MathUtils {
 
     template <bool acum, bool transA, bool transB> static inline void Sgemm(const Tensor<float>& a, const Tensor<float>& b, Tensor<float>& c) {
         assert(a.Dimensionality() == 2 && b.Dimensionality() == 2 && c.Dimensionality() == 2);
-        assert(a.Data() != nullptr && b.Data() != nullptr && c.Data() != nullptr);
+        assert(!a.IsEmpty() && !b.IsEmpty() && !c.IsEmpty());
         assert(!a.HasNan() && !b.HasNan());
 
         const auto aDims = a.Dimensions();
@@ -50,20 +50,24 @@ struct MathUtils {
         assert(src.Size() == dest.Size());
         assert(!src.HasNan());
 
-        cblas_scopy(dest.Size(), src.Data(), 1, dest.Data(), 1);
+        cblas_scopy(src.Size(), src.Data(), 1, dest.Data(), 1);
     }
-    static inline void PartialCopy(const Tensor<float>& src, Tensor<float>& dest) {
+    template <bool clear> static inline void PartialCopy(const Tensor<float>& src, Tensor<float>& dest) {
         assert(src.Data() != nullptr && dest.Data() != nullptr);
         assert(dest.Size() >= src.Size());
         assert(!src.HasNan());
 
-        cblas_scopy(src.Size(), src.Data(), 1, dest.Data(), 1);
+        const size_t srcSize = src.Size();
+        cblas_scopy(srcSize, src.Data(), 1, dest.Data(), 1);
 
         // zero out remaining elements
-        const size_t destSize = dest.Size();
-        size_t remaining = destSize - src.Size();
-        if (remaining > 0) {
-            std::memset(&dest.Data()[destSize-remaining], 0, remaining*sizeof(float));
+        if constexpr (clear) {
+            const size_t destSize = dest.Size();
+            size_t remaining = destSize-srcSize;
+
+            if (remaining > 0) {
+                std::memset(dest.Data()+srcSize, 0, remaining*sizeof(float));
+            }
         }
     }
 

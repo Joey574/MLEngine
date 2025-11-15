@@ -4,10 +4,14 @@ template <typename T>
 struct Tensor {
     public:
 
+    Tensor() : data(nullptr) {}
+
     /// @brief Constructor
     template <typename... Dims> Tensor(Dims... dims) : dimensions{dims...}, owner(true) {
         size_t size = Size();
-        data = (T*)aligned_alloc(32, size*sizeof(T));
+        if (size > 0) {
+            data = (T*)aligned_alloc(32, size*sizeof(T));
+        }
     }
 
 
@@ -33,16 +37,18 @@ struct Tensor {
 
 
     /// @brief Deconstructor
-    ~Tensor() { if (data && owner) {
-        #ifdef DEBUG
-            std::cout << "[i] Tensor freeing (" << Size()*sizeof(T) << " bytes)\n";
-        #endif
-        std::free(data); } 
+    ~Tensor() { 
+        if (data && owner) {
+            #ifdef DEBUG
+                std::cout << "[i] Tensor freeing (" << Size()*sizeof(T) << " bytes)\n";
+            #endif
+            std::free(data); 
+        } 
     }
 
 
     /// @brief Move operator
-    Tensor& operator = (Tensor&& other) noexcept {
+    inline Tensor& operator = (Tensor&& other) noexcept {
         if (data && owner && this != &other) { 
             #ifdef DEBUG
                 std::cout << "[i] Tensor freeing (" << Size()*sizeof(T) << " bytes)\n";
@@ -59,7 +65,7 @@ struct Tensor {
 
 
     /// @brief Copy operator
-    Tensor& operator = (const Tensor& other) {
+    inline Tensor& operator = (const Tensor& other) {
         if (data && owner && this != &other) { 
             #ifdef DEBUG
                 std::cout << "[i] Tensor freeing (" << Size()*sizeof(T) << " bytes)\n";
@@ -82,23 +88,15 @@ struct Tensor {
 
 
     /// @return Const pointer to raw data 
-    inline const T* Data() const {
-        assert(data != nullptr);
-        return data; 
-    }
+    inline const T* Data() const { return data; }
 
 
     /// @return Pointer to raw data
-    inline T* Data() {
-        assert(data != nullptr);
-        return data; 
-    }
+    inline T* Data() { return data; }
 
 
     /// @return The dimensionality of the tensor
-    inline size_t Dimensionality() const {
-        return dimensions.size(); 
-    }
+    inline size_t Dimensionality() const { return dimensions.size(); }
 
 
     /// @return vector of dimensions
@@ -153,6 +151,23 @@ struct Tensor {
     /// @brief Zeroes out all tensor elements
     inline void Zero() {
         std::memset(data, 0, Size()*sizeof(T));
+    }
+
+
+    inline bool IsEmpty() const { return data == nullptr; }
+
+
+    inline T Mean() {
+        if constexpr (std::is_floating_point_v<T>) {
+            float mean = 0.0f;
+
+            #pragma omp parallel for simd schedule(static) reduction(+:mean)
+            for (size_t i = 0; i < Size(); i++) {
+                mean += data[i];
+            }
+
+            return mean / Size();
+        }
     }
 
     private:

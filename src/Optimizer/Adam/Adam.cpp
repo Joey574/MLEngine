@@ -30,8 +30,8 @@ void Adam::Update(Tensor<float>& weights, Tensor<float>& biases, Tensor<float>& 
     assert(iteration > 0);
     assert(epsilon > 0.0f);
 
-    Compute(weights, weightDerivatives, weightVelocity, weightSquares, elements, learningRate);
-    Compute(biases, biasDerivatives, biasVelocity, biasSquares, elements, learningRate);
+    if (!weights.IsEmpty()) Compute(weights, weightDerivatives, weightVelocity, weightSquares, elements, learningRate);
+    if (!biases.IsEmpty()) Compute(biases, biasDerivatives, biasVelocity, biasSquares, elements, learningRate);
     iteration++;
 }
 
@@ -43,7 +43,8 @@ void Adam::Compute(Tensor<float>& parameters, Tensor<float>& derivatives, Tensor
     assert(iteration > 0);
     assert(epsilon > 0.0f);
 
-    const float factor = learningRate / (float)elements;
+    //const float factor = learningRate / (float)elements;
+    const float factor = learningRate;
     const float b1Rate = 1.0f-b1;
     const float b2Rate = 1.0f-b2;
 
