@@ -33,12 +33,22 @@ struct Tensor {
 
 
     /// @brief Deconstructor
-    ~Tensor() { if (data && owner) { std::free(data); } }
+    ~Tensor() { if (data && owner) {
+        #ifdef DEBUG
+            std::cout << "[i] Tensor freeing (" << Size()*sizeof(T) << " bytes)\n";
+        #endif
+        std::free(data); } 
+    }
 
 
     /// @brief Move operator
     Tensor& operator = (Tensor&& other) noexcept {
-        if (data && owner && this != &other) { std::free(data); }
+        if (data && owner && this != &other) { 
+            #ifdef DEBUG
+                std::cout << "[i] Tensor freeing (" << Size()*sizeof(T) << " bytes)\n";
+            #endif
+            std::free(data); 
+        }
 
         data = other.Data();
         dimensions = std::move(other.dimensions);
@@ -50,9 +60,14 @@ struct Tensor {
 
     /// @brief Copy operator
     Tensor& operator = (const Tensor& other) {
-        if (data && owner && this != &other) { free(data); }
+        if (data && owner && this != &other) { 
+            #ifdef DEBUG
+                std::cout << "[i] Tensor freeing (" << Size()*sizeof(T) << " bytes)\n";
+            #endif
+            free(data); 
+        }
+        
         dimensions = other.dimensions;
-
         size_t size = Size();
 
         #ifdef DEBUG

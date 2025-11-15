@@ -42,6 +42,7 @@ int Supervisor::Build() {
 nlohmann::json Supervisor::Train(nlohmann::json& history) {
     assert(defined && built);
 
+    // TODO : Implement iterations, major problem
     for (size_t e = 0; e < trainingConfig.epochs && KEEPRUNNING; e++) {
         size_t startElement = e*trainingConfig.batchSize;
         size_t numElements = std::min((*dataset).TrainingSamples()-startElement, trainingConfig.batchSize);

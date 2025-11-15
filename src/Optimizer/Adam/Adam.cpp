@@ -17,6 +17,11 @@ void Adam::Build(size_t weightSize, size_t biasSize) {
     biasVelocity = Tensor<float>(biasSize);
     weightSquares = Tensor<float>(weightSize);
     biasSquares = Tensor<float>(biasSize);
+
+    weightVelocity.Zero();
+    biasVelocity.Zero();
+    weightSquares.Zero();
+    biasSquares.Zero();
     built = true;
 }
 
@@ -55,7 +60,7 @@ void Adam::Compute(Tensor<float>& parameters, Tensor<float>& derivatives, Tensor
         const float mh = velocity.Data()[i]*b1InvDenominator;
         const float vh = squares.Data()[i]*b2InvDenominator;
 
-        parameters.Data()[i] -= factor*(mh/sqrtf(vh+epsilon));
+        parameters.Data()[i] -= factor*(mh/(sqrtf(vh)+epsilon));
     }
 
     assert(!parameters.HasNan());

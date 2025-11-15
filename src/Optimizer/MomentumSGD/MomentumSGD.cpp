@@ -12,6 +12,9 @@ void MomentumSGD::Build(size_t weightSize, size_t biasSize) {
 
     weightVelocity = Tensor<float>(weightSize);
     biasVelocity = Tensor<float>(biasSize);
+
+    weightVelocity.Zero();
+    biasVelocity.Zero();
     built = true;
 }
 

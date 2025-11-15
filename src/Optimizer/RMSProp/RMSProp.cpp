@@ -13,6 +13,9 @@ void RMSProp::Build(size_t weightSize, size_t biasSize) {
 
     weightSquares = Tensor<float>(weightSize);
     biasSquares = Tensor<float>(biasSize);
+
+    weightSquares.Zero();
+    biasSquares.Zero();
     built = true;
 }
 

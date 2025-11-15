@@ -3,7 +3,7 @@ dataset: mnist
 
 optimizer:
   type: adam
-  learning_rate: 0.001
+  learning_rate: 0.2
 
 layers:
   - type: input
@@ -25,6 +25,6 @@ layers:
 
 seed: 42
 
-epochs: 50
+epochs: 500
 valid_freq: 1
 batch_size: 512
