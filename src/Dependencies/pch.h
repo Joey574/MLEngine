@@ -21,6 +21,7 @@
 #include <functional>
 #include <numeric>
 #include <cmath>
+#include <omp.h>
 
 // External libraries
 #include "json.hpp"

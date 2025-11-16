@@ -71,7 +71,91 @@ struct MathUtils {
         }
     }
 
-    static void CopyByRow(const Tensor<float>& src, Tensor<float>& dest);
+    static inline void CopyByRow(const Tensor<float>& src, Tensor<float>& dest) {
+        assert(src.Data() != nullptr && dest.Data() != nullptr);
+        assert(dest.Size() % src.Size() == 0);
+        assert(!src.HasNan());
 
-    template <bool acum> static void SumColumns(const Tensor<float>& a, Tensor<float>& b);
+        const size_t srcSize = src.Size();
+        const size_t n = dest.Size() / srcSize;
+
+        const float* __restrict srcData = src.Data();
+        float* __restrict dstData = dest.Data();
+
+        for (size_t i = 0; i < n; i++) {
+            cblas_scopy(srcSize, srcData, 1, &dstData[i*srcSize], 1);
+        }
+    }
+
+    template <bool ACUM> static void SumColumns(const Tensor<float>& a, Tensor<float>& b) {
+        assert(a.Dimensionality() == b.Dimensionality()+1);
+        assert(a.Data() != nullptr && b.Data() != nullptr);
+        assert(!a.HasNan() && !b.HasNan());
+        
+        const size_t size = a.Size();
+
+        if (size > 2048*1024) {
+            ParallelSumColumns<ACUM, 16>(a, b);
+        } else {
+            SerialSumColumns<ACUM>(a, b);
+        }
+    }
+    template <bool ACUM> static inline void SerialSumColumns(const Tensor<float>& a, Tensor<float>& b) {
+        assert(a.Dimensionality() == b.Dimensionality()+1);
+        assert(a.Data() != nullptr && b.Data() != nullptr);
+        assert(!a.HasNan() && !b.HasNan());
+
+        const auto aDims = a.Dimensions();
+        const size_t ar = aDims[0];
+        const size_t ac = aDims[1];
+
+        if constexpr (!ACUM) {
+            b.Zero();
+        }
+
+        const float* __restrict aData = a.Data();
+        float* __restrict bData = b.Data();
+
+        for (size_t r = 0; r < ar; r++) {
+            cblas_saxpy(ac, 1.0f, &aData[r*ac], 1, bData, 1);
+        }
+    }
+    template <bool ACUM, size_t NUM_THREADS> static inline void ParallelSumColumns(const Tensor<float>& a, Tensor<float>& b) {
+        assert(a.Dimensionality() == b.Dimensionality()+1);
+        assert(a.Data() != nullptr && b.Data() != nullptr);
+        assert(!a.HasNan() && !b.HasNan());
+        
+        const auto aDims = a.Dimensions();
+        const size_t ar = aDims[0];
+        const size_t ac = aDims[1];
+
+        Tensor<float> threadBuf(ac*NUM_THREADS);
+        threadBuf.Zero();
+
+        if constexpr (!ACUM) {
+            b.Zero();
+        }
+
+        const float* __restrict aData = a.Data();
+        float* __restrict bData = b.Data();
+        float* __restrict tData = threadBuf.Data();
+
+        #pragma omp parallel num_threads(NUM_THREADS)
+        {
+            const int tid = omp_get_thread_num();
+
+            // parallel axpy into threadBuf
+            #pragma omp for schedule(static)
+            for (size_t r = 0; r < ar; r++) {
+                cblas_saxpy(ac, 1.0f, &aData[r*ac], 1, &tData[tid*ac], 1);
+            }
+
+            // serialize threadBud into bData
+            #pragma omp barrier
+            #pragma omp single
+            for (size_t i = 0; i < NUM_THREADS; i++) {
+                cblas_saxpy(ac, 1.0f, &tData[i*ac], 1, bData, 1);
+            }
+        }
+    }
 };
