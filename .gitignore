@@ -1,3 +1,4 @@
 CMakeBuild
 bin
 build
+*.data
