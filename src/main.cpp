@@ -50,19 +50,6 @@ void segv(int signum) {
     exit(1);
 }
 
-// TODO : Actually get this to work
-__attribute__((constructor(101)))
-static void configure() {
-    unsetenv("OMP_NUM_THREADS");
-    unsetenv("OPENBLAS_NUM_THREADS");
-
-    int logical = std::thread::hardware_concurrency();
-    int threads = logical / 2;
-
-    omp_set_num_threads(threads);
-    setenv("OMP_NUM_THREADS", std::to_string(threads).c_str(), 1);
-}
-
 int main(int argc, char* argv[]) {
     KEEPRUNNING = true;
     signal(SIGINT, handleInterupt);
