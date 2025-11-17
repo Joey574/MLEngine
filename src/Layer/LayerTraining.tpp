@@ -1,25 +1,25 @@
 #include "Layer.hpp"
 
-template<bool training> void Layer::Forward(const Tensor<float>& input, size_t elements) {
+template<bool TRAINING> void Layer::Forward(const Tensor<float>& input) {
     if (type == Type::Input) {
-        InputForward<training>(input, elements);
+        InputForward<TRAINING>(input);
     } else {
-        HiddenForward<training>(input, elements);
+        HiddenForward<TRAINING>(input);
     }
 }
 
-template<bool training> void Layer::InputForward(const Tensor<float>& input, size_t elements) {
-    if constexpr (training) {
+template<bool TRAINING> void Layer::InputForward(const Tensor<float>& input) {
+    if constexpr (TRAINING) {
         MathUtils::PartialCopy<true>(input, trainingActivations);
     } else {
         MathUtils::PartialCopy<true>(input, testingActivations);
     }
 }
-template<bool training> void Layer::HiddenForward(const Tensor<float>& input, size_t elements) {
+template<bool TRAINING> void Layer::HiddenForward(const Tensor<float>& input) {
     Tensor<float>* z;
     Tensor<float>* a;
 
-    if constexpr (training) {
+    if constexpr (TRAINING) {
         z = &trainingTotals;
         a = &trainingActivations;
     } else {

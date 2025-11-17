@@ -72,7 +72,6 @@ void Layer::InitializeParameters() {
         float upper = std::sqrt(2.0f / nodes);
         std::normal_distribution<float> dist(lower, upper);
 
-        #pragma omp simd
         for (size_t i = 0; i < n; i++) {
             weights.Data()[i] = dist(gen);
         }
@@ -81,21 +80,17 @@ void Layer::InitializeParameters() {
         float upper = 0.5f;
         std::uniform_real_distribution<float> dist(lower, upper);
 
-        #pragma omp simd
         for (size_t i = 0; i < n; i++) {
             weights.Data()[i] = dist(gen) * std::sqrt(1.0f / nodes);
         }
-
     } else if (weightType == WeightType::Xavier) {
         float lower = (-1.0f / std::sqrt(nodes));
         float upper = 1.0f / std::sqrt(nodes);
         std::uniform_real_distribution<float> dist(lower, upper);
 
-        #pragma omp simd
         for (size_t i = 0; i < n; i++) {
             weights.Data()[i] = dist(gen);
         }
-
     } else {
         weights.Zero();
     }

@@ -38,3 +38,20 @@ void MomentumSGD::Compute(Tensor<float>& parameters, Tensor<float>& derivatives,
         parameters.Data()[i] -= velocity.Data()[i];
     }
 }
+
+int MomentumSGD::Save(std::ofstream& f) const {
+    assert(defined && built);
+    assert(!weightVelocity.IsEmpty() && !biasVelocity.IsEmpty());
+
+    f.write((char*)weightVelocity.Data(), weightVelocity.Size()*sizeof(float));
+    f.write((char*)biasVelocity.Data(), biasVelocity.Size()*sizeof(float));
+
+    return 0;
+}
+int MomentumSGD::Load(std::ifstream& f) {
+    assert(defined && !built);
+
+
+    built = true;
+    return 0;
+}

@@ -73,9 +73,9 @@ struct Layer {
     void Define(const YAML::Node& layerConfig, const YAML::Node& optimizerConfig, const TrainingConfig& trainingConfig, size_t in, size_t out);
     void Build();
 
-    template <bool training> void Forward(const Tensor<float>& input, size_t elements);
-    template <bool training> void InputForward(const Tensor<float>& input, size_t elements);
-    template <bool training> void HiddenForward(const Tensor<float>& input, size_t elements);
+    template <bool training> void Forward(const Tensor<float>& input);
+    template <bool training> void InputForward(const Tensor<float>& input);
+    template <bool training> void HiddenForward(const Tensor<float>& input);
 
     void Backward(const Tensor<float>& truth, const Tensor<float>& input, const Tensor<float>& nextWeights, size_t elements);
     void InputBackward();
@@ -89,8 +89,8 @@ struct Layer {
         return (*lossMetric.metric)(testingActivations, truth);
     }
 
-    template <bool train> inline Tensor<float>& Output() {
-        if constexpr (train) {
+    template <bool TRAIN> inline Tensor<float>& Output() {
+        if constexpr (TRAIN) {
             return trainingActivations;
         } else {
             return testingActivations;

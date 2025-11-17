@@ -16,6 +16,9 @@ struct Optimizer {
 
     void Update(size_t elements);
 
+    int Save(std::ofstream& f) const;
+    int Load(std::ifstream& f);
+
     static inline Type ParseType(const std::string& name) {
         auto lower = std::string(name.size(), ' ');
         std::transform(name.begin(), name.end(), lower.begin(), tolower);

@@ -11,7 +11,7 @@ void NeuralNetwork::Forward(size_t startElement, size_t numElements) {
             &(*dataset).TrainingData(startElement, numElements) :
             &layers[i-1].Output<true>();
 
-        layers[i].Forward<true>(*input, numElements);
+        layers[i].Forward<true>(*input);
     }
 }
 
@@ -54,7 +54,7 @@ Score NeuralNetwork::Validate() {
             &(*dataset).TestingData() :
             &layers[i-1].Output<false>();
 
-        layers[i].Forward<false>(*input, (*trainingConfig).testSize);
+        layers[i].Forward<false>(*input);
     }
 
     float score = layers.back().Score((*dataset).TestingLabels());

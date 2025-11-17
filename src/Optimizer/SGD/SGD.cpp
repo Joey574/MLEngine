@@ -46,3 +46,13 @@ void SGD::Compute(Tensor<float>& parameters, const Tensor<float>& derivatives, s
         parameters.Data()[i] -= derivatives.Data()[i]*factor;
     }
 }
+
+int SGD::Save(std::ofstream& f) const {
+    assert(defined && built);
+    return 0;
+}
+int SGD::Load(std::ifstream& f) {
+    assert(defined && !built);
+    built = true;
+    return 0;
+}

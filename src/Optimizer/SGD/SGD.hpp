@@ -7,6 +7,9 @@ struct SGD {
     void Define(const YAML::Node& config);
     void Build(size_t weightSize, size_t biasSize);
 
+    int Save(std::ofstream& f) const;
+    int Load(std::ifstream& f);
+
     inline bool IsDefined() const { return defined; }
     inline bool IsBuilt() const { return built; }
 

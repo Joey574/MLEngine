@@ -43,8 +43,14 @@ void Adam::Compute(Tensor<float>& parameters, Tensor<float>& derivatives, Tensor
     assert(iteration > 0);
     assert(epsilon > 0.0f);
 
-    //const float factor = learningRate / (float)elements;
-    const float factor = learningRate;
+    //std::cout << "P: " << parameters.Mean() << "\nD: " << derivatives.Mean() << "\nV: " << velocity.Mean() << "\nS: " << squares.Mean() << "\nE: " << elements << "\nLr: " << learningRate << "\n\n";
+
+    float* __restrict pData = parameters.Data();
+    float* __restrict dData = derivatives.Data();
+    float* __restrict vData = velocity.Data();
+    float* __restrict sData = squares.Data();
+
+    const float factor = learningRate / (float)elements;
     const float b1Rate = 1.0f-b1;
     const float b2Rate = 1.0f-b2;
 
@@ -55,14 +61,21 @@ void Adam::Compute(Tensor<float>& parameters, Tensor<float>& derivatives, Tensor
 
     #pragma omp parallel for simd schedule(static)
     for (size_t i = 0; i < numParameters; i++) {
-        velocity.Data()[i] = (velocity.Data()[i]*b1)+b1Rate*derivatives.Data()[i];
-        squares.Data()[i] = (squares.Data()[i]*b2)+b2Rate*derivatives.Data()[i]*derivatives.Data()[i];
+        vData[i] = (vData[i]*b1)+(b1Rate*dData[i]);
+        sData[i] = (sData[i]*b2)+(b2Rate*dData[i]*dData[i]);
 
-        const float mh = velocity.Data()[i]*b1InvDenominator;
-        const float vh = squares.Data()[i]*b2InvDenominator;
+        const float mh = vData[i]*b1InvDenominator;
+        const float vh = sData[i]*b2InvDenominator;
 
-        parameters.Data()[i] -= factor*(mh/(sqrtf(vh)+epsilon));
+        pData[i] -= factor*(mh/sqrtf(vh+epsilon));
     }
 
     assert(!parameters.HasNan());
+}
+
+int Adam::Save(std::ofstream& f) const {
+
+}
+int Adam::Load(std::ifstream& f) {
+
 }

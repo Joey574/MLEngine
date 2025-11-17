@@ -41,3 +41,10 @@ void RMSProp::Compute(Tensor<float>& parameters, Tensor<float>& derivatives, Ten
         parameters.Data()[i] -= (factor /(std::sqrt(squares.Data()[i]+epsilon)))*squares.Data()[i];
     }
 }
+
+int RMSProp::Save(std::ofstream& f) const {
+
+}
+int RMSProp::Load(std::ifstream& f) {
+
+}

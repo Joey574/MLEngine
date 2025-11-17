@@ -65,3 +65,14 @@ void Optimizer::Update(size_t elements) {
         data.Update(*weights, *biases, *weightDerivatives, *biasDerivatives, elements, learningRate);
     }, data);
 }
+
+int Optimizer::Save(std::ofstream& f) const {
+    std::visit([&](auto& data) {
+
+    }, data);
+}
+int Optimizer::Load(std::ifstream& f) {
+    std::visit([&](auto& data) {
+
+    }, data);
+}
