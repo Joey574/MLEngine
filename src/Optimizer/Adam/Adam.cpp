@@ -74,8 +74,24 @@ void Adam::Compute(Tensor<float>& parameters, Tensor<float>& derivatives, Tensor
 }
 
 int Adam::Save(std::ofstream& f) const {
+    assert(defined && built);
+    assert(!weightVelocity.IsEmpty() && !biasVelocity.IsEmpty());
+    assert(!weightSquares.IsEmpty() && !biasSquares.IsEmpty());
 
+    if (!weightVelocity.IsEmpty()) f.write((char*)weightVelocity.Data(), weightVelocity.Size()*sizeof(float));
+    if (!biasVelocity.IsEmpty()) f.write((char*)biasVelocity.Data(), biasVelocity.Size()*sizeof(float));
+    if (!weightSquares.IsEmpty()) f.write((char*)weightSquares.Data(), weightSquares.Size()*sizeof(float));
+    if (!biasSquares.IsEmpty()) f.write((char*)biasSquares.Data(), biasSquares.Size()*sizeof(float));
+    f.write((char*)&iteration, sizeof(size_t));
+    return 0;
 }
 int Adam::Load(std::ifstream& f) {
+    assert(defined && built);
 
+    if (!weightVelocity.IsEmpty()) f.read((char*)weightVelocity.Data(), weightVelocity.Size()*sizeof(float));
+    if (!biasVelocity.IsEmpty()) f.read((char*)biasVelocity.Data(), biasVelocity.Size()*sizeof(float));
+    if (!weightSquares.IsEmpty()) f.read((char*)weightSquares.Data(), weightSquares.Size()*sizeof(float));
+    if (!biasSquares.IsEmpty()) f.read((char*)biasSquares.Data(), biasSquares.Size()*sizeof(float));
+    f.read((char*)&iteration, sizeof(size_t));
+    return 0;
 }

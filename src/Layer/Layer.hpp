@@ -73,9 +73,14 @@ struct Layer {
     void Define(const YAML::Node& layerConfig, const YAML::Node& optimizerConfig, const TrainingConfig& trainingConfig, size_t in, size_t out);
     void Build();
 
-    template <bool training> void Forward(const Tensor<float>& input);
-    template <bool training> void InputForward(const Tensor<float>& input);
-    template <bool training> void HiddenForward(const Tensor<float>& input);
+    int Save(std::ofstream& f) const;
+    int Load(std::ifstream& f);
+    inline int SaveOptimizers(std::ofstream& f) const { return optimizer.Save(f); }
+    inline int LoadOptimizers(std::ifstream& f) { return optimizer.Load(f); }
+
+    template <bool TRAINING> void Forward(const Tensor<float>& input);
+    template <bool TRAINING> void InputForward(const Tensor<float>& input);
+    template <bool TRAINING> void HiddenForward(const Tensor<float>& input);
 
     void Backward(const Tensor<float>& truth, const Tensor<float>& input, const Tensor<float>& nextWeights, size_t elements);
     void InputBackward();

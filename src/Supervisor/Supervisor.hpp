@@ -10,14 +10,18 @@ struct Supervisor {
         dataset = new Dataset();
     }
     ~Supervisor() {
-        delete model;
-        delete dataset;
+        if (model) { delete model; }
+        if (dataset) { delete dataset; }
     }
 
     int Define(YAML::Node& config, std::string& path, std::string& name);
     int Build();
 
+    int Save() const;
     int Load();
+    int SaveOptimizers() const;
+    int LoadOptimizers();
+
 
     nlohmann::json Train(nlohmann::json& history);
 
@@ -38,5 +42,4 @@ struct Supervisor {
     YAML::Node* config;
     TrainingConfig trainingConfig;
 
-    void Save() const;
 };

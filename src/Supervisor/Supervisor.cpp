@@ -44,7 +44,6 @@ nlohmann::json Supervisor::Train(nlohmann::json& history) {
 
     const size_t iterations = ((*dataset).TrainingSamples()+trainingConfig.batchSize-1) / trainingConfig.batchSize;
 
-    // TODO : Implement iterations, major problem
     for (size_t e = 0; e < trainingConfig.epochs && KEEPRUNNING; e++) {
 
         std::cout << "[i] " << e;
@@ -56,7 +55,7 @@ nlohmann::json Supervisor::Train(nlohmann::json& history) {
             model->Backward(startElement, numElements);
         }
 
-        if (trainingConfig.scoreFrequency > 0 && e % trainingConfig.scoreFrequency == 0) {
+        if (trainingConfig.scoreFrequency > 0 && e % trainingConfig.scoreFrequency == 0 && KEEPRUNNING) {
             Score score = model->Validate();
             std::cout << ": " << score.GetScore();
 
@@ -71,11 +70,25 @@ nlohmann::json Supervisor::Train(nlohmann::json& history) {
     return history;
 }
 
-/// @brief Tries to load model
-/// @return 0 for success
+int Supervisor::Save() const {
+    assert(!path.empty() && !name.empty());
+    assert(defined && built);
+
+    const std::string file = path+"/"+name+".model";
+    std::ofstream f(file, std::ios::trunc);
+    if (!f.is_open()) {
+        return 1;
+    }
+
+    int code = model->Save(f);
+    f.close();
+
+    code += SaveOptimizers();
+    return code;
+}
 int Supervisor::Load() {
     assert(!path.empty() && !name.empty());
-    assert(defined && !built);
+    assert(defined && built);
 
     std::string file = path+"/"+name+".model";
     std::ifstream f(file);
@@ -83,21 +96,38 @@ int Supervisor::Load() {
         return 1;
     }
 
-    int err = model->Load(f);
+    int code = model->Load(f);
     f.close();
-    built = true;
-    return err;
+
+    code += LoadOptimizers();
+    return code;
 }
 
-/// @brief Saves model
-void Supervisor::Save() const {
+int Supervisor::SaveOptimizers() const {
     assert(!path.empty() && !name.empty());
     assert(defined && built);
 
-    const std::string file = path+"/"+name+".model";
-    std::ofstream f(file, std::ios::trunc);
-    assert(f.is_open());
+    std::string file = path+"/"+name+".optimizers";
+    std::ofstream f(file);
+    if (!f.is_open()) {
+        return 1;
+    }
 
-    model->Save(f);
+    int err = model->SaveOptimizers(f);
     f.close();
+    return err;
+}
+int Supervisor::LoadOptimizers() {
+    assert(!path.empty() && !name.empty());
+    assert(defined && built);
+
+    std::string file = path+"/"+name+".optimizers";
+    std::ifstream f(file);
+    if (!f.is_open()) {
+        return 1;
+    }
+
+    int err = model->LoadOptimizers(f);
+    f.close();
+    return err;
 }

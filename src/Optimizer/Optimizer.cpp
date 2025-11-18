@@ -67,12 +67,12 @@ void Optimizer::Update(size_t elements) {
 }
 
 int Optimizer::Save(std::ofstream& f) const {
-    std::visit([&](auto& data) {
-
+    std::visit([&](const auto& data) {
+        data.Save(f);
     }, data);
 }
 int Optimizer::Load(std::ifstream& f) {
     std::visit([&](auto& data) {
-
+        data.Load(f);
     }, data);
 }

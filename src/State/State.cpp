@@ -9,6 +9,7 @@ int State::Load() {
 
     int code = 0;
     code += supervisor->Define(config, path, name);
+    code += supervisor->Build();
     code += supervisor->Load();
 
     return code;

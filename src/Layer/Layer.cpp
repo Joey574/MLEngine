@@ -49,7 +49,6 @@ void Layer::Define(const YAML::Node& layerConfig, const YAML::Node& optimizerCon
     optimizer.Define(optimizerConfig, weights.Size(), biases.Size());
     defined = true;
 }
-
 void Layer::Build() {
     assert(defined && !built);
     assert(optimizer.IsDefined() && !optimizer.IsBuilt());
@@ -94,4 +93,19 @@ void Layer::InitializeParameters() {
     } else {
         weights.Zero();
     }
+}
+
+int Layer::Save(std::ofstream& f) const {
+    assert(defined && built);
+
+    if (!weights.IsEmpty()) f.write((char*)weights.Data(), weights.Size()*sizeof(float));
+    if (!biases.IsEmpty()) f.write((char*)biases.Data(), biases.Size()*sizeof(float));
+    return 0;
+}
+int Layer::Load(std::ifstream& f) {
+    assert(defined && built);
+
+    if (!weights.IsEmpty()) f.read((char*)weights.Data(), weights.Size()*sizeof(float));
+    if (!biases.IsEmpty()) f.read((char*)biases.Data(), biases.Size()*sizeof(float));
+    return 0;
 }

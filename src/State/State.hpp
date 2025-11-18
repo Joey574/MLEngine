@@ -12,7 +12,7 @@ struct State {
         modelPath = workspacePath+"/Models";
     }
     ~State() {
-        delete supervisor;
+        if (supervisor) { delete supervisor; }
     }
 
     int Start(int argc, char* argv[]);
@@ -40,7 +40,8 @@ struct State {
     bool ModelExists() const;
     bool IsValid() const;
 
-    static std::string ParseArgs(int argc, char* argv[]);
+    YAML::Node ParseArgs(int argc, char* argv[]);
+    void DeleteModel(const std::string& name);
 
     static std::string ExpandPath(const std::string& path);
     static bool CreateDirectory(const std::string& path);

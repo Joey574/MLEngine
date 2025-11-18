@@ -4,13 +4,7 @@
 int State::Start(int argc, char* argv[]) {
 
     // parse arguments and return the passed config file path
-    std::string configFile = ParseArgs(argc, argv);
-    if (configFile.empty()) {
-        std::cerr << "[x] No config passed / found\n";
-        return 1;
-    }
-
-    config = YAML::LoadFile(configFile);
+    config = ParseArgs(argc, argv);
     name = config[Y_MODELNAME].as<std::string>();
     SEED = config[Y_SEED].as<uint64_t>(std::random_device{}());
     path = modelPath+"/"+name;

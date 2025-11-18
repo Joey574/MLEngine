@@ -14,10 +14,10 @@ int NeuralNetwork::Define(YAML::Node& config, Dataset& dataset, const TrainingCo
 
     for (size_t i = 0; i < layers.size(); i++) {
         auto layerConf = layerConfigs[i];
-        size_t i_nodes = i == 0 ? 0 : layerConfigs[i-1][Y_NODES].as<size_t>();
-        size_t n_nodes = i == layers.size()-1 ? 0 : layerConfigs[i+1][Y_NODES].as<size_t>();
+        size_t iNodes = i == 0 ? 0 : layerConfigs[i-1][Y_NODES].as<size_t>();
+        size_t nNodes = i == layers.size()-1 ? 0 : layerConfigs[i+1][Y_NODES].as<size_t>();
 
-        layers[i].Define(layerConf, optimizerConfig, trainingConfig, i_nodes, n_nodes);
+        layers[i].Define(layerConf, optimizerConfig, trainingConfig, iNodes, nNodes);
     }
 
     defined = true;

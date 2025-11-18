@@ -8,10 +8,10 @@ struct NeuralNetwork {
     int Define(YAML::Node& config, Dataset& dataset, const TrainingConfig& trainingConfig);
     int Build();
 
-    int Load(std::ifstream& file);
-    void Save(std::ofstream& file) const;
-    void LoadOptimizers(std::ifstream& file);
-    void SaveOptimizers(std::ofstream& file) const;
+    int Save(std::ofstream& f) const;
+    int Load(std::ifstream& f);
+    int SaveOptimizers(std::ofstream& f) const;
+    int LoadOptimizers(std::ifstream& f);
 
     void Forward(size_t startElement, size_t numElements);
     void Backward(size_t startElement, size_t numElements);

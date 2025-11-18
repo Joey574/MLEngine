@@ -43,8 +43,19 @@ void RMSProp::Compute(Tensor<float>& parameters, Tensor<float>& derivatives, Ten
 }
 
 int RMSProp::Save(std::ofstream& f) const {
+    assert(defined && built);
+    assert(!weightSquares.IsEmpty() && !biasSquares.IsEmpty());
 
+    f.write((char*)weightSquares.Data(), weightSquares.Size()*sizeof(float));
+    f.write((char*)biasSquares.Data(), biasSquares.Size()*sizeof(float));
+    return 0;
 }
 int RMSProp::Load(std::ifstream& f) {
+    assert(defined && built);
+
+    f.read((char*)weightSquares.Data(), weightSquares.Size()*sizeof(float));
+    f.read((char*)biasSquares.Data(), biasSquares.Size()*sizeof(float));
+    built = true;
+    return 0;
 
 }

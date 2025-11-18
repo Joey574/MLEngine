@@ -1,17 +1,30 @@
 #include "NeuralNetwork.hpp"
 
-int NeuralNetwork::Load(std::ifstream& file) {
-    assert(defined && !built);
+int NeuralNetwork::Load(std::ifstream& f) {
+    assert(defined && built);
 
-    built = true;
-    return 0;
+    int code = 0;
+    for (Layer& l : layers) { code += l.Load(f); }
+    return code;
 }
-void NeuralNetwork::Save(std::ofstream& file) const {
+int NeuralNetwork::Save(std::ofstream& f) const {
     assert(defined && built);
+
+    int code = 0;
+    for (const Layer& l : layers) { code += l.Save(f); }
+    return code;
 }
-void NeuralNetwork::LoadOptimizers(std::ifstream& file) {
+int NeuralNetwork::LoadOptimizers(std::ifstream& f) {
     assert(defined && built);
+    
+    int code = 0;
+    for (Layer& l : layers) { code += l.Load(f); }
+    return code;
 }
-void NeuralNetwork::SaveOptimizers(std::ofstream& file) const {
+int NeuralNetwork::SaveOptimizers(std::ofstream& f) const {
     assert(defined && built);
+
+    int code = 0;
+    for (const Layer& l : layers) { code += l.Save(f); }
+    return code;
 }

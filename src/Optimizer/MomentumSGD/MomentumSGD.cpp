@@ -45,13 +45,13 @@ int MomentumSGD::Save(std::ofstream& f) const {
 
     f.write((char*)weightVelocity.Data(), weightVelocity.Size()*sizeof(float));
     f.write((char*)biasVelocity.Data(), biasVelocity.Size()*sizeof(float));
-
     return 0;
 }
 int MomentumSGD::Load(std::ifstream& f) {
-    assert(defined && !built);
+    assert(defined && built);
 
-
+    f.read((char*)weightVelocity.Data(), weightVelocity.Size()*sizeof(float));
+    f.read((char*)biasVelocity.Data(), biasVelocity.Size()*sizeof(float));
     built = true;
     return 0;
 }
