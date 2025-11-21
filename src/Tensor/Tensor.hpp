@@ -4,27 +4,31 @@ template <typename T>
 struct Tensor {
     public:
 
-    Tensor() : data(nullptr) {}
+    Tensor() : data(nullptr), owner(false) {}
 
     /// @brief Constructor
     template <typename... Dims> Tensor(Dims... dims) : dimensions{dims...}, owner(true) {
         size_t size = Size();
         if (size > 0) {
             data = (T*)aligned_alloc(32, size*sizeof(T));
+
+            #ifdef DEBUG
+                std::cout << "[i] Tensor allocating to " << data << " (" << size*sizeof(T) << " bytes)\n";
+            #endif
         }
     }
 
 
     /// @brief Contstructor
-    Tensor(float* data, std::vector<size_t>& dimensions, bool owner=true) : data(data), dimensions(dimensions), owner(owner) {}
+    Tensor(T* data, std::vector<size_t>& dimensions, bool owner=true) : data(data), dimensions(dimensions), owner(owner) {}
 
 
     /// @brief Move constructor
-    Tensor(Tensor&& other) noexcept : data(other.Data()), dimensions(std::move(other.Dimensions())), owner(other.owner) { other.Data() = nullptr; }
+    Tensor(Tensor&& other) noexcept : data(other.Data()), dimensions(std::move(other.dimensions)), owner(other.owner) { other.data = nullptr; other.owner = false; }
 
 
     /// @brief Copy constructor
-    Tensor(const Tensor& other) : dimensions(other.Dimensions()), owner(other.owner) {
+    Tensor(const Tensor& other) : dimensions(other.dimensions), owner(true) {
         size_t size = Size();
 
         #ifdef DEBUG
@@ -32,7 +36,7 @@ struct Tensor {
         #endif
 
         data = (T*)aligned_alloc(32, size*sizeof(T));
-        std::memcpy(data, other.Data(), size*sizeof(T));
+        std::memcpy(data, other.data, size*sizeof(T));
     }
 
 
@@ -40,10 +44,11 @@ struct Tensor {
     ~Tensor() { 
         if (data && owner) {
             #ifdef DEBUG
-                std::cout << "[i] Tensor freeing (" << Size()*sizeof(T) << " bytes)\n";
+                std::cout << "[i] Tensor freeing " << data <<  " (" << Size()*sizeof(T) << " bytes)\n";
             #endif
+
             std::free(data); 
-        } 
+        }
     }
 
 
@@ -51,15 +56,16 @@ struct Tensor {
     inline Tensor& operator = (Tensor&& other) noexcept {
         if (data && owner && this != &other) { 
             #ifdef DEBUG
-                std::cout << "[i] Tensor freeing (" << Size()*sizeof(T) << " bytes)\n";
+                std::cout << "[i] Tensor freeing " << data <<  " (" << Size()*sizeof(T) << " bytes)\n";
             #endif
             std::free(data); 
         }
 
-        data = other.Data();
+        data = other.data;
         dimensions = std::move(other.dimensions);
         other.data = nullptr;
         owner = other.owner;
+        other.owner = false;
         return *this;
     }
 
@@ -68,7 +74,7 @@ struct Tensor {
     inline Tensor& operator = (const Tensor& other) {
         if (data && owner && this != &other) { 
             #ifdef DEBUG
-                std::cout << "[i] Tensor freeing (" << Size()*sizeof(T) << " bytes)\n";
+                std::cout << "[i] Tensor freeing " << data <<  " (" << Size()*sizeof(T) << " bytes)\n";
             #endif
             free(data); 
         }
@@ -81,8 +87,8 @@ struct Tensor {
         #endif
 
         data = (T*)aligned_alloc(32, size*sizeof(T));
-        std::memcpy(data, other.Data(), size*sizeof(T));
-        owner = other.owner;
+        std::memcpy(data, other.data, size*sizeof(T));
+        owner = true;
         return *this;
     }
 
@@ -104,7 +110,7 @@ struct Tensor {
 
 
     /// @return The number of elements in the tensor
-    inline const size_t Size() const {
+    inline size_t Size() const {
         if (dimensions.empty()) { return 0; }
         return std::reduce(std::execution::unseq, dimensions.begin(), dimensions.end(), 1, std::multiplies<size_t>());
     }
@@ -150,24 +156,25 @@ struct Tensor {
 
     /// @brief Zeroes out all tensor elements
     inline void Zero() {
-        std::memset(data, 0, Size()*sizeof(T));
+        if constexpr (std::is_trivially_copyable_v<T>) {
+            std::memset(data, 0, Size()*sizeof(T));
+        }
     }
 
 
     inline bool IsEmpty() const { return data == nullptr; }
 
 
-    inline T Mean() {
-        if constexpr (std::is_floating_point_v<T>) {
-            float mean = 0.0f;
+    inline std::enable_if_t<std::is_floating_point_v<T>, T> Mean() {
+        const size_t n = Size();
+        double mean = 0.0f;
 
-            #pragma omp parallel for simd schedule(static) reduction(+:mean)
-            for (size_t i = 0; i < Size(); i++) {
-                mean += data[i];
-            }
-
-            return mean / Size();
+        #pragma omp parallel for simd schedule(static) reduction(+:mean)
+        for (size_t i = 0; i < n; i++) {
+            mean += data[i];
         }
+
+        return mean / n;
     }
 
     private:

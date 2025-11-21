@@ -15,6 +15,10 @@ done
 mkdir -p build
 cd build
 
+export OMP_NUM_THREADS=$(nproc)
+export OMP_PLACES=cores
+export OMP_PROC_BIND=close
+
 # configure
 cmake .. -DCMAKE_BUILD_TYPE="$build_type" -G Ninja
 
