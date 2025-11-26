@@ -59,14 +59,14 @@ int Dataset::LoadMNISTStyle(std::ifstream& traind, std::ifstream& trainl, std::i
     ReadBigInt(&trainl);
     ReadBigInt(&traind);
     size_t elements = ReadBigInt(&traind);
-    size_t width = ReadBigInt(&traind);
-    size_t height = ReadBigInt(&traind);
+    size_t width    = ReadBigInt(&traind);
+    size_t height   = ReadBigInt(&traind);
 
-    trainingData = Tensor<float>(width, height, elements);
+    trainingData   = Tensor<float>(width, height, elements);
     trainingLabels = Tensor<float>(elements);
 
     // read training data
-    std::vector<uint8_t> bytes(width*height, 0);
+    std::vector<uint8_t> bytes(width * height, 0);
     std::vector<float> floatData(bytes.size(), 0);
 
     for (size_t i = 0; i < elements; i++) {
@@ -75,7 +75,7 @@ int Dataset::LoadMNISTStyle(std::ifstream& traind, std::ifstream& trainl, std::i
         std::transform(bytes.begin(), bytes.end(), floatData.begin(), [](uint8_t v) { return (float)v / 255.0f; });
 
         // copy into tensor
-        cblas_scopy(floatData.size(), floatData.data(), 1, &trainingData.Data()[i*width*height], 1);
+        cblas_scopy(floatData.size(), floatData.data(), 1, &trainingData.Data()[i * width * height], 1);
 
         // read and insert label
         char byte;
@@ -88,10 +88,10 @@ int Dataset::LoadMNISTStyle(std::ifstream& traind, std::ifstream& trainl, std::i
     ReadBigInt(&testl);
     ReadBigInt(&testd);
     elements = ReadBigInt(&testd);
-    width = ReadBigInt(&testd);
-    height = ReadBigInt(&testd);
+    width    = ReadBigInt(&testd);
+    height   = ReadBigInt(&testd);
 
-    testingData = Tensor<float>(width, height, elements);
+    testingData   = Tensor<float>(width, height, elements);
     testingLabels = Tensor<float>(elements);
 
     for (size_t i = 0; i < elements; i++) {
@@ -100,7 +100,7 @@ int Dataset::LoadMNISTStyle(std::ifstream& traind, std::ifstream& trainl, std::i
         std::transform(bytes.begin(), bytes.end(), floatData.begin(), [](uint8_t v) { return (float)v / 255.0f; });
 
         // insert into tensor
-        cblas_scopy(floatData.size(), floatData.data(), 1, &testingData.Data()[i*width*height], 1);
+        cblas_scopy(floatData.size(), floatData.data(), 1, &testingData.Data()[i * width * height], 1);
 
         // read and insert label
         char byte;
@@ -111,6 +111,4 @@ int Dataset::LoadMNISTStyle(std::ifstream& traind, std::ifstream& trainl, std::i
     return 0;
 }
 
-int Dataset::LoadMandlebrot() {
-
-}
+int Dataset::LoadMandlebrot() {}

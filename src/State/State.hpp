@@ -2,22 +2,23 @@
 #include "../Supervisor/Supervisor.hpp"
 
 struct State {
-    public:
-
+  public:
     State() {
         supervisor = new Supervisor();
 
         workspacePath = ExpandPath("~/.local/share/MLEngine");
-        datasetPath = workspacePath+"/Datasets";
-        modelPath = workspacePath+"/Models";
+        datasetPath   = workspacePath + "/Datasets";
+        modelPath     = workspacePath + "/Models";
     }
     ~State() {
-        if (supervisor) { delete supervisor; }
+        if (supervisor) {
+            delete supervisor;
+        }
     }
 
     int Start(int argc, char* argv[]);
 
-    private:
+  private:
     std::string name;
     Supervisor* supervisor;
 

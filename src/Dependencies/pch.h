@@ -1,34 +1,33 @@
 // Standard libraries
-#include <chrono>
-#include <csignal>
-#include <vector>
-#include <string>
-#include <immintrin.h>
-#include <string.h>
-#include <ranges>
 #include <algorithm>
-#include <iostream>
-#include <filesystem>
 #include <atomic>
-#include <thread>
-#include <fstream>
-#include <random>
-#include <format>
 #include <cctype>
-#include <math.h>
-#include <complex>
-#include <execution>
-#include <functional>
-#include <numeric>
+#include <chrono>
 #include <cmath>
+#include <complex>
+#include <csignal>
+#include <execution>
+#include <filesystem>
+#include <format>
+#include <fstream>
+#include <functional>
+#include <iostream>
+#include <math.h>
+#include <numeric>
 #include <omp.h>
+#include <random>
+#include <ranges>
+#include <string.h>
+#include <string>
+#include <thread>
+#include <vector>
 
 // External libraries
 #include "json.hpp"
-#include <yaml-cpp/yaml.h>
 #include <cblas.h>
+#include <yaml-cpp/yaml.h>
 
 // Internal librarie esq things
-#include "../Tensor/Tensor.hpp"
 #include "../Definitions/data.hpp"
 #include "../MathUtils/MathUtils.hpp"
+#include "../Tensor/Tensor.hpp"

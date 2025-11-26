@@ -11,7 +11,7 @@ void LossMetric::MAELoss(const Tensor<float>& x, const Tensor<float>& y, Tensor<
 
     const size_t n = x.Size();
 
-    #pragma omp parallel for simd schedule(static)
+#pragma omp parallel for simd schedule(static)
     for (size_t i = 0; i < n; i++) {
         c.Data()[i] = (x.Data()[i] - y.Data()[i]) > 0.0f ? 1.0f : -1.0f;
     }
@@ -25,10 +25,10 @@ void LossMetric::MSELoss(const Tensor<float>& x, const Tensor<float>& y, Tensor<
     assert(x.Data() != nullptr && y.Data() != nullptr && c.Data() != nullptr);
     assert(x.Size() == y.Size() && y.Size() == c.Size());
     assert(!x.HasNan() && !y.HasNan() && !c.HasNan());
-    
+
     const size_t n = x.Size();
 
-    #pragma omp parallel for simd schedule(static)
+#pragma omp parallel for simd schedule(static)
     for (size_t i = 0; i < n; i++) {
         c.Data()[i] = 2.0f * (x.Data()[i] - y.Data()[i]);
     }
@@ -42,17 +42,17 @@ void LossMetric::OneHotLoss(const Tensor<float>& x, const Tensor<float>& y, Tens
     assert(x.Data() != nullptr && y.Data() != nullptr && c.Data() != nullptr);
     assert(!x.HasNan() && !y.HasNan() && !c.HasNan());
     assert(x.Size() == c.Size());
-    
+
     const size_t n = x.Size();
 
-    const auto xDims = x.Dimensions();
+    const auto xDims  = x.Dimensions();
     const size_t rows = xDims[0];
     const size_t cols = xDims[1];
 
     cblas_scopy(n, x.Data(), 1, c.Data(), 1);
 
-    #pragma omp parallel for simd schedule(static)
+#pragma omp parallel for simd schedule(static)
     for (size_t i = 0; i < rows; i++) {
-        c.Data()[i*cols+(int)y.Data()[i]]--;
+        c.Data()[i * cols + (int)y.Data()[i]]--;
     }
 }

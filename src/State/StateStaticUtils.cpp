@@ -12,7 +12,7 @@ std::string State::ExpandPath(const std::string& path) {
 bool State::CreateDirectory(const std::string& path) {
     std::string fullPath = ExpandPath(path);
 
-    if (!std::filesystem::exists(fullPath)) { 
+    if (!std::filesystem::exists(fullPath)) {
         return std::filesystem::create_directories(fullPath);
     }
 
@@ -23,7 +23,4 @@ bool State::DirectoryExists(const std::string& path) {
 
     return std::filesystem::exists(fullPath) && std::filesystem::is_directory(fullPath);
 }
-bool State::FileExists(const std::string& path) {
-    return std::filesystem::exists(ExpandPath(path));
-}
-
+bool State::FileExists(const std::string& path) { return std::filesystem::exists(ExpandPath(path)); }

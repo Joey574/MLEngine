@@ -5,9 +5,9 @@ int State::Start(int argc, char* argv[]) {
 
     // parse arguments and return the passed config file path
     config = ParseArgs(argc, argv);
-    name = config[Y_MODELNAME].as<std::string>();
-    SEED = config[Y_SEED].as<uint64_t>(std::random_device{}());
-    path = modelPath+"/"+name;
+    name   = config[Y_MODELNAME].as<std::string>();
+    SEED   = config[Y_SEED].as<uint64_t>(std::random_device{}());
+    path   = modelPath + "/" + name;
 
     // create save directory for model
     InitializeSaveLocation();
@@ -38,7 +38,7 @@ void State::InitializeSaveLocation() const {
 }
 
 int State::Load() {
-    std::string file = path+"/"+name+".model";
+    std::string file = path + "/" + name + ".model";
     if (!FileExists(file)) [[unlikely]] {
         std::cerr << "[x] Save file not found\n";
         return 1;
@@ -64,9 +64,9 @@ int State::Train() {
     history = supervisor->Train(history);
 
     // update history
-    std::ofstream f(path+"/history.meta", std::ios::trunc);
+    std::ofstream f(path + "/history.meta", std::ios::trunc);
     assert(f.is_open());
-    
+
     f << history.dump(4) << "\n";
     f.close();
 

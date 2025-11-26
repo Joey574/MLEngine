@@ -1,0 +1,19 @@
+---
+Checks: >
+  -*,
+  clang-analyzer-*,
+  bugprone-*,
+  performance-*,           # performance hints (move/noexcept etc.)
+  modernize-*,
+  cppcoreguidelines-*,
+  readability-make-member-function-const,
+  hicpp-*,                 # extra safety/perf style checks
+  modernize-use-noexcept,  # converts throw() -> noexcept where applicable
+  misc-unused-parameters
+
+CheckOptions:
+  - key: readability-make-member-function-const.StrictMode
+    value: '1'
+
+  - key: modernize-use-auto.MinTypeNameLength
+    value: '5'

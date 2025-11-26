@@ -1,15 +1,13 @@
 #pragma once
-#include "SGD/SGD.hpp"
+#include "Adam/Adam.hpp"
 #include "MomentumSGD/MomentumSGD.hpp"
 #include "RMSProp/RMSProp.hpp"
-#include "Adam/Adam.hpp"
+#include "SGD/SGD.hpp"
 
 /// @brief Acts as a wrapper to various Optimizer implementations
 struct Optimizer {
-    public:
-    enum class Type {
-        None, SGD, MomentumSGD, RMSProp, Adam
-    };
+  public:
+    enum class Type { None, SGD, MomentumSGD, RMSProp, Adam };
 
     void Define(const YAML::Node& config, size_t weightSize, size_t biasSize);
     void Build(Tensor<float>& weights, Tensor<float>& biases, Tensor<float>& weightDerivatives, Tensor<float>& biasDerivatives);
@@ -55,8 +53,8 @@ struct Optimizer {
     inline bool IsDefined() const { return defined; }
     inline bool IsBuilt() const { return built; }
     inline Type GetType() const { return type; }
-    
-    private:
+
+  private:
     using Data = std::variant<SGD, MomentumSGD, RMSProp, Adam>;
 
     Type type;
@@ -64,7 +62,7 @@ struct Optimizer {
 
     // data needed by all optimizer implementations
     bool defined = false;
-    bool built = false;
+    bool built   = false;
 
     float learningRate;
     size_t weightSize;

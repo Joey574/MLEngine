@@ -1,0 +1,21 @@
+# .clang-format
+BasedOnStyle: LLVM
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 180
+
+#PragmaIndentation: None
+IndentPPDirectives: BeforeHash
+PPIndentWidth: 4
+
+BreakBeforeBraces: Attach
+
+IndentCaseLabels: true
+QualifierAlignment: Left
+PointerAlignment: Left
+
+SpaceBeforeParens: ControlStatements
+AllowShortFunctionsOnASingleLine: All
+AllowShortBlocksOnASingleLine: true
+AlignConsecutiveAssignments: true

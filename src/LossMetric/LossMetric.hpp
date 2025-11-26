@@ -1,10 +1,8 @@
 #pragma once
 
 struct LossMetric {
-    public:
-    enum class Type {
-        None, MAE, MSE, Accuracy, OneHot
-    };
+  public:
+    enum class Type { None, MAE, MSE, Accuracy, OneHot };
 
     static inline Type ParseType(const std::string& name) {
         auto lower = std::string(name.size(), ' ');
@@ -41,11 +39,9 @@ struct LossMetric {
 
     inline Type GetLossType() const { return lossType; }
     inline Type GetMetricType() const { return metricType; }
-    inline void AssignPointers(const std::string& loss, const std::string& metric) {
-        AssignPointers(ParseType(loss), ParseType(metric));
-    }
+    inline void AssignPointers(const std::string& loss, const std::string& metric) { AssignPointers(ParseType(loss), ParseType(metric)); }
     inline void AssignPointers(const Type lossType, const Type metricType) {
-        this->lossType = lossType;
+        this->lossType   = lossType;
         this->metricType = metricType;
 
         switch (lossType) {
@@ -63,7 +59,7 @@ struct LossMetric {
                 break;
         }
 
-        switch (metricType) { 
+        switch (metricType) {
             case Type::MAE:
                 metric = MAEScore;
                 break;
@@ -81,8 +77,8 @@ struct LossMetric {
 
     void (*loss)(const Tensor<float>&, const Tensor<float>&, Tensor<float>&);
     float (*metric)(const Tensor<float>&, const Tensor<float>&);
- 
-    private:
+
+  private:
     Type lossType;
     Type metricType;
 
@@ -93,9 +89,9 @@ struct LossMetric {
     static void MSELoss(const Tensor<float>& x, const Tensor<float>& y, Tensor<float>& c);
     static void OneHotLoss(const Tensor<float>& x, const Tensor<float>& y, Tensor<float>& c);
 
-   /* ----------
-    metric functions
-    ---------- */
+    /* ----------
+     metric functions
+     ---------- */
     static float MAEScore(const Tensor<float>& x, const Tensor<float>& y);
     static float MSEScore(const Tensor<float>& x, const Tensor<float>& y);
     static float AccuracyScore(const Tensor<float>& x, const Tensor<float>& y);
