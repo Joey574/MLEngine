@@ -79,7 +79,7 @@ else()
 endif()
 
 # Precompiled header
-target_precompile_headers(MLEngine PRIVATE src/Dependencies/pch.h)
+target_precompile_headers(MLEngine PRIVATE src/Definitions/pch.h)
 
 # -----------------------
 # Link libraries

@@ -62,7 +62,7 @@ auto main(int argc, char* argv[]) -> int {
     signal(SIGINT, handleInterupt);
     signal(SIGSEGV, segv);
 
-    const int ideal = std::thread::hardware_concurrency() / 2;
+    const size_t ideal = std::thread::hardware_concurrency() / 2;
     omp_set_num_threads(ideal);
 
 #ifdef DEBUG

@@ -3,12 +3,12 @@ Checks: >
   -*,
   clang-analyzer-*,
   bugprone-*,
-  performance-*,           # performance hints (move/noexcept etc.)
+  performance-*,
   modernize-*,
   cppcoreguidelines-*,
   readability-make-member-function-const,
-  hicpp-*,                 # extra safety/perf style checks
-  modernize-use-noexcept,  # converts throw() -> noexcept where applicable
+  hicpp-*,
+  modernize-use-noexcept,
   misc-unused-parameters
 
 CheckOptions:

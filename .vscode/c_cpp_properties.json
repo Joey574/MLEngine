@@ -11,7 +11,9 @@
             "cppStandard": "c++23",
             "compileCommands": "${workspaceFolder}/build/compile_commands.json",
             "intelliSenseMode": "linux-gcc-x64",
-            "forcedInclude": ["${workspaceFolder}/src/Dependencies/pch.h"]
+            "forcedInclude": [
+                "${workspaceFolder}/src/Dependencies/pch.h"
+            ]
         }
     ],
     "version": 4

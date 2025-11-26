@@ -23,11 +23,12 @@
 #include <vector>
 
 // External libraries
-#include "json.hpp"
+#include "../Dependencies/json.hpp"
 #include <cblas.h>
 #include <yaml-cpp/yaml.h>
 
 // Internal librarie esq things
-#include "../Definitions/data.hpp"
-#include "../MathUtils/MathUtils.hpp"
 #include "../Tensor/Tensor.hpp"
+
+#include "../MathUtils/MathUtils.hpp"
+#include "./data.hpp"
