@@ -41,7 +41,7 @@ set(GNU_RELEASE_FLAGS
 )
 
 set(GNU_DEBUG_FLAGS
-  -march=native 
+  -march=native
   -O0 -g -DDEBUG -rdynamic
   -fno-lto -fopenmp
 )
@@ -54,7 +54,7 @@ set(MSVC_RELEASE_FLAGS
 
 set(MSVC_DEBUG_FLAGS
   /Od /Ob0 /Zi /RTC1
-  /MDd /DDEBUG 
+  /MDd /DDEBUG
   /openmp:llvm
 )
 

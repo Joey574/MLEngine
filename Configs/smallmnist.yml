@@ -9,7 +9,7 @@ weight: he
 
 layers:
   - type: input
-
+    nodes: 784
 
   - type: hidden
     nodes: 128

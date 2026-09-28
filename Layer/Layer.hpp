@@ -47,9 +47,9 @@ public:
     // meta data
     std::vector<Layer>* m_layers;
     size_t m_layer_idx;
-    
+
     LayerType type;
-    
+
 
     size_t nodes;
     size_t inodes;

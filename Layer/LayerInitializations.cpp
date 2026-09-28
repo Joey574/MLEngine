@@ -32,7 +32,7 @@ void Layer::Define(std::vector<Layer>& layers, size_t idx, YAML::Node config, YA
     if (config[Y_SKIPCONN]) {
         m_s_skipconn = true;
         m_s_idx = config[Y_SKIPCONN].as<size_t>();
-        
+
         m_s_base = inodes;
         m_s_skip = (*m_layers)[m_s_idx].nodes;
 
@@ -58,9 +58,9 @@ void Layer::InitializeSizes(size_t bn, size_t tn) {
             m_ta_bytes = MathUtils::RoundTo(64, nodes*tn*sizeof(float));
 
             layer_batch_bytes = m_a_bytes;
-            layer_test_bytes = m_ta_bytes;            
+            layer_test_bytes = m_ta_bytes;
             break;
-        case LayerType::output: case LayerType::hidden: 
+        case LayerType::output: case LayerType::hidden:
             SetBasicBatchTestBytes(bn, tn);
             break;
     }
@@ -145,7 +145,7 @@ void Layer::InitializeWeights(float* data, WeightInitialization init) {
     memset(&data[wsize], 0, bsize*sizeof(float));
 
     if (init == WeightInitialization::he) {
-        
+
         lowerRand = 0.0f;
         upperRand = std::sqrt(2.0f/nodes);
 
@@ -154,7 +154,7 @@ void Layer::InitializeWeights(float* data, WeightInitialization init) {
             data[i] = dist(gen);
         }
     } else if (init == WeightInitialization::normalize) {
-        
+
         lowerRand = -0.5f;
         upperRand = 0.5f;
 
@@ -163,7 +163,7 @@ void Layer::InitializeWeights(float* data, WeightInitialization init) {
             data[i] = dist(gen) * std::sqrt(1.0f/nodes);
         }
     } else if (init == WeightInitialization::xavier) {
-        
+
         lowerRand = (-1.0f/std::sqrt(nodes));
         upperRand = 1.0f/std::sqrt(nodes);
 

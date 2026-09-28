@@ -14,7 +14,7 @@ void NeuralNetwork::Initialize(const std::string& path, const std::string& name,
     // define layers
     YAML::Node layers = config[Y_LAYERS];
     for (size_t i = 0; i < layers.size(); i++) {
-        size_t in = i == 0 ? 0 : layers[i-1][Y_NODES].as<size_t>();
+        size_t in = i == 0 ? : layers[i-1][Y_NODES].as<size_t>();
         size_t nn = i == layers.size()-1 ? 0 : layers[i+1][Y_NODES].as<size_t>();
 
         Layer layer;
@@ -39,7 +39,7 @@ void NeuralNetwork::Initialize(const std::string& path, const std::string& name,
 void NeuralNetwork::InitializeWeights(Layer::WeightInitialization type) {
     size_t dataidx = 0;
     memset(m_network, 0, m_network_bytes);
-    
+
     for (size_t i = 0; i < m_layers.size(); i++) {
         m_layers[i].InitializeWeights(&m_network[dataidx], type);
         dataidx += m_layers[i].params;
@@ -70,7 +70,7 @@ void NeuralNetwork::InitializeLayerPointers(size_t bn, size_t tn) {
     char* net = (char*)m_network;
     char* batch = (char*)m_batch_data;
     char* test = (char*)m_test_data;
-    
+
     for (size_t i = 0; i < m_layers.size(); i++) {
         char* data = &net[dataidx];
         char* batchdata = &batch[batchidx];
