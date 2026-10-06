@@ -1,5 +1,7 @@
 start_time=$(date +%s.%N)
 
+set -e
+
 # values
 build_type="Release"
 

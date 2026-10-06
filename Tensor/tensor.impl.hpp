@@ -1,7 +1,4 @@
 #pragma once
-#ifndef TNSR
-    #include "Tensor.hpp"
-#endif
 
 template <typename T>
 size_t Tensor<T>::computeFlatIndex(const std::initializer_list<size_t>& idxs) const {

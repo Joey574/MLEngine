@@ -7,6 +7,7 @@ pkgs.mkShell {
     cmake
     ninja
     yaml-cpp
+    OpenBLAS
   ];
 
   shellHook = ''

@@ -1,4 +1,4 @@
-#define TNSR
+#pragma once
 
 template <typename T>
 struct Tensor {
@@ -43,4 +43,3 @@ private:
 };
 
 #include "tensor.impl.hpp"
-#undef TNSR

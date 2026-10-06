@@ -17,15 +17,6 @@ if(NOT CMAKE_BUILD_TYPE)
   )
 endif()
 
-# check platform
-if(WIN32)
-  message(STATUS "Configuring for Windows")
-elseif(UNIX)
-  message(STATUS "Configuring for Unix/Linux")
-else()
-  message(FATAL_ERROR "Unsupported platform")
-endif()
-
 set(RELEASE_FLAGS
   -march=native -mtune=native
   -flto=auto -fomit-frame-pointer -funroll-loops -fipa-pta
@@ -78,7 +69,6 @@ file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS
 # executable
 add_executable(MLEngine ${SOURCE_FILES})
 
-
 # set flags
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
   target_compile_options(MLEngine PRIVATE ${DEBUG_FLAGS})
@@ -96,6 +86,20 @@ target_link_libraries(MLEngine PRIVATE pthread m dl)
 # packages
 find_package(yaml-cpp REQUIRED)
 find_package(OpenMP REQUIRED)
-target_link_libraries(MLEngine PRIVATE OpenMP::OpenMP_CXX yaml-cpp)
+
+
+set(BLA_VENDER OpenBLAS)
+find_package(BLAS REQUIRED)
+if(BLAS_FOUND)
+    message("OpenBLAS found.")
+    include_directories(/opt/OpenBLAS/include/)
+endif(BLAS_FOUND)
+
+target_link_libraries(
+  MLEngine PRIVATE
+  OpenMP::OpenMP_CXX
+  yaml-cpp
+  ${BLAS_LIBRARIES}
+)
 
 target_precompile_headers(MLEngine PRIVATE Dependencies/pch.h)
