@@ -9,7 +9,7 @@ bool State::IsValid() const {
 }
 
 YAML::Node State::ParseArgs(int argc, char* argv[]) {
-    if (argc < 2) [[unlikely]] {
+    if (argc < 2) {
         return YAML::Node{};
     }
 

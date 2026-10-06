@@ -1,0 +1,137 @@
+
+---
+events:
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/run/current-system/sw/share/cmake-4.1/Modules/CMakeDetermineSystem.cmake:12 (find_program)"
+      - "CMakeLists.txt:6 (project)"
+    mode: "program"
+    variable: "CMAKE_UNAME"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "uname"
+    candidate_directories:
+      - "/run/wrappers/bin/"
+      - "/home/joey/.local/share/flatpak/exports/bin/"
+      - "/var/lib/flatpak/exports/bin/"
+      - "/home/joey/.nix-profile/bin/"
+      - "/nix/profile/bin/"
+      - "/home/joey/.local/state/nix/profile/bin/"
+      - "/etc/profiles/per-user/joey/bin/"
+      - "/nix/var/nix/profiles/default/bin/"
+      - "/run/current-system/sw/bin/"
+      - "/nix/store/h3irasawaqvb3h9g3rgkli9z7zyil1sa-nodejs-24.18.0/bin/"
+    searched_directories:
+      - "/run/wrappers/bin/uname"
+      - "/home/joey/.local/share/flatpak/exports/bin/uname"
+      - "/var/lib/flatpak/exports/bin/uname"
+      - "/home/joey/.nix-profile/bin/uname"
+      - "/nix/profile/bin/uname"
+      - "/home/joey/.local/state/nix/profile/bin/uname"
+      - "/etc/profiles/per-user/joey/bin/uname"
+      - "/nix/var/nix/profiles/default/bin/uname"
+    found: "/run/current-system/sw/bin/uname"
+    search_context:
+      ENV{PATH}:
+        - "/run/wrappers/bin"
+        - "/home/joey/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/home/joey/.nix-profile/bin"
+        - "/nix/profile/bin"
+        - "/home/joey/.local/state/nix/profile/bin"
+        - "/etc/profiles/per-user/joey/bin"
+        - "/nix/var/nix/profiles/default/bin"
+        - "/run/current-system/sw/bin"
+        - "/nix/store/h3irasawaqvb3h9g3rgkli9z7zyil1sa-nodejs-24.18.0/bin"
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/run/current-system/sw/share/cmake-4.1/Modules/CMakeDetermineSystem.cmake:212 (message)"
+      - "CMakeLists.txt:6 (project)"
+    message: |
+      The system is: Linux - 6.18.40 - x86_64
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/run/current-system/sw/share/cmake-4.1/Modules/CMakeUnixFindMake.cmake:5 (find_program)"
+      - "CMakeLists.txt:6 (project)"
+    mode: "program"
+    variable: "CMAKE_MAKE_PROGRAM"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "gmake"
+      - "make"
+      - "smake"
+    candidate_directories:
+      - "/run/wrappers/bin/"
+      - "/home/joey/.local/share/flatpak/exports/bin/"
+      - "/var/lib/flatpak/exports/bin/"
+      - "/home/joey/.nix-profile/bin/"
+      - "/nix/profile/bin/"
+      - "/home/joey/.local/state/nix/profile/bin/"
+      - "/etc/profiles/per-user/joey/bin/"
+      - "/nix/var/nix/profiles/default/bin/"
+      - "/run/current-system/sw/bin/"
+      - "/nix/store/h3irasawaqvb3h9g3rgkli9z7zyil1sa-nodejs-24.18.0/bin/"
+    searched_directories:
+      - "/run/wrappers/bin/gmake"
+      - "/home/joey/.local/share/flatpak/exports/bin/gmake"
+      - "/var/lib/flatpak/exports/bin/gmake"
+      - "/home/joey/.nix-profile/bin/gmake"
+      - "/nix/profile/bin/gmake"
+      - "/home/joey/.local/state/nix/profile/bin/gmake"
+      - "/etc/profiles/per-user/joey/bin/gmake"
+      - "/nix/var/nix/profiles/default/bin/gmake"
+      - "/run/current-system/sw/bin/gmake"
+      - "/nix/store/h3irasawaqvb3h9g3rgkli9z7zyil1sa-nodejs-24.18.0/bin/gmake"
+      - "/run/wrappers/bin/make"
+      - "/home/joey/.local/share/flatpak/exports/bin/make"
+      - "/var/lib/flatpak/exports/bin/make"
+      - "/home/joey/.nix-profile/bin/make"
+      - "/nix/profile/bin/make"
+      - "/home/joey/.local/state/nix/profile/bin/make"
+      - "/etc/profiles/per-user/joey/bin/make"
+      - "/nix/var/nix/profiles/default/bin/make"
+      - "/run/current-system/sw/bin/make"
+      - "/nix/store/h3irasawaqvb3h9g3rgkli9z7zyil1sa-nodejs-24.18.0/bin/make"
+      - "/run/wrappers/bin/smake"
+      - "/home/joey/.local/share/flatpak/exports/bin/smake"
+      - "/var/lib/flatpak/exports/bin/smake"
+      - "/home/joey/.nix-profile/bin/smake"
+      - "/nix/profile/bin/smake"
+      - "/home/joey/.local/state/nix/profile/bin/smake"
+      - "/etc/profiles/per-user/joey/bin/smake"
+      - "/nix/var/nix/profiles/default/bin/smake"
+      - "/run/current-system/sw/bin/smake"
+      - "/nix/store/h3irasawaqvb3h9g3rgkli9z7zyil1sa-nodejs-24.18.0/bin/smake"
+    found: false
+    search_context:
+      ENV{PATH}:
+        - "/run/wrappers/bin"
+        - "/home/joey/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/home/joey/.nix-profile/bin"
+        - "/nix/profile/bin"
+        - "/home/joey/.local/state/nix/profile/bin"
+        - "/etc/profiles/per-user/joey/bin"
+        - "/nix/var/nix/profiles/default/bin"
+        - "/run/current-system/sw/bin"
+        - "/nix/store/h3irasawaqvb3h9g3rgkli9z7zyil1sa-nodejs-24.18.0/bin"
+...

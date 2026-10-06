@@ -72,7 +72,7 @@ else()
   set(RELEASE_FLAGS_CXX -march=native -mtune=native -flto -DNDEBUG -Ofast -O3)
   set(RELEASE_FLAGS_CUDA -march=native -mtune=native -O3 --extended-lambda)
 
-  target_compile_options(MLEngine PRIVATE 
+  target_compile_options(MLEngine PRIVATE
     $<$<COMPILE_LANGUAGE:CXX>:${RELEASE_FLAGS_CXX}>
     $<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<BOOL:${USE_CUDA_FOUND}>>:${RELEASE_FLAGS_CUDA}>
   )
