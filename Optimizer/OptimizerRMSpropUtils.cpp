@@ -77,10 +77,10 @@ void Optimizer::RMSPropCompute(float* __restrict  p, float* __restrict  g, const
 #else
 void Optimizer::RMSPropCompute(float* __restrict  p, float* __restrict  g, const float* __restrict  d, size_t size, float lr, size_t n, float decay, float epsl) {
     SCALAR_VALID_PATH();
-    
+
     // adjust learning rate to factor in number of elements
     const float factor = lr / (float)n;
-    
+
     #pragma omp parallel for simd
 	for (size_t i = 0; i < size; i++) {
         g[i] = (decay*g[i])+(1.0f-decay)*d[i]*d[i];
@@ -88,5 +88,3 @@ void Optimizer::RMSPropCompute(float* __restrict  p, float* __restrict  g, const
 	}
 }
 #endif
-
-

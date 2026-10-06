@@ -31,14 +31,14 @@ void NeuralNetwork::FitEnd(nlohmann::json& history, std::chrono::system_clock::t
 }
 
 void NeuralNetwork::EpochStart(nlohmann::json& history) {
-    
+
 }
 void NeuralNetwork::EpochEnd(nlohmann::json& history, const std::string& res, double ns, size_t e) {
     history[J_EPOCHS] = (int)history[J_EPOCHS] + 1;
 
     // fastest epoch
     if (!history.contains(J_FASTESTEPOCH)) {
-        history[J_FASTESTEPOCH] = ns; 
+        history[J_FASTESTEPOCH] = ns;
     } else {
         if (ns < history[J_FASTESTEPOCH]) {
             history[J_FASTESTEPOCH] = ns;
@@ -47,7 +47,7 @@ void NeuralNetwork::EpochEnd(nlohmann::json& history, const std::string& res, do
 
     // slowest epoch
     if (!history.contains(J_SLOWESTEPOCH)) {
-        history[J_SLOWESTEPOCH] = ns; 
+        history[J_SLOWESTEPOCH] = ns;
     } else {
         if (ns > history[J_SLOWESTEPOCH]) {
             history[J_SLOWESTEPOCH] = ns;
@@ -74,7 +74,7 @@ std::string NeuralNetwork::CleanTime(std::chrono::nanoseconds time) {
     if (hour.count() > 0) {
         ftime = std::format("{}h {}m {}s", hour.count(), minute.count(), second.count());
     } else if (minute.count() > 0) {
-        ftime = std::format("{}m {}s {}ms", minute.count(), second.count(), ms.count());        
+        ftime = std::format("{}m {}s {}ms", minute.count(), second.count(), ms.count());
     } else if (second.count() > 0) {
         ftime = std::format("{}s {}ms", second.count(), ms.count());
     } else {

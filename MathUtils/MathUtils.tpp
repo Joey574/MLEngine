@@ -123,7 +123,7 @@ void MathUtils::Scale(float* a, float scale, size_t n) {
 #else
 template <bool clear> void MathUtils::MatrixColumnSum(const float* __restrict a, float* __restrict b, size_t a_r, size_t a_c) {
     SCALAR_VALID_PATH();
-    
+
     // compute sum
     for (size_t i = 0; i < a_r; i++) {
 

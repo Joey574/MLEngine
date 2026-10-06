@@ -56,7 +56,7 @@ Optimizer::Update Optimizer::ParseUpdType(const std::string& upd) {
         return Update::none;
     } else {
         std::cerr << "[-] Invalid Update Type: " << upd << "\n";
-        return Update::none;        
+        return Update::none;
     }
 }
 
@@ -68,7 +68,7 @@ void Optimizer::Define(YAML::Node config) {
 
     if (config[Y_OPT_REGULARIZATION]) {
         std::string reg = config[Y_OPT_REGULARIZATION].as<std::string>();
-        
+
         m_reg_lambda = config[Y_OPT_REGLAMBDA].as<float>(Y_REGLAMBDA_DEFAULT);
         m_reg = ParseRegType(reg);
     }
@@ -95,7 +95,7 @@ void Optimizer::Initialize(float* dw, float* db, char* data, size_t wsize, size_
     size_t offset = 0;
     m_s_dw = dw;
     m_s_db = db;
-    
+
     this->wsize = wsize;
     this->bsize = bsize;
 
@@ -105,7 +105,7 @@ void Optimizer::Initialize(float* dw, float* db, char* data, size_t wsize, size_
         case Update::momentumsgd:
             m_m_vw = (float*)(data+offset);
             offset += MathUtils::RoundTo(64, wsize*sizeof(float));
-            
+
             m_m_vb = (float*)(data+offset);
             offset += MathUtils::RoundTo(64, bsize*sizeof(float));
             break;
@@ -167,7 +167,7 @@ size_t Optimizer::Size(size_t wsize, size_t bsize) {
             size += MathUtils::RoundTo(64, wsize*sizeof(float));
             size += MathUtils::RoundTo(64, bsize*sizeof(float));
             break;
-        
+
         case Update::rmsprop:
             size += MathUtils::RoundTo(64, wsize*sizeof(float));
             size += MathUtils::RoundTo(64, bsize*sizeof(float));
@@ -207,7 +207,7 @@ bool Optimizer::Save(std::ofstream& file) const {
             file.write((char*)m_a_mb, bsize*sizeof(float));
             return file.fail();
     }
-    
+
     return true;
 }
 bool Optimizer::Load(std::ifstream& file) {

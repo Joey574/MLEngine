@@ -101,7 +101,7 @@ float LossMetric::MaeScore(const float* __restrict x, const float* __restrict y,
 }
 float LossMetric::MseScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
     AVX2_VALID_PATH();
-    
+
     __m256 _sum = _mm256_setzero_ps();
 
     size_t i = 0;
@@ -125,7 +125,7 @@ float LossMetric::MseScore(const float* __restrict x, const float* __restrict y,
 #else
 float LossMetric::MaeScore(const float* __restrict x, const float* __restrict y, size_t rows, size_t cols) {
     SCALAR_VALID_PATH();
-    
+
     float error = 0.0f;
 
     #pragma omp parallel for simd

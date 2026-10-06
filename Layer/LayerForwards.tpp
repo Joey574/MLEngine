@@ -1,6 +1,6 @@
 #include "Layer.hpp"
 
-template <bool training> 
+template <bool training>
 void Layer::InputForward(float* __restrict input, size_t n) {
     if constexpr (training) {
         std::memcpy(m_a, input, nodes*n*sizeof(float));
@@ -21,7 +21,7 @@ void Layer::BasicForward(float* __restrict input, size_t n) {
 
     float* __restrict z;
     float* __restrict a;
-    
+
     // change output pointers based on if we're training or not
     if constexpr (training) {
         z = m_z;
@@ -61,7 +61,7 @@ void Layer::Convolutional2DForward(float* __restrict input, size_t n) {
 
     float* __restrict z;
     float* __restrict a;
-    
+
     // change output pointers based on if we're training or not
     if constexpr (training) {
         z = m_z;

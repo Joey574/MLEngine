@@ -58,7 +58,7 @@ void Optimizer::AdamCompute(float* __restrict p, float* __restrict m, float* __r
 #elif defined(__AVX2__) && defined(__FMA__)
 void Optimizer::AdamCompute(float* __restrict p, float* __restrict m, float* __restrict v, const float* __restrict d, size_t size, float lr, size_t n, float b1, float b2, float epsl, size_t t) {
     AVX2_VALID_PATH();
-    
+
     // simd const values
     const float factor = lr / (float)n;
     const __m256 _factor = _mm256_set1_ps(factor);

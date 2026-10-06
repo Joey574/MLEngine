@@ -62,7 +62,7 @@ private:
     size_t m_test_data_bytes;
 
     size_t m_epoch_since_improvement;
-    
+
 
     template <bool training> void ForwardProp(
         float* __restrict x,
@@ -106,7 +106,7 @@ private:
 
 /* Memory Layout
 
-    _____|m_network|_____ 
+    _____|m_network|_____
    |                     |
    |     layer0 data     |  <- layer0.size
    |                     |

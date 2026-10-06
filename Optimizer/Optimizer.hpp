@@ -17,7 +17,7 @@ public:
     };
 
     UpdateFn update;
-    
+
     void Define(YAML::Node config);
     void Initialize(float* dw, float* db, char* data, size_t wsize, size_t bsize);
     size_t Size(size_t wsize, size_t bsize);

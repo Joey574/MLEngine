@@ -32,7 +32,7 @@ __attribute__((target("avx2,fma")))
 __m256 MathUtils::Exp256(__m256 _x) {
     AVX2_VALID_PATH();
 
-    const __m256 _a = _mm256_set1_ps(12102203.0f); 
+    const __m256 _a = _mm256_set1_ps(12102203.0f);
     const __m256 _b = _mm256_set1_ps(127.0f * (1 << 23));
     const __m256 _c = _mm256_fmadd_ps(_x, _a, _b);
 

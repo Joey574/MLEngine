@@ -79,7 +79,7 @@ void LossMetric::MaeLoss(const float* __restrict x, const float* __restrict y, f
 }
 void LossMetric::MseLoss(const float* __restrict x, const float* __restrict y, float* __restrict c, size_t rows, size_t cols) {
     AVX2_VALID_PATH();
-    
+
     const __m256 _two = _mm256_set1_ps(2.0f);
 
     #pragma omp parallel for

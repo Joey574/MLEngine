@@ -58,11 +58,11 @@ int NeuralNetwork::Save(std::ofstream& file) const {
     DEBUG_LOG("Saving model");
 
     file.write((char*)m_network, m_network_bytes);
-    return file.fail();   
+    return file.fail();
 }
 int NeuralNetwork::Load(std::ifstream& file) {
     DEBUG_LOG("Loading model");
-    
+
     file.read((char*)m_network, m_network_bytes);
     return file.fail();
 }

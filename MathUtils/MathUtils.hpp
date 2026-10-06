@@ -14,7 +14,7 @@ public:
 
     // image augmenting utils
     static float BilinearSample(const float* image, size_t w, size_t h, float fx, float fy);
-    
+
     static void RotateImage(const float* image, float* out, size_t width, size_t height, float deg);
     static void ScaleImage(const float* image, float* out, size_t width, size_t height, float scale);
     static void ShearImage(const float* image, float* out, size_t width, size_t height, float shear);

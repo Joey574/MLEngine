@@ -19,7 +19,7 @@ public:
     inline void takeover(T* data) { this->data=data; }
 
     inline T* begin() { return data; }
-    
+
     inline size_t dimensionality() const { return m_dimensionality; }
     inline size_t size() const { return m_data_size; }
     inline const std::vector<size_t>& shape() const { return m_dimensions; }
@@ -31,7 +31,7 @@ public:
     inline T& operator()(Idxs... idxs) {
         return data[computeFlatIndex({(size_t)idxs...})];
     }
-    
+
 private:
     T* data;
     size_t m_data_size;

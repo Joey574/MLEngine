@@ -2,7 +2,7 @@
 
 void Supervisor::Train() {
     auto trainstart = std::chrono::high_resolution_clock::now();
-    
+
     std::cout << "\n" << config << "\n\n";
 
     size_t epochs = config[Y_EPOCHS].as<size_t>(Y_EPOCH_DEFAULT);
@@ -33,5 +33,5 @@ void Supervisor::Train() {
 
     // save optimizer state, model, etc
     EndNetworks();
-    
+
 }

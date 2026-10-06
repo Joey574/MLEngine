@@ -55,7 +55,7 @@ void Layer::AssignBasicBatchPtrs(char* batchdata, size_t bn) {
 }
 
 void Layer::SetBasicBatchTestBytes(size_t bn, size_t tn) {
- 
+
     m_z_bytes = MathUtils::RoundTo(64, nodes*bn*sizeof(float));
     m_a_bytes = MathUtils::RoundTo(64, nodes*bn*sizeof(float));
 
@@ -75,7 +75,7 @@ void Layer::SetBasicBatchTestBytes(size_t bn, size_t tn) {
     m_o_bytes = m_optimizer.Size(wsize, bsize);
 
     // size in all the things
-    layer_batch_bytes = m_z_bytes + m_a_bytes + m_dt_bytes + m_dw_bytes + m_db_bytes + 
+    layer_batch_bytes = m_z_bytes + m_a_bytes + m_dt_bytes + m_dw_bytes + m_db_bytes +
         m_d_dpmask_bytes + m_o_bytes;
 
     // size for total and activation

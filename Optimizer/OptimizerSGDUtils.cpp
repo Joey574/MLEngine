@@ -19,7 +19,7 @@ void Optimizer::SGDCompute(float* __restrict p, const float* __restrict d, size_
 	}
 
 	for (size_t i = size-(size%16); i < size; i++) {
-        p[i] -= d[i]*factor;		
+        p[i] -= d[i]*factor;
 	}
 }
 void Optimizer::SGDL1Compute(float* __restrict p, const float* __restrict d, size_t size, float lr, size_t n, float lambda) {
@@ -51,7 +51,7 @@ void Optimizer::SGDL1Compute(float* __restrict p, const float* __restrict d, siz
 
     for (size_t i = size-(size%16); i < size; i++) {
         const float sign = (p[i] > 0.0f) - (p[i] < 0.0f);
-        p[i] -= factor*(d[i]+(lambda*sign));	
+        p[i] -= factor*(d[i]+(lambda*sign));
     }
 }
 void Optimizer::SGDL2Compute(float* __restrict p, const float* __restrict d, size_t size, float lr, size_t n, float lambda) {
@@ -97,7 +97,7 @@ void Optimizer::SGDCompute(float* __restrict p, const float* __restrict d, size_
 	}
 
 	for (size_t i = size-(size%8); i < size; i++) {
-        p[i] -= d[i]*factor;		
+        p[i] -= d[i]*factor;
 	}
 }
 void Optimizer::SGDL1Compute(float* __restrict p, const float* __restrict d, size_t size, float lr, size_t n, float lambda) {
@@ -129,7 +129,7 @@ void Optimizer::SGDL1Compute(float* __restrict p, const float* __restrict d, siz
 
     for (size_t i = size-(size%8); i < size; i++) {
         const float sign = (p[i] > 0.0f) - (p[i] < 0.0f);
-        p[i] -= factor*(d[i]+(lambda*sign));	
+        p[i] -= factor*(d[i]+(lambda*sign));
     }
 }
 void Optimizer::SGDL2Compute(float* __restrict p, const float* __restrict d, size_t size, float lr, size_t n, float lambda) {
@@ -166,7 +166,7 @@ void Optimizer::SGDCompute(float* __restrict p, const float* __restrict d, size_
 	// update parameters
 	#pragma omp parallel for simd
 	for (size_t i = 0; i < size; i++) {
-        p[i] -= d[i]*factor;		
+        p[i] -= d[i]*factor;
 	}
 }
 void Optimizer::SGDL1Compute(float* __restrict p, const float* __restrict d, size_t size, float lr, size_t n, float lambda) {
@@ -178,7 +178,7 @@ void Optimizer::SGDL1Compute(float* __restrict p, const float* __restrict d, siz
     #pragma omp parallel for simd
     for (size_t i = 0; i < size; i++) {
         const float sign = (p[i] > 0.0f) - (p[i] < 0.0f);
-        p[i] -= factor*(d[i]+(lambda*sign));	
+        p[i] -= factor*(d[i]+(lambda*sign));
     }
 }
 void Optimizer::SGDL2Compute(float* __restrict p, const float* __restrict d, size_t size, float lr, size_t n, float lambda) {

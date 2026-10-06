@@ -19,7 +19,7 @@ void Layer::ApplyDropoutFP(size_t n) {
         newbyte |= (m_d_dropoutdist(gen) & 1) << 5;
         newbyte |= (m_d_dropoutdist(gen) & 1) << 6;
         newbyte |= (m_d_dropoutdist(gen) & 1) << 7;
-        
+
         mask[i] = newbyte;
     }
 

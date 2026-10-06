@@ -20,7 +20,7 @@ nlohmann::json NeuralNetwork::Fit(DataLoader& dataset, nlohmann::json& storedhis
 	LoadOptimizers();
 
 	const size_t iterations = std::ceil((double)dataset.trainData.rows/(double)batch_size);
-	
+
 	for (size_t e = 0; e < epochs && KEEPRUNNING; e++) {
 		auto epochstart = std::chrono::high_resolution_clock::now();
 
@@ -52,7 +52,7 @@ nlohmann::json NeuralNetwork::Fit(DataLoader& dataset, nlohmann::json& storedhis
 	TestNetwork(dataset, history, storedhistory, epochs);
 
 	SaveOptimizers();
-	
+
 	FitEnd(history, fitstart);
 	storedhistory[J_RUNS].push_back(history);
 	return storedhistory;
@@ -80,7 +80,7 @@ std::string NeuralNetwork::TestNetwork(DataLoader& dataset, nlohmann::json& hist
 	int size = snprintf(nullptr, 0, "%-25s %-30s %-30s", curs.data(), sesb.data(), eveb.data());
 
 	std::string fmt(size+1, ' ');
-	sprintf(fmt.data(), "%-25s %-30s %-30s", curs.data(), sesb.data(), eveb.data());	
+	sprintf(fmt.data(), "%-25s %-30s %-30s", curs.data(), sesb.data(), eveb.data());
 	return fmt;
 }
 

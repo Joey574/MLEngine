@@ -3,7 +3,7 @@
 #if defined(__AVX512F__)
 void Optimizer::MomentumSGDCompute(float* __restrict  p, float* __restrict  v, const float* __restrict  d, size_t size, float lr, size_t n, float coef) {
     AVX512_VALID_PATH();
-    
+
     // simd const values
     const float factor = lr / (float)n;
     const __m512 _factor = _mm512_set1_ps(factor);
@@ -26,7 +26,7 @@ void Optimizer::MomentumSGDCompute(float* __restrict  p, float* __restrict  v, c
 
 	for (size_t i = size-(size%16); i < size; i++) {
         v[i] = (v[i]*coef)+(d[i]*factor);
-        p[i] -= v[i];		
+        p[i] -= v[i];
 	}
 }
 void Optimizer::MomentumSGDL1Compute(float* __restrict p, float* __restrict  v, const float* __restrict d, size_t size, float lr, size_t n, float lambda, float coef) {
@@ -37,7 +37,7 @@ void Optimizer::MomentumSGDL1Compute(float* __restrict p, float* __restrict  v, 
     const __m512 _factor = _mm512_set1_ps(factor);
     const __m512 _coef = _mm512_set1_ps(coef);
     const __m512 _lambda = _mm512_set1_ps(lambda);
-    
+
     const __m512 _none = _mm512_set1_ps(-1.0f);
     const __m512 _one = _mm512_set1_ps(1.0f);
     const __m512 _zero = _mm512_setzero_ps();
@@ -65,7 +65,7 @@ void Optimizer::MomentumSGDL1Compute(float* __restrict p, float* __restrict  v, 
     for (size_t i = size-(size%16); i < size; i++) {
         const float sign = p[i] > 0.0f ? 1.0f : -1.0f;
         v[i] = (v[i]*coef)+(d[i]*factor);
-        p[i] -= (v[i]+(lambda*sign));	
+        p[i] -= (v[i]+(lambda*sign));
     }
 }
 void Optimizer::MomentumSGDL2Compute(float* __restrict p, float* __restrict  v, const float* __restrict d, size_t size, float lr, size_t n, float lambda, float coef) {
@@ -137,7 +137,7 @@ void Optimizer::MomentumSGDL1Compute(float* __restrict p, float* __restrict  v, 
     const __m256 _factor = _mm256_set1_ps(factor);
     const __m256 _coef = _mm256_set1_ps(coef);
     const __m256 _lambda = _mm256_set1_ps(lambda);
-    
+
     const __m256 _none = _mm256_set1_ps(-1.0f);
     const __m256 _one = _mm256_set1_ps(1.0f);
     const __m256 _zero = _mm256_setzero_ps();
@@ -165,7 +165,7 @@ void Optimizer::MomentumSGDL1Compute(float* __restrict p, float* __restrict  v, 
     for (size_t i = size-(size%8); i < size; i++) {
         const float sign = p[i] > 0.0f ? 1.0f : -1.0f;
         v[i] = (v[i]*coef)+(d[i]*factor);
-        p[i] -= (v[i]+(lambda*sign));	
+        p[i] -= (v[i]+(lambda*sign));
     }
 }
 void Optimizer::MomentumSGDL2Compute(float* __restrict p, float* __restrict  v, const float* __restrict d, size_t size, float lr, size_t n, float lambda, float coef) {
@@ -210,7 +210,7 @@ void Optimizer::MomentumSGDCompute(float* __restrict  p, float* __restrict  v, c
 	#pragma omp parallel for simd
 	for (size_t i = 0; i < size; i++) {
         v[i] = (v[i]*coef)+(d[i]*factor);
-        p[i] -= v[i];		
+        p[i] -= v[i];
 	}
 }
 void Optimizer::MomentumSGDL1Compute(float* __restrict p, float* __restrict  v, const float* __restrict d, size_t size, float lr, size_t n, float lambda, float coef) {
@@ -223,7 +223,7 @@ void Optimizer::MomentumSGDL1Compute(float* __restrict p, float* __restrict  v, 
     for (size_t i = 0; i < size; i++) {
         const float sign = p[i] > 0.0f ? 1.0f : -1.0f;
         v[i] = (v[i]*coef)+(d[i]*factor);
-        p[i] -= (v[i]+(lambda*sign));	
+        p[i] -= (v[i]+(lambda*sign));
     }
 }
 void Optimizer::MomentumSGDL2Compute(float* __restrict p, float* __restrict  v, const float* __restrict d, size_t size, float lr, size_t n, float lambda, float coef) {

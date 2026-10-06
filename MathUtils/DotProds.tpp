@@ -5,7 +5,7 @@ template <bool clear> void MathUtils::DotProd(const float* __restrict a, const f
 	AVX512_VALID_PATH();
 
 	#pragma omp parallel for
-    for (size_t i = 0; i < a_r; i++) {		
+    for (size_t i = 0; i < a_r; i++) {
 		const size_t aidx = i*a_c;
 		const size_t cidx = i*b_c;
 
@@ -54,7 +54,7 @@ template <bool clear> void MathUtils::DotProd(const float* __restrict a, const f
 	AVX2_VALID_PATH();
 
 	#pragma omp parallel for
-    for (size_t i = 0; i < a_r; i++) {		
+    for (size_t i = 0; i < a_r; i++) {
 		const size_t aidx = i*a_c;
 		const size_t cidx = i*b_c;
 
@@ -103,7 +103,7 @@ template <bool clear> void MathUtils::DotProd(const float* __restrict a, const f
     SCALAR_VALID_PATH();
 
     #pragma omp parallel for
-    for (size_t i = 0; i < a_r; i++) {		
+    for (size_t i = 0; i < a_r; i++) {
 		const size_t aidx = i*a_c;
 		const size_t cidx = i*b_c;
 
@@ -112,7 +112,7 @@ template <bool clear> void MathUtils::DotProd(const float* __restrict a, const f
         // first j loop to clear existing c values
         if constexpr (clear) {
             j = 1;
-            
+
             #pragma omp simd
             for (size_t k = 0; k < b_c; k++) {
                 c[cidx+k] = a[aidx+0] * b[0*b_c+k];
