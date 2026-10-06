@@ -1,4 +1,8 @@
 {
+    "[cpp]": {
+        "editor.defaultFormatter": "xaver.clang-format"
+    },
+    "editor.formatOnSave": true,
     "files.associations": {
         "*.config": "json",
         "*.env": "ini",

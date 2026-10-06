@@ -1,10 +1,9 @@
 #pragma once
-#include "../Layer/Layer.hpp"
 #include "../Dataset/Dataset.hpp"
+#include "../Layer/Layer.hpp"
 
 struct NeuralNetwork {
-    public:
-
+  public:
     int Define(YAML::Node& config, Dataset& dataset, const TrainingConfig& trainingConfig);
     int Build();
 
@@ -20,9 +19,9 @@ struct NeuralNetwork {
     inline bool IsDefined() const { return defined; }
     inline bool IsBuilt() const { return built; }
 
-    private:
+  private:
     bool defined = false;
-    bool built = false;
+    bool built   = false;
 
     const TrainingConfig* trainingConfig;
     YAML::Node* config;

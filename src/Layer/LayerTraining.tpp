@@ -1,6 +1,6 @@
 #include "Layer.hpp"
 
-template<bool TRAINING> void Layer::Forward(const Tensor<float>& input) {
+template <bool TRAINING> void Layer::Forward(const Tensor<float>& input) {
     if (type == Type::Input) {
         InputForward<TRAINING>(input);
     } else {
@@ -8,14 +8,14 @@ template<bool TRAINING> void Layer::Forward(const Tensor<float>& input) {
     }
 }
 
-template<bool TRAINING> void Layer::InputForward(const Tensor<float>& input) {
+template <bool TRAINING> void Layer::InputForward(const Tensor<float>& input) {
     if constexpr (TRAINING) {
         MathUtils::PartialCopy<true>(input, trainingActivations);
     } else {
         MathUtils::PartialCopy<true>(input, testingActivations);
     }
 }
-template<bool TRAINING> void Layer::HiddenForward(const Tensor<float>& input) {
+template <bool TRAINING> void Layer::HiddenForward(const Tensor<float>& input) {
     Tensor<float>* z;
     Tensor<float>* a;
 
@@ -26,7 +26,7 @@ template<bool TRAINING> void Layer::HiddenForward(const Tensor<float>& input) {
         z = &testingTotals;
         a = &testingActivations;
     }
-    
+
     // copy biases into output, clearing old values
     MathUtils::CopyByRow(biases, *z);
 
@@ -36,18 +36,20 @@ template<bool TRAINING> void Layer::HiddenForward(const Tensor<float>& input) {
 }
 
 void Layer::Backward(const Tensor<float>& truth, const Tensor<float>& input, const Tensor<float>& nextWeights, size_t elements) {
-    if (type == Type::Input) { InputBackward(); }
-    else if (type == Type::Hidden) { HiddenBackward(truth, input, nextWeights, elements); }
-    else if (type == Type::Output) { OutputBackward(truth, input, elements); }
+    if (type == Type::Input) {
+        InputBackward();
+    } else if (type == Type::Hidden) {
+        HiddenBackward(truth, input, nextWeights, elements);
+    } else if (type == Type::Output) {
+        OutputBackward(truth, input, elements);
+    }
 }
 
-void Layer::InputBackward() {
-    return;
-}
+void Layer::InputBackward() { return; }
 void Layer::HiddenBackward(const Tensor<float>& truth, const Tensor<float>& input, const Tensor<float>& nextWeights, size_t elements) {
     MathUtils::DotProdTB<false>(truth, nextWeights, totalDerivatives);
     (activation.derivative)(trainingTotals, totalDerivatives);
-    
+
     ComputeBackward(input, elements);
 }
 void Layer::OutputBackward(const Tensor<float>& truth, const Tensor<float>& input, size_t elements) {
@@ -60,6 +62,4 @@ void Layer::ComputeBackward(const Tensor<float>& input, size_t elements) {
     MathUtils::SumColumns<false>(totalDerivatives, biasDerivatives);
 }
 
-void Layer::Update(size_t elements) {
-    optimizer.Update(elements);
-}
+void Layer::Update(size_t elements) { optimizer.Update(elements); }

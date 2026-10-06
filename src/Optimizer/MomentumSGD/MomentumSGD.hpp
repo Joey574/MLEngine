@@ -1,7 +1,7 @@
 #pragma once
 
 struct MomentumSGD {
-    public:
+  public:
     void Update(Tensor<float>& weights, Tensor<float>& biases, Tensor<float>& weightDerivatives, Tensor<float>& biasDerivatives, size_t elements, float learningRate);
 
     void Define(const YAML::Node& config);
@@ -13,9 +13,9 @@ struct MomentumSGD {
     inline bool IsDefined() const { return defined; }
     inline bool IsBuilt() const { return built; }
 
-    private:
+  private:
     bool defined = false;
-    bool built = false;
+    bool built   = false;
 
     float momentum;
     Tensor<float> weightVelocity;

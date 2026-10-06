@@ -4,13 +4,9 @@
 #include "../Optimizer/Optimizer.hpp"
 
 struct Layer {
-    public:
-    enum class Type {
-        None, Input, Hidden, Output
-    };
-    enum class WeightType {
-        None, He, Normalize, Xavier
-    };
+  public:
+    enum class Type { None, Input, Hidden, Output };
+    enum class WeightType { None, He, Normalize, Xavier };
 
     inline Type GetType() const { return type; }
     static inline Type ParseType(const std::string& name) {
@@ -89,10 +85,8 @@ struct Layer {
     void ComputeBackward(const Tensor<float>& input, size_t elements);
 
     void Update(size_t elements);
-    
-    inline float Score(const Tensor<float>& truth) const {
-        return (*lossMetric.metric)(testingActivations, truth);
-    }
+
+    inline float Score(const Tensor<float>& truth) const { return (*lossMetric.metric)(testingActivations, truth); }
 
     template <bool TRAIN> inline Tensor<float>& Output() {
         if constexpr (TRAIN) {
@@ -106,9 +100,9 @@ struct Layer {
     inline bool IsDefined() const { return defined; }
     inline bool IsBuilt() const { return built; }
 
-    private:
+  private:
     bool defined = false;
-    bool built = false;
+    bool built   = false;
 
     Type type;
     WeightType weightType;
@@ -120,7 +114,7 @@ struct Layer {
     size_t nodes;
     size_t iNodes;
     size_t oNodes;
-    
+
     Tensor<float> weights;
     Tensor<float> biases;
 

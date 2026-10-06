@@ -1,17 +1,20 @@
 #pragma once
-#include "../NeuralNetwork/NeuralNetwork.hpp"
 #include "../Dataset/Dataset.hpp"
+#include "../NeuralNetwork/NeuralNetwork.hpp"
 
 struct Supervisor {
-    public:
-
+  public:
     Supervisor() {
-        model = new NeuralNetwork();
+        model   = new NeuralNetwork();
         dataset = new Dataset();
     }
     ~Supervisor() {
-        if (model) { delete model; }
-        if (dataset) { delete dataset; }
+        if (model) {
+            delete model;
+        }
+        if (dataset) {
+            delete dataset;
+        }
     }
 
     int Define(YAML::Node& config, std::string& path, std::string& name);
@@ -22,15 +25,14 @@ struct Supervisor {
     int SaveOptimizers() const;
     int LoadOptimizers();
 
-
     nlohmann::json Train(nlohmann::json& history);
 
     inline bool IsDefined() const { return defined; }
     inline bool IsBuilt() const { return built; }
 
-    private:
+  private:
     bool defined = false;
-    bool built = false;
+    bool built   = false;
 
     std::string path;
     std::string name;
@@ -41,5 +43,4 @@ struct Supervisor {
 
     YAML::Node* config;
     TrainingConfig trainingConfig;
-
 };

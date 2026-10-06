@@ -10,9 +10,9 @@ float LossMetric::MAEScore(const Tensor<float>& x, const Tensor<float>& y) {
     assert(x.Size() == y.Size());
 
     const size_t n = x.Size();
-    float error = 0.0f;
+    float error    = 0.0f;
 
-    #pragma omp parallel for simd schedule(static) reduction(+:error)
+#pragma omp parallel for simd schedule(static) reduction(+ : error)
     for (size_t i = 0; i < n; i++) {
         error += fabsf(x.Data()[i] - y.Data()[i]);
     }
@@ -28,13 +28,13 @@ float LossMetric::MSEScore(const Tensor<float>& x, const Tensor<float>& y) {
     assert(x.Data() != nullptr && y.Data() != nullptr);
     assert(!x.HasNan() && !y.HasNan());
     assert(x.Size() == y.Size());
-    
-    const size_t n = x.Size();
-    float error = 0.0f;
 
-    #pragma omp parallel for simd schedule(static) reduction(+:error)
+    const size_t n = x.Size();
+    float error    = 0.0f;
+
+#pragma omp parallel for simd schedule(static) reduction(+ : error)
     for (size_t i = 0; i < n; i++) {
-        error += (x.Data()[i]-y.Data()[i])*(x.Data()[i]-y.Data()[i]);
+        error += (x.Data()[i] - y.Data()[i]) * (x.Data()[i] - y.Data()[i]);
     }
 
     return error / (float)n;
@@ -48,27 +48,29 @@ float LossMetric::AccuracyScore(const Tensor<float>& x, const Tensor<float>& y) 
     assert(x.Data() != nullptr && y.Data() != nullptr);
     assert(!x.HasNan() && !y.HasNan());
 
-    const auto xDims = x.Dimensions();
+    const auto xDims  = x.Dimensions();
     const size_t rows = xDims[0];
     const size_t cols = xDims[1];
 
     size_t correct = 0;
 
-    #pragma omp parallel for schedule(static) reduction(+:correct)
+#pragma omp parallel for schedule(static) reduction(+ : correct)
     for (size_t r = 0; r < rows; r++) {
 
         // find max element and its index in column
         size_t midx = 0;
-        float max = x.Data()[r*cols+0];
-        
+        float max   = x.Data()[r * cols + 0];
+
         for (size_t c = 1; c < cols; c++) {
-            if (x.Data()[r*cols+c] > max) {
-                max = x.Data()[r*cols+c];
+            if (x.Data()[r * cols + c] > max) {
+                max  = x.Data()[r * cols + c];
                 midx = c;
             }
         }
 
-        if (midx == y.Data()[r]) { correct++; }
+        if (midx == y.Data()[r]) {
+            correct++;
+        }
     }
 
     return ((float)correct / (float)rows) * 100.0f;

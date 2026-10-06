@@ -5,11 +5,11 @@ void Layer::Define(const YAML::Node& layerConfig, const YAML::Node& optimizerCon
     assert(!(optimizer.IsDefined() || optimizer.IsBuilt()));
     assert(layerConfig[Y_LAYERTYPE] && layerConfig[Y_NODES]);
 
-    type = ParseType(layerConfig[Y_LAYERTYPE].as<std::string>());
+    type       = ParseType(layerConfig[Y_LAYERTYPE].as<std::string>());
     weightType = ParseWeightType(layerConfig[Y_WEIGHT].as<std::string>(Y_WEIGHT_DEFAULT));
 
     // set nodes, input nodes, and output nodes sizes
-    nodes = layerConfig[Y_NODES].as<size_t>();
+    nodes  = layerConfig[Y_NODES].as<size_t>();
     iNodes = in;
     oNodes = out;
 
@@ -17,33 +17,31 @@ void Layer::Define(const YAML::Node& layerConfig, const YAML::Node& optimizerCon
     activation.AssignPointers(layerConfig[Y_ACTIVATION].as<std::string>(Y_ACTV_DEFAULT));
 
     // set loss / metric functions, default to none
-    lossMetric.AssignPointers(
-        layerConfig[Y_LOSS].as<std::string>(Y_LOSS_DEFAULT),
-        layerConfig[Y_METRIC].as<std::string>(Y_METRIC_DEFAULT)
-    );
+    lossMetric.AssignPointers(layerConfig[Y_LOSS].as<std::string>(Y_LOSS_DEFAULT), layerConfig[Y_METRIC].as<std::string>(Y_METRIC_DEFAULT));
 
     // allocate tensors
     switch (type) {
         case Type::Input:
-            weights = Tensor<float>(0);
-            biases = Tensor<float>(0);
+            weights           = Tensor<float>(0);
+            biases            = Tensor<float>(0);
             weightDerivatives = Tensor<float>(0);
-            biasDerivatives = Tensor<float>(0);
+            biasDerivatives   = Tensor<float>(0);
             break;
-        case Type::Hidden: case Type::Output:
+        case Type::Hidden:
+        case Type::Output:
             weights = Tensor<float>(iNodes, nodes);
-            biases = Tensor<float>(nodes);
-            
+            biases  = Tensor<float>(nodes);
+
             weightDerivatives = Tensor<float>(iNodes, nodes);
-            biasDerivatives = Tensor<float>(nodes);
-            totalDerivatives = Tensor<float>(trainingConfig.batchSize, nodes);
+            biasDerivatives   = Tensor<float>(nodes);
+            totalDerivatives  = Tensor<float>(trainingConfig.batchSize, nodes);
             break;
     }
 
     // allocate training and testing tensors
-    testingTotals = Tensor<float>(trainingConfig.testSize, nodes);
-    trainingTotals = Tensor<float>(trainingConfig.batchSize, nodes);
-    testingActivations = Tensor<float>(trainingConfig.testSize, nodes);
+    testingTotals       = Tensor<float>(trainingConfig.testSize, nodes);
+    trainingTotals      = Tensor<float>(trainingConfig.batchSize, nodes);
+    testingActivations  = Tensor<float>(trainingConfig.testSize, nodes);
     trainingActivations = Tensor<float>(trainingConfig.batchSize, nodes);
 
     optimizer.Define(optimizerConfig, weights.Size(), biases.Size());
@@ -98,14 +96,18 @@ void Layer::InitializeParameters() {
 int Layer::Save(std::ofstream& f) const {
     assert(defined && built);
 
-    if (!weights.IsEmpty()) f.write((char*)weights.Data(), weights.Size()*sizeof(float));
-    if (!biases.IsEmpty()) f.write((char*)biases.Data(), biases.Size()*sizeof(float));
+    if (!weights.IsEmpty())
+        f.write((char*)weights.Data(), weights.Size() * sizeof(float));
+    if (!biases.IsEmpty())
+        f.write((char*)biases.Data(), biases.Size() * sizeof(float));
     return 0;
 }
 int Layer::Load(std::ifstream& f) {
     assert(defined && built);
 
-    if (!weights.IsEmpty()) f.read((char*)weights.Data(), weights.Size()*sizeof(float));
-    if (!biases.IsEmpty()) f.read((char*)biases.Data(), biases.Size()*sizeof(float));
+    if (!weights.IsEmpty())
+        f.read((char*)weights.Data(), weights.Size() * sizeof(float));
+    if (!biases.IsEmpty())
+        f.read((char*)biases.Data(), biases.Size() * sizeof(float));
     return 0;
 }

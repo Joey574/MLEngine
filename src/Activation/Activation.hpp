@@ -1,10 +1,8 @@
 #pragma once
 
 struct Activation {
-    public:
-    enum class Type {
-        None, Linear, Sigmoid, ReLU, LeakyReLU, ELU, Softmax
-    };
+  public:
+    enum class Type { None, Linear, Sigmoid, ReLU, LeakyReLU, ELU, Softmax };
 
     static inline Type ParseType(const std::string& name) {
         auto lower = std::string(name.size(), ' ');
@@ -48,9 +46,7 @@ struct Activation {
     }
 
     inline Type GetType() const { return type; }
-    inline void AssignPointers(const std::string& name) {
-        AssignPointers(ParseType(name));
-    }
+    inline void AssignPointers(const std::string& name) { AssignPointers(ParseType(name)); }
     inline void AssignPointers(const Type type) {
         this->type = type;
 
@@ -85,11 +81,11 @@ struct Activation {
                 return;
         }
     }
-    
+
     void (*activation)(const Tensor<float>&, Tensor<float>&);
     void (*derivative)(const Tensor<float>&, Tensor<float>&);
 
-    private:
+  private:
     Type type;
 
     /* ----------

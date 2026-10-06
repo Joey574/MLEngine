@@ -1,9 +1,9 @@
 #pragma once
 
 #ifdef DEBUG
-#define DEBUG_LOG(m) std::cout << __FILE__ << ":" << __LINE__ << " | " << m << std::endl
+    #define DEBUG_LOG(m) std::cout << __FILE__ << ":" << __LINE__ << " | " << m << std::endl
 #else
-#define DEBUG_LOG(m)
+    #define DEBUG_LOG(m)
 #endif
 
 #define AVX512_VALID_PATH() assert(__builtin_cpu_supports("avx512f"))
