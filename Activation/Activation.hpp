@@ -1,11 +1,11 @@
 #pragma once
 #include "../MathUtils/MathUtils.hpp"
 
-/* @brief 
+/* @brief
 The Activation struct is responsible for providing utilities regarding activation functions and their derivatives.
 
-Activation functions themselves will write the activation directly to the output location, highly parallelized and vectorized. Derivative functions are a little different, 
-they take the activation value and the location of the values to multiply by the derivativethus no intermediary derivative value is needed, and the values are multiplied 
+Activation functions themselves will write the activation directly to the output location, highly parallelized and vectorized. Derivative functions are a little different,
+they take the activation value and the location of the values to multiply by the derivativethus no intermediary derivative value is needed, and the values are multiplied
 by the derivative in place.
 
 Struct contents itself are mostly static, the only non static members being function pointers, a type value, and some initialization functions, these provide users to

@@ -20,10 +20,78 @@ public:
     LossMetric(Type l, Type m) { AssignPointers(l, m); };
 
     // parsing utils
-    static Type ParseType(const std::string& name);
-    static std::string ParseName(Type type);
+    static inline Type ParseType(const std::string& name) {
+        if (name == "mae") {
+            return Type::mae;
+        } else if (name == "mse") {
+            return Type::mse;
+        } else if (name == "accuracy") {
+            return Type::accuracy;
+        } else if (name == "onehot") {
+            return Type::onehot;
+        } else if (name == "none") {
+            return Type::none;
+        } else {
+            std::cerr << "[-] Invalid LossMetric Type: " << name << "\n";
+            return Type::none;
+        }
+    };
+    static inline std::string ParseName(Type type) {
+        switch (type) {
+            case Type::mae:
+                return "mae";
+            case Type::mse:
+                return "mse";
+            case Type::accuracy:
+                return "accuracy";
+            case Type::onehot:
+                return "onehot";
+            case Type::none:
+                return "none";
+            default:
+                std::cerr << "[-] Invalid LossMetric Type: " << (int)type << "\n";
+                return "none";
+        }
+    }
 
-    void AssignPointers(Type l, Type m);
+    void AssignPointers(Type l, Type m) {
+        ltype = l;
+        mtype = m;
+
+        switch (l) {
+            case Type::mae:
+                loss = MaeLoss;
+                break;
+            case Type::mse:
+                loss = MseLoss;
+                break;
+            case Type::onehot:
+                loss = OneHotLoss;
+                break;
+            default:
+                loss = nullptr;
+                break;
+        }
+
+        switch (m) {
+            case Type::mae:
+                highestIsBest = false;
+                metric = MaeScore;
+                break;
+            case Type::mse:
+                highestIsBest = false;
+                metric = MseScore;
+                break;
+            case Type::accuracy:
+                highestIsBest = true;
+                metric = AccuracyScore;
+                break;
+            default:
+                metric = nullptr;
+                break;
+        }
+    }
+
 
 private:
 

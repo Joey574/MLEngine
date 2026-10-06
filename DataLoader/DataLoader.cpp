@@ -227,9 +227,8 @@ void DataLoader::LoadMNISTStyleDataset(std::ifstream& traind, std::ifstream& tra
     height = ReadBigInt(&testd);
 
     // set up vector sizes
-    testData.data = std::vector<float>();
+    testData.data = std::vector<float>(imagenum*width*height, 0.0f);
     testLabels.data = std::vector<float>(imagenum);
-    testData.data.reserve(imagenum*width*height);
 
     testData.rows = imagenum;
     testData.cols = width*height;
