@@ -8,7 +8,7 @@ void DataLoader::Deform(size_t e) {
     }
 
     // shuffle new traindata
-    Shuffle(e, trainData, trainLabels);    
+    Shuffle(e, trainData, trainLabels);
 }
 void DataLoader::Shuffle(size_t e, Matrix& data, Matrix& labels) {
     std::mt19937 rng(SEED+22+e);
@@ -87,7 +87,7 @@ size_t DataLoader::ApplyShear(Matrix& data, Matrix& labels, size_t original_samp
 size_t DataLoader::ApplyElasticDeform(Matrix& data, Matrix& labels, size_t original_samples, std::mt19937& rd, size_t w, size_t h, float alpha, float sigma, size_t samples, size_t a_idx) {
     // pre make gaussian kernel
     std::vector<float> k = MathUtils::MakeGaussianKernel1D(std::ceil(3.0f*sigma), sigma);
-    
+
     // pre allocate scratch space
     std::vector<float> tmp(w*h);
     std::vector<float> uxs(w*h);
@@ -102,6 +102,6 @@ size_t DataLoader::ApplyElasticDeform(Matrix& data, Matrix& labels, size_t origi
             a_idx++;
         }
     }
-    
+
     return a_idx;
 }

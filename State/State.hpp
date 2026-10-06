@@ -14,7 +14,7 @@ public:
     nlohmann::json history;
 
     State() {}
-    
+
     void Init();
     void SaveInit();
 
@@ -28,18 +28,18 @@ public:
     std::string DeleteModel() const;
     std::string ResetModel() const;
     std::string VisualizeModel();
-    
+
     std::string AvailableModels() const;
 
     // static utils
     static std::string ExpandPath(const std::string& path);
     static bool CreateDir(const std::string& path);
     static bool DirExists(const std::string& path);
-    static bool FileExists(const std::string& path); 
+    static bool FileExists(const std::string& path);
 
     bool ModelExists();
     bool IsValid();
-        
+
 private:
 
     std::string p_workspace;

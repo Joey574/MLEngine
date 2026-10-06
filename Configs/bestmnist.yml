@@ -15,7 +15,7 @@ dataset_args:
   shear: 0.2
   min_shear: 0.1
   shear_variants: 2
-  
+
   elastic_deform:
     alpha: 34
     sigma: 4
@@ -25,9 +25,13 @@ optimizer:
   type: adam
   learning_rate: 0.01
 
-
 layers:
   - type: input
+
+  - type: hidden
+    dropout: 0.3
+    nodes: 1024
+    activation: leakyrelu
 
   - type: hidden
     dropout: 0.3
@@ -40,7 +44,7 @@ layers:
     loss: onehot
     metric: accuracy
 
-seed: 406123
+#seed: 406123
 
 weight: he
 epochs: 5000

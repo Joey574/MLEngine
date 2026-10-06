@@ -46,7 +46,7 @@ public:
 
     static void SaveMandleImage(const std::string& path, const float* points, size_t width, size_t height);
     static void VisualizeTerminalMNISTLike(const float* image, size_t width, size_t height);
-    
+
 private:
     YAML::Node args;
 

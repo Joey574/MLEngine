@@ -1,13 +1,20 @@
 cmake_minimum_required(VERSION 3.18)
 project(MLEngine LANGUAGES CXX)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # cpp standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # default to release
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the build type (Release or Debug)" FORCE)
+  set(
+    CMAKE_BUILD_TYPE
+    "Release" CACHE STRING
+    "Choose the build type (Release or Debug)" FORCE
+  )
 endif()
 
 # check platform
@@ -19,7 +26,7 @@ else()
   message(FATAL_ERROR "Unsupported platform")
 endif()
 
-set(GNU_RELEASE_FLAGS
+set(RELEASE_FLAGS
   -march=native -mtune=native
   -flto=auto -fomit-frame-pointer -funroll-loops -fipa-pta
   -fdevirtualize-speculatively
@@ -40,47 +47,17 @@ set(GNU_RELEASE_FLAGS
   -ftree-loop-distribute-patterns -ftree-loop-im -fsplit-loops -fsplit-paths
 )
 
-set(GNU_DEBUG_FLAGS
+set(DEBUG_FLAGS
   -march=native
   -O0 -g -DDEBUG -rdynamic
   -fno-lto -fopenmp
 )
-
-set(MSVC_RELEASE_FLAGS
-  /O2 /Ob2 /Ot /GL /Gy
-  /DNDEBUG /MT /fp:fast
-  /openmp:llvm
-)
-
-set(MSVC_DEBUG_FLAGS
-  /Od /Ob0 /Zi /RTC1
-  /MDd /DDEBUG
-  /openmp:llvm
-)
-
 
 # use ccache if available
 find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
   set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
 endif()
-
-
-# set compiler flags based on compiler
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  message(STATUS "Compiling with GNU")
-
-  set(RELEASE_FLAGS ${GNU_RELEASE_FLAGS})
-  set(DEBUG_FLAGS ${GNU_DEBUG_FLAGS})
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-  message(WARNING "Fallback to msvc, degraded performance/support expected (MinGW STRONGLY recommended)")
-
-  set(RELEASE_FLAGS ${MSVC_RELEASE_FLAGS})
-  set(DEBUG_FLAGS ${MSVC_DEBUG_FLAGS})
-else()
-  message(FATAL_ERROR "Unsupported compiler")
-endif()
-
 
 # collect all cpp files
 file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS
@@ -110,7 +87,10 @@ else()
 endif()
 
 # static linking
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++")
+set(
+  CMAKE_EXE_LINKER_FLAGS
+  "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++"
+)
 target_link_libraries(MLEngine PRIVATE pthread m dl)
 
 # packages

@@ -1,2 +1,4 @@
 bin
 build
+__cmake_systeminformation
+.cache

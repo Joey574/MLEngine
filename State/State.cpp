@@ -2,7 +2,7 @@
 
 void State::Init() {
     model = new NeuralNetwork();
-    
+
     p_workspace = ExpandPath("~/.local/share/MLEngine");
 
     // create / validate workspace for models
@@ -51,7 +51,7 @@ void State::Load() {
             // failed to load, build model again
             std::cerr << "Failed to load parameters, rebuilding model\n";
             Build(true);
-        }        
+        }
     } else {
         std::cout << "No save found, rebuilding model\n";
         Build(true);

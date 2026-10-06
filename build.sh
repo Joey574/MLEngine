@@ -13,6 +13,7 @@ done
 
 # build directory
 mkdir -p build
+mkdir -p bin
 cd build
 
 # configure
@@ -24,7 +25,7 @@ echo "-- Building program ($build_type)"
 cmake --build . -j
 
 # output
-file_size=$(stat -c %s "./MLEngine")
+file_size=$(stat -c %s "../bin/MLEngine")
 size_human=$(numfmt --to=iec --suffix=B "$file_size")
 end_time=$(date +%s.%N)
 elapsed=$(echo "$end_time - $start_time" | bc)

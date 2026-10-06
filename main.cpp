@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
     signal(SIGSEGV, segv);
 
     DEBUG_LOG("Running in DEBUG mode");
-    
+
     State state;
     state.Init();
     std::string config_file;
@@ -125,9 +125,9 @@ int main(int argc, char* argv[]) {
         }
 
         if (listmeta) { displayMeta(state); }
-        if (listhistory) { displayHistory(state); }      
+        if (listhistory) { displayHistory(state); }
         if (deletemodel) { deleteModel(state); }
-        if (resetmodel) { resetModel(state); }  
+        if (resetmodel) { resetModel(state); }
         if (visualizemodel) { visualizeModel(state); }
     }
 
@@ -149,7 +149,7 @@ int main(int argc, char* argv[]) {
         SEED = rd();
         std::cout << "Global Seed: " << SEED << "\n";
     }
-    
+
 
     if (state.ModelExists()) {
         std::cout << "Loading existing model\n";
@@ -161,7 +161,7 @@ int main(int argc, char* argv[]) {
             std::cout << app.help();
             exit(1);
         }
-        
+
         std::cout << "Creating new model\n";
         state.Build(true);
     }

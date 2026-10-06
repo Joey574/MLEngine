@@ -4,7 +4,7 @@
 void DataLoader::LoadDataset(YAML::Node& config) {
     std::string dataset = config[Y_DATASET].as<std::string>();
     args = config[Y_DATASETARGS];
-    
+
     refresh_every = args[Y_AUGMENT_REF_INTERVAL].as<size_t>(Y_AUGMENT_REF_INTERVAL_DEFAULT);
 
     if (dataset == "mnist") {
@@ -117,7 +117,7 @@ void DataLoader::LoadMandlebrot() {
     testLabels.rows = test_elements;
     testLabels.cols = 1;
 
-    trainData.data = std::vector<float>(trainData.rows*trainData.cols);  
+    trainData.data = std::vector<float>(trainData.rows*trainData.cols);
     testData.data = std::vector<float>(testData.rows*testData.cols);
 
     trainLabels.data = std::vector<float>(n);
@@ -233,7 +233,7 @@ void DataLoader::LoadMNISTStyleDataset(std::ifstream& traind, std::ifstream& tra
 
     testData.rows = imagenum;
     testData.cols = width*height;
-  
+
     testLabels.rows = imagenum;
     testLabels.cols = 1;
 
