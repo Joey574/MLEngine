@@ -18,24 +18,23 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 set(RELEASE_FLAGS
-  -march=native -mtune=native
-  -flto=auto -fomit-frame-pointer -funroll-loops -fipa-pta
-  -fdevirtualize-speculatively
-  -Ofast -fopenmp
-  -fvect-cost-model=unlimited -DNDEBUG
-  -falign-functions=32 -falign-loops=32
-  -ffast-math -fno-math-errno -fassociative-math -freciprocal-math
-  -fno-signed-zeros -fno-trapping-math -fmodulo-sched
-  -fmodulo-sched-allow-regmoves -fpredictive-commoning
-  -fhoist-adjacent-loads -ftree-loop-distribution
-  -ftree-loop-vectorize -ftree-slp-vectorize -ftree-vectorize
-  -Wno-unused-result -frename-registers -fschedule-insns -fschedule-insns2
-  -fweb -fipa-cp-clone -floop-nest-optimize -ftree-partial-pre
-  -funsafe-loop-optimizations -freorder-blocks-and-partition
-  -fno-semantic-interposition -finline-functions -finline-functions-called-once
-  -fwhole-program -floop-interchange -floop-block -floop-strip-mine
-  -funswitch-loops -fira-loop-pressure -fsched-pressure
-  -ftree-loop-distribute-patterns -ftree-loop-im -fsplit-loops -fsplit-paths
+  -Ofast
+  -march=native
+  -flto=auto
+  -fopenmp
+  -DNDEBUG
+  -fvect-cost-model=unlimited
+  -falign-functions=32
+  -falign-loops=32
+  -funroll-loops
+  -fipa-pta
+  -fmodulo-sched
+  -fmodulo-sched-allow-regmoves
+  -fira-loop-pressure
+  -fsched-pressure
+  -frename-registers
+  -fschedule-insns
+  -Wno-unused-result
 )
 
 set(DEBUG_FLAGS
@@ -87,19 +86,19 @@ target_link_libraries(MLEngine PRIVATE pthread m dl)
 find_package(yaml-cpp REQUIRED)
 find_package(OpenMP REQUIRED)
 
+find_library(OPENBLAS_LIB NAMES openblas REQUIRED)
+find_path(OPENBLAS_INCLUDE_DIR NAMES cblas.h
+          PATH_SUFFIXES include/openblas include REQUIRED)
+message(STATUS "OpenBLAS lib: ${OPENBLAS_LIB}")
+message(STATUS "OpenBLAS include: ${OPENBLAS_INCLUDE_DIR}")
 
-set(BLA_VENDER OpenBLAS)
-find_package(BLAS REQUIRED)
-if(BLAS_FOUND)
-    message("OpenBLAS found.")
-    include_directories(/opt/OpenBLAS/include/)
-endif(BLAS_FOUND)
+target_include_directories(MLEngine PRIVATE ${OPENBLAS_INCLUDE_DIR})
 
 target_link_libraries(
   MLEngine PRIVATE
   OpenMP::OpenMP_CXX
   yaml-cpp
-  ${BLAS_LIBRARIES}
+  ${OPENBLAS_LIB}
 )
 
 target_precompile_headers(MLEngine PRIVATE Dependencies/pch.h)

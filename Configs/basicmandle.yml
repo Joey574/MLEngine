@@ -10,11 +10,9 @@ optimizer:
   type: adam
   learning_rate: 0.005
 
-
 layers:
   - type: input
 
-
   - type: hidden
     nodes: 1024
     dropout: 0.3
@@ -34,7 +32,6 @@ layers:
     nodes: 1024
     dropout: 0.3
     activation: leakyrelu
-
 
   - type: output
     nodes: 1
@@ -42,7 +39,7 @@ layers:
     loss: mse
     metric: mae
 
-seed: 2539531789
+#seed: 2539531789
 
 weight: he
 epochs: 100000

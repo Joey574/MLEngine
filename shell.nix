@@ -3,9 +3,13 @@
 }:
 
 pkgs.mkShell {
-  buildInputs = with pkgs; [
+  nativeBuildInputs = with pkgs; [
     cmake
     ninja
+    pkg-config
+  ];
+
+  buildInputs = with pkgs; [
     yaml-cpp
     openblas
   ];

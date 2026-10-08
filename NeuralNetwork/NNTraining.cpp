@@ -73,6 +73,7 @@ std::string NeuralNetwork::TestNetwork(DataLoader& dataset, nlohmann::json& hist
 	std::string sesb = "Session Best: " + std::to_string((float)history[J_BESTSCORE]);
 	std::string eveb = "Best Ever: " + std::to_string((float)storedhistory[J_BESTEVSCORE]);
 
+	// TODO : this is not very good design
 	if (dataset.type == DataLoader::Type::mandlebrot) {
 		DataLoader::SaveMandleImage(m_path+"images/"+std::to_string(e)+".png", predictions, dataset.test_dims[0], dataset.test_dims[1]);
 	}
