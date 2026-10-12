@@ -2,13 +2,13 @@ name: basicmandle
 dataset: mandlebrot
 
 dataset_args:
-  samples: 250000
+  samples: 500000
   mandledepth: 500
   fourier_series: 64
 
 optimizer:
   type: adam
-  learning_rate: 0.0005
+  learning_rate: 0.00005
 
 layers:
   - type: input
