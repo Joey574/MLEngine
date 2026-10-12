@@ -4,19 +4,14 @@ dataset: mandlebrot
 dataset_args:
   samples: 250000
   mandledepth: 500
-  fourier_series: 32
+  fourier_series: 64
 
 optimizer:
   type: adam
-  learning_rate: 0.005
+  learning_rate: 0.0005
 
 layers:
   - type: input
-
-  - type: hidden
-    nodes: 1024
-    dropout: 0.3
-    activation: leakyrelu
 
   - type: hidden
     nodes: 1024
