@@ -15,17 +15,14 @@ layers:
 
   - type: hidden
     nodes: 1024
-    dropout: 0.3
     activation: leakyrelu
 
   - type: hidden
     nodes: 1024
-    dropout: 0.3
     activation: leakyrelu
 
   - type: hidden
     nodes: 1024
-    dropout: 0.3
     activation: leakyrelu
 
   - type: output
