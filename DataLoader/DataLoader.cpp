@@ -139,7 +139,7 @@ void DataLoader::LoadMandlebrot() {
     double scaleX = (std::abs(xMin-xMax)/((double)img_width-1.0));
     double scaleY = (std::abs(yMin-yMax)/((double)img_height-1.0));
 
-    #pragma omp parallel for
+    #pragma omp parallel for simd schedule(static)
     for (size_t h = 0; h < img_height; h++) {
         for (size_t w = 0; w < img_width; w++) {
             const size_t i = h*img_width+w;
@@ -174,8 +174,8 @@ void DataLoader::LoadMandlebrot() {
         float min, max;
 
         std::tie(min, max) = MathUtils::ColMinMax(&trainData.data[0], trainData.rows, trainData.cols, i);
-        MathUtils::NormalizeCol(&trainData.data[0], 0.0f, 1.0f, trainData.rows, trainData.cols, i);
-        MathUtils::NormalizeCol(&testData.data[0], 0.0f, 1.0f, testData.rows, testData.cols, i);
+        MathUtils::NormalizeCol(&trainData.data[0], 0.0f, 1.0f, min, max, trainData.rows, trainData.cols, i);
+        MathUtils::NormalizeCol(&testData.data[0], 0.0f, 1.0f, min, max, testData.rows, testData.cols, i);
     }
 }
 
@@ -349,16 +349,23 @@ float DataLoader::InMandlebrot(double x, double y, size_t it) {
         return 1.0f;
 }
 void DataLoader::ComputeFourier(float* x, float xmin, float xmax, float ymin, float ymax, size_t series) {
-    const float xv = x[0] = M_PI + ((x[0]-xmin)/(xmax-xmin)*(M_PI-(-M_PI)));
-    const float yv = x[1] = M_PI + ((x[1]-ymin)/(ymax-ymin)*(M_PI-(-M_PI)));
+    const float xv = -M_PI + (x[0]-xmin) / (xmax-xmin) * (2.0f*M_PI);
+    const float yv = -M_PI + (x[1]-ymin) / (ymax-ymin) * (2.0f*M_PI);
+    x[0] = xv;
+    x[1] = yv;
 
     #pragma omp simd
     for (size_t i = 0; i < series; i++) {
-        x[2+(i*4)] = std::sin(std::pow(xv, i+2));
-        x[2+(i*4)+1] = std::cos(std::pow(xv, i+2));
+        const float freq = i+1;
 
-        x[2+(i*4)+2] = std::sin(std::pow(yv, i+2));
-        x[2+(i*4)+3] = std::cos(std::pow(yv, i+2));
+        const float xp = xv * freq;
+        const float yp = yv * freq;
+
+        x[2+(i*4)] = std::sin(xp);
+        x[2+(i*4)+1] = std::cos(xp);
+
+        x[2+(i*4)+2] = std::sin(yp);
+        x[2+(i*4)+3] = std::cos(yp);
     }
 }
 
