@@ -29,7 +29,13 @@ void DataLoader::SaveMandleImage(const std::string& path, const float* __restric
         std::filesystem::create_directories(dir);
     }
 
-    if (!stbi_write_png(path.c_str(), width, height, 3, image.data(), width*3)) {
-        std::cerr << "Failed to write image to " << path << "\n";
-    }
+	if (this->pipe != nullptr) {
+	    fwrite(image.data(), 1, image.size(), this->pipe);
+	} else {
+	    std::cerr << "Pipe is null, cannot append frame\n";
+	}
+
+    //if (!stbi_write_png(path.c_str(), width, height, 3, image.data(), width*3)) {
+    //    std::cerr << "Failed to write image to " << path << "\n";
+    //}
 }

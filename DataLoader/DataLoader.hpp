@@ -44,9 +44,14 @@ public:
     void LoadFMNIST();
     void LoadMandlebrot();
 
-    static void SaveMandleImage(const std::string& path, const float* points, size_t width, size_t height);
+    void SaveMandleImage(const std::string& path, const float* points, size_t width, size_t height);
     static void VisualizeTerminalMNISTLike(const float* image, size_t width, size_t height);
 
+    ~DataLoader() {
+        if (pipe != nullptr) {
+            pclose(pipe);
+        }
+    }
 private:
     YAML::Node args;
 
@@ -67,6 +72,7 @@ private:
     // mandlebrot utils
     static float InMandlebrot(double x, double y, size_t it);
     static void ComputeFourier(float* x, float xmin, float xmax, float ymin, float ymax, size_t series);
+    FILE* pipe;
 
     static std::string ExpandPath(const std::string& path);
 };

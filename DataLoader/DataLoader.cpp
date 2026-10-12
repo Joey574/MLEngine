@@ -1,4 +1,5 @@
 #include "DataLoader.hpp"
+#include <string>
 
 /// @brief Returns the passed dataset as constrained by args
 void DataLoader::LoadDataset(YAML::Node& config) {
@@ -177,6 +178,11 @@ void DataLoader::LoadMandlebrot() {
         MathUtils::NormalizeCol(&trainData.data[0], 0.0f, 1.0f, min, max, trainData.rows, trainData.cols, i);
         MathUtils::NormalizeCol(&testData.data[0], 0.0f, 1.0f, min, max, testData.rows, testData.cols, i);
     }
+
+    std::string cmd = "ffmpeg -y -loglevel error -nostats -f rawvideo -vcodec rawvideo -s ";
+    cmd += std::to_string(test_dims[0]) + "x" + std::to_string(test_dims[1]);
+    cmd +=  " -pix_fmt rgb24 -r 30 -i pipe:0 -c:v libx264 -pix_fmt yuv420p output.mp4";
+    this->pipe = popen(cmd.c_str(), "w");
 }
 
 void DataLoader::LoadMNISTStyleDataset(std::ifstream& traind, std::ifstream& trainl, std::ifstream& testd, std::ifstream& testl) {
