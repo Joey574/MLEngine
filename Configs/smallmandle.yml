@@ -4,12 +4,11 @@ dataset: mandlebrot
 dataset_args:
   samples: 600000
   mandledepth: 1000
-  fourier_series: 32
+  fourier_series: 64
 
 optimizer:
   type: adam
   learning_rate: 0.005
-
 
 layers:
   - type: input
