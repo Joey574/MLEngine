@@ -1,4 +1,5 @@
 #include "DataLoader.hpp"
+#include <random>
 #include <string>
 
 /// @brief Returns the passed dataset as constrained by args
@@ -124,16 +125,31 @@ void DataLoader::LoadMandlebrot() {
     trainLabels.data = std::vector<float>(n);
     testLabels.data = std::vector<float>(test_elements);
 
+    // TODO
+    // gwidth and gheight should be user defined
+    const double uniformPercent = args[Y_MANDLE_UNIFORM_PERCENT].as<float>(Y_MANDLE_UNIFORM_PERCENT_DEFAULT);
+    const size_t gwidth = 4096;
+    const size_t gheight = 4096;
+
+    const auto cells = GenerateBoundaryCells(xMin, xMax, yMin, yMax, gwidth, gheight, depth);
+
+    std::uniform_real_distribution<double> prob(0.0, 1.0);
+
     // build training dataset
     for (size_t i = 0; i < n; i++) {
-        double x = xrand(gen);
-        double y = yrand(gen);
+        double x;
+        double y;
 
-        float m = InMandlebrot(x, y, depth);
+        if (cells.empty() || prob(gen) < uniformPercent) {
+            x = xrand(gen);
+            y = yrand(gen);
+        } else {
+            std::tie(x, y) = SampleBoundary(gen, cells);
+        }
 
         trainData.data[i*trainData.cols] = x;
         trainData.data[i*trainData.cols+1] = y;
-        trainLabels.data[i] = m;
+        trainLabels.data[i] = InMandlebrot(x, y, depth);
     }
 
     // build testing dataset
@@ -156,28 +172,23 @@ void DataLoader::LoadMandlebrot() {
         }
     }
 
-    float xmin, xmax, ymin, ymax;
-    std::tie(xmin, xmax) = MathUtils::ColMinMax(&trainData.data[0], trainData.rows, trainData.cols, 0);
-    std::tie(ymin, ymax) = MathUtils::ColMinMax(&trainData.data[0], trainData.rows, trainData.cols, 1);
-
     #pragma omp parallel for
     for (size_t i = 0; i < n; i++) {
-        ComputeFourier(&trainData.data[i*trainData.cols], xmin, xmax, ymin, ymax, fourier);
+        ComputeFourier(&trainData.data[i*trainData.cols], xMin, xMax, yMin, yMax, fourier);
     }
 
     #pragma omp parallel for
     for (size_t i = 0; i < test_elements; i++) {
-        ComputeFourier(&testData.data[i*testData.cols], xmin, xmax, ymin, ymax, fourier);
+        ComputeFourier(&testData.data[i*testData.cols], xMin, xMax, yMin, yMax, fourier);
     }
 
-    // normalize to range [0-1]
-    for (size_t i = 0; i < trainData.cols; i++) {
-        float min, max;
-
-        std::tie(min, max) = MathUtils::ColMinMax(&trainData.data[0], trainData.rows, trainData.cols, i);
-        MathUtils::NormalizeCol(&trainData.data[0], 0.0f, 1.0f, min, max, trainData.rows, trainData.cols, i);
-        MathUtils::NormalizeCol(&testData.data[0], 0.0f, 1.0f, min, max, testData.rows, testData.cols, i);
-    }
+    // normalize to range [-1-1]
+    // fourier elements are already normalized to this range
+    // they do not require any other modifications
+    MathUtils::NormalizeCol(&trainData.data[0], -1.0f, 1.0f, xMin, xMax, trainData.rows, trainData.cols, 0);
+    MathUtils::NormalizeCol(&trainData.data[0], -1.0f, 1.0f, yMin, yMax, trainData.rows, trainData.cols, 1);
+    MathUtils::NormalizeCol(&testData.data[0], -1.0f, 1.0f, xMin, xMax, testData.rows, testData.cols, 0);
+    MathUtils::NormalizeCol(&testData.data[0], -1.0f, 1.0f, yMin, yMax, testData.rows, testData.cols, 1);
 
     std::string cmd = "ffmpeg -y -loglevel error -nostats -f rawvideo -vcodec rawvideo -s ";
     cmd += std::to_string(test_dims[0]) + "x" + std::to_string(test_dims[1]);
@@ -340,7 +351,6 @@ int DataLoader::ReadBigInt(std::ifstream* f) {
 
     return lint;
 }
-
 
 float DataLoader::InMandlebrot(double x, double y, size_t it) {
     std::complex<double> c(x, y);

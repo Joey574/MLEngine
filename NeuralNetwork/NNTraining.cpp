@@ -75,7 +75,7 @@ std::string NeuralNetwork::TestNetwork(DataLoader& dataset, nlohmann::json& hist
 
 	// TODO : this is not very good design
 	if (dataset.type == DataLoader::Type::mandlebrot) {
-		dataset.SaveMandleImage(m_path+"images/"+std::to_string(e)+".png", predictions, dataset.test_dims[0], dataset.test_dims[1]);
+		dataset.SaveMandleImage(m_path+"images/latest.png", predictions, dataset.test_dims[0], dataset.test_dims[1]);
 	}
 
 	int size = snprintf(nullptr, 0, "%-25s %-30s %-30s", curs.data(), sesb.data(), eveb.data());

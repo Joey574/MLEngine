@@ -1,6 +1,13 @@
 #pragma once
 #include "../MathUtils/MathUtils.hpp"
 
+struct BoundaryCell {
+    double x;
+    double y;
+    double width;
+    double height;
+};
+
 /* @brief
 The DataLoader struct is responsible for loading, storing, and augmenting datasets to be used in training
 */
@@ -71,9 +78,19 @@ private:
 
     // mandlebrot utils
     static float InMandlebrot(double x, double y, size_t it);
+    std::vector<BoundaryCell> GenerateBoundaryCells(
+        double xmin,
+        double xmax,
+        double ymin,
+        double ymax,
+        size_t width,
+        size_t height,
+        size_t depth
+    );
+    std::pair<double, double> SampleBoundary(std::mt19937& gen, const std::vector<BoundaryCell>& cells);
 
-    template <typename T> static void ComputeFourier(T* x, T xmin, T xmax, T ymin, T ymax, size_t series);
-    template <typename T> static void ComputeHashGrid();
+
+    static void ComputeFourier(float* x, float xmin, float xmax, float ymin, float ymax, size_t series);
 
     FILE* pipe;
 

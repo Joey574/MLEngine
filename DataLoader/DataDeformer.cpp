@@ -106,10 +106,10 @@ size_t DataLoader::ApplyElasticDeform(Matrix& data, Matrix& labels, size_t origi
     return a_idx;
 }
 
-template <typename T>
-void DataLoader::ComputeFourier(T* x, T xmin, T xmax, T ymin, T ymax, size_t series) {
-    const T xv = -M_PI + (x[0]-xmin) / (xmax-xmin) * (2.0f*M_PI);
-    const T yv = -M_PI + (x[1]-ymin) / (ymax-ymin) * (2.0f*M_PI);
+// Writes a normalized [-1, 1] sampling of fourier series to x
+void DataLoader::ComputeFourier(float* x, float xmin, float xmax, float ymin, float ymax, size_t series) {
+    const float xv = -M_PI + (x[0]-xmin) / (xmax-xmin) * (2.0f*M_PI);
+    const float yv = -M_PI + (x[1]-ymin) / (ymax-ymin) * (2.0f*M_PI);
     x[0] = xv;
     x[1] = yv;
 
@@ -120,15 +120,10 @@ void DataLoader::ComputeFourier(T* x, T xmin, T xmax, T ymin, T ymax, size_t ser
         const float xp = xv * freq;
         const float yp = yv * freq;
 
-        x[2+(i*4)] = std::sin(xp);
-        x[2+(i*4)+1] = std::cos(xp);
+        x[2+(i*4)] = (std::sin(xp) + 1.0f) * 0.5f;
+        x[2+(i*4)+1] = (std::cos(xp) + 1.0f) * 0.5f;
 
-        x[2+(i*4)+2] = std::sin(yp);
-        x[2+(i*4)+3] = std::cos(yp);
+        x[2+(i*4)+2] = (std::sin(yp) + 1.0f) * 0.5f;
+        x[2+(i*4)+3] = (std::cos(yp) + 1.0f) * 0.5f;
     }
-}
-
-template <typename T>
-void DataLoader::ComputeHashGrid() {
-
 }

@@ -25,6 +25,8 @@
 #define Y_ELASTIC_SIGMA_DEFAULT 4.0
 #define Y_ELASTIC_VAR_DEFAULT 0
 
+#define Y_MANDLE_UNIFORM_PERCENT_DEFAULT 0.3
+
 // training defaults
 #define Y_EPOCH_DEFAULT 0
 #define Y_BATCH_DEFAULT 512

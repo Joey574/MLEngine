@@ -28,6 +28,7 @@
 #define Y_FOURIER_SERIES "fourier_series"
 #define Y_MANDLE_IMG_WIDTH "image_width"
 #define Y_MANDLE_IMG_HEIGHT "image_height"
+#define Y_MANDLE_UNIFORM_PERCENT "uniform_percent"
 
 #define Y_ELASTIC_DEFORM "elastic_deform"
 #define Y_ELASTIC_ALPHA "alpha"
