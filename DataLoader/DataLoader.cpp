@@ -1,4 +1,6 @@
 #include "DataLoader.hpp"
+#include <cmath>
+#include <fstream>
 #include <random>
 #include <string>
 
@@ -125,13 +127,19 @@ void DataLoader::LoadMandlebrot() {
     trainLabels.data = std::vector<float>(n);
     testLabels.data = std::vector<float>(test_elements);
 
-    // TODO
-    // gwidth and gheight should be user defined
-    const double uniformPercent = args[Y_MANDLE_UNIFORM_PERCENT].as<float>(Y_MANDLE_UNIFORM_PERCENT_DEFAULT);
-    const size_t gwidth = 4096;
-    const size_t gheight = 4096;
+    const bool makeQuad = args[Y_MANDLE_SAMPLE_QUAD_TREE].as<bool>(Y_MANDLE_SAMPLE_QUAD_TREE_DEFAULT);
+    const size_t quadDepth = args[Y_MANDLE_SAMPLE_QUAD_DEPTH].as<size_t>(Y_MANDLE_SAMPLE_QUAD_DEPTH_DEFAULT);
 
-    const auto cells = GenerateBoundaryCells(xMin, xMax, yMin, yMax, gwidth, gheight, depth);
+    const double uniformPercent = args[Y_MANDLE_UNIFORM_PERCENT].as<float>(Y_MANDLE_UNIFORM_PERCENT_DEFAULT);
+    const size_t xRes = args[Y_MANDLE_SAMPLE_X_RES].as<size_t>(Y_MANDLE_SAMPLE_X_RES_DEFAULT);
+    const size_t yRes = args[Y_MANDLE_SAMPLE_Y_RES].as<size_t>(Y_MANDLE_SAMPLE_Y_RES_DEFAULT);
+
+    std::vector<BoundaryCell> cells;
+    if (makeQuad) {
+        cells = GenerateBoundaryCellsQuadTree(xMin, xMax, yMin, yMax, xRes, yRes, depth, quadDepth, 0);
+    } else {
+        cells = GenerateBoundaryCells(xMin, xMax, yMin, yMax, xRes, yRes, depth);
+    }
 
     std::uniform_real_distribution<double> prob(0.0, 1.0);
 
@@ -150,6 +158,16 @@ void DataLoader::LoadMandlebrot() {
         trainData.data[i*trainData.cols] = x;
         trainData.data[i*trainData.cols+1] = y;
         trainLabels.data[i] = InMandlebrot(x, y, depth);
+    }
+
+    const bool dump = args[Y_MANDLE_DUMP_RAW_DATASET].as<bool>(Y_MANDLE_DUMP_RAW_DATASET_DEFUALT);
+    if (dump) {
+        std::ofstream f("./dataset.bin");
+        if (f.is_open()) {
+            f.write((char*)trainData.data.data(), trainData.data.size()*sizeof(float));
+            f.close();
+            exit(1);
+        }
     }
 
     // build testing dataset
@@ -359,7 +377,7 @@ float DataLoader::InMandlebrot(double x, double y, size_t it) {
         for (size_t i = 0; i < it; i++) {
             z = z * z + c;
             if (std::abs(z) > 2.0) {
-                return (1.0 - (1.0 / (((double)i / 50.0) + 1.0)));
+                return (1.0 - (1.0 / ((double)i / 50.0) + 1.0));
             }
         }
         return 1.0f;

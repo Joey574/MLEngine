@@ -39,13 +39,13 @@ nlohmann::json NeuralNetwork::Fit(DataLoader& dataset, nlohmann::json& storedhis
 			BackProp(x, y, effective_size);
 		}
 
-		std::string res = "";
-		if ((e+1) % valid_freq == 0) {
-			res = TestNetwork(dataset, history, storedhistory, e);
-		}
+        std::string res = "";
+        if ((e+1) % valid_freq == 0) {
+            res = TestNetwork(dataset, history, storedhistory, e);
+        }
 
-		double epochns = (std::chrono::high_resolution_clock::now() - epochstart).count();
-		EpochEnd(history, res, epochns, e);
+        double epochns = (std::chrono::high_resolution_clock::now() - epochstart).count();
+        EpochEnd(history, res, epochns, e);
 	}
 
 	// forced network test to make sure we get at least one save if model wasn't validated during training

@@ -1,0 +1,41 @@
+name: mandledatatest
+dataset: mandlebrot
+
+dataset_args:
+  samples: 1000000
+  mandledepth: 1000
+  #dump_raw_dataset: true
+  uniform_percent: 0.2
+  quad_tree: true
+  quad_depth: 10
+  x_resolution: 4
+  y_resolution: 2
+
+  image_width: 1920
+  image_height: 1080
+
+optimizer:
+  type: adam
+  learning_rate: 0.000001
+
+layers:
+  - type: input
+
+  - type: hidden
+    nodes: 512
+    activation: leakyrelu
+
+  - type: hidden
+    nodes: 512
+    activation: leakyrelu
+
+  - type: output
+    nodes: 1
+    activation: sigmoid
+    loss: mse
+    metric: mae
+
+weight: he
+epochs: 100
+valid_freq: 1
+batch_size: 32768

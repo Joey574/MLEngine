@@ -87,8 +87,19 @@ private:
         size_t height,
         size_t depth
     );
-    std::pair<double, double> SampleBoundary(std::mt19937& gen, const std::vector<BoundaryCell>& cells);
 
+    std::vector<BoundaryCell> GenerateBoundaryCellsQuadTree(
+        double xmin,
+        double xmax,
+        double ymin,
+        double ymax,
+        size_t xRes,
+        size_t yRes,
+        size_t mandleDepth,
+        size_t maxQuadDepth,
+        size_t quadDepth
+    );
+    std::pair<double, double> SampleBoundary(std::mt19937& gen, const std::vector<BoundaryCell>& cells);
 
     static void ComputeFourier(float* x, float xmin, float xmax, float ymin, float ymax, size_t series);
 

@@ -12,6 +12,7 @@ pkgs.mkShell {
   buildInputs = with pkgs; [
     yaml-cpp
     openblas
+    bc
   ];
 
   shellHook = ''

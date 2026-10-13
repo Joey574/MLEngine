@@ -2,15 +2,18 @@ name: smallmandle
 dataset: mandlebrot
 
 dataset_args:
-  samples: 600000
+  samples: 100000
   mandledepth: 1000
-  fourier_series: 64
+
+  uniform_percent: 0.5
+  fourier_series: 16
+
   image_width: 1920
   image_height: 1080
 
 optimizer:
   type: adam
-  learning_rate: 0.005
+  learning_rate: 0.01
 
 layers:
   - type: input
