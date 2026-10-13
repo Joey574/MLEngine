@@ -7,6 +7,11 @@ void DataLoader::Deform(size_t e) {
         (this->*augment)(e);
     }
 
+    // special case for mandlebrot
+    if (type == Type::mandlebrot && e % refresh_every == 0) {
+        LoadMandlebrotTrainData(e);
+    }
+
     // shuffle new traindata
     Shuffle(e, trainData, trainLabels);
 }
@@ -120,10 +125,13 @@ void DataLoader::ComputeFourier(float* x, float xmin, float xmax, float ymin, fl
         const float xp = xv * freq;
         const float yp = yv * freq;
 
-        x[2+(i*4)] = (std::sin(xp) + 1.0f) * 0.5f;
-        x[2+(i*4)+1] = (std::cos(xp) + 1.0f) * 0.5f;
+        x[2+(i*4)] = std::sin(xp);
+        x[2+(i*4)+1] = std::cos(xp);
 
-        x[2+(i*4)+2] = (std::sin(yp) + 1.0f) * 0.5f;
-        x[2+(i*4)+3] = (std::cos(yp) + 1.0f) * 0.5f;
+        x[2+(i*4)+2] = std::sin(yp);
+        x[2+(i*4)+3] = std::cos(yp);
     }
+
+    x[0] = xv / M_PI;
+    x[1] = yv / M_PI;
 }

@@ -77,6 +77,7 @@ private:
     void LoadMNISTStyleDataset(std::ifstream& traind, std::ifstream& trainl, std::ifstream& testd, std::ifstream& testl);
 
     // mandlebrot utils
+    void LoadMandlebrotTrainData(size_t e);
     static float InMandlebrot(double x, double y, size_t it);
     std::vector<BoundaryCell> GenerateBoundaryCells(
         double xmin,
@@ -102,7 +103,6 @@ private:
     std::pair<double, double> SampleBoundary(std::mt19937& gen, const std::vector<BoundaryCell>& cells);
 
     static void ComputeFourier(float* x, float xmin, float xmax, float ymin, float ymax, size_t series);
-
     FILE* pipe;
 
     static std::string ExpandPath(const std::string& path);

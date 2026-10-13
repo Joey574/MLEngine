@@ -108,9 +108,6 @@ void DataLoader::LoadMandlebrot() {
 
     std::mt19937 gen(SEED-82);
 
-    std::uniform_real_distribution<double> xrand(xMin, xMax);
-    std::uniform_real_distribution<double> yrand(yMin, yMax);
-
     trainData.rows = n;
     trainData.cols = 2 + (fourier*4);
     testData.rows = test_elements;
@@ -126,6 +123,54 @@ void DataLoader::LoadMandlebrot() {
 
     trainLabels.data = std::vector<float>(n);
     testLabels.data = std::vector<float>(test_elements);
+
+    LoadMandlebrotTrainData(-1);
+
+    // build testing dataset
+    double scaleX = (std::abs(xMin-xMax)/((double)img_width-1.0));
+    double scaleY = (std::abs(yMin-yMax)/((double)img_height-1.0));
+
+    #pragma omp parallel for simd schedule(static)
+    for (size_t h = 0; h < img_height; h++) {
+        for (size_t w = 0; w < img_width; w++) {
+            const size_t i = h*img_width+w;
+
+            double x = xMin+(double)w*scaleX;
+            double y = yMin+(double)h*scaleY;
+
+            float m = InMandlebrot(x, y, depth);
+
+            testData.data[i*testData.cols] = x;
+            testData.data[i*testData.cols+1] = y;
+            testLabels.data[i] = m;
+        }
+    }
+
+    #pragma omp parallel for
+    for (size_t i = 0; i < test_elements; i++) {
+        ComputeFourier(&testData.data[i*testData.cols], xMin, xMax, yMin, yMax, fourier);
+    }
+
+    std::string cmd = "ffmpeg -y -loglevel error -nostats -f rawvideo -vcodec rawvideo -s ";
+    cmd += std::to_string(test_dims[0]) + "x" + std::to_string(test_dims[1]);
+    cmd +=  " -pix_fmt rgb24 -r 30 -i pipe:0 -c:v libx264 -pix_fmt yuv420p output.mp4";
+    this->pipe = popen(cmd.c_str(), "w");
+}
+
+void DataLoader::LoadMandlebrotTrainData(size_t e) {
+    const size_t n = args[Y_SAMPLES].as<size_t>(Y_SAMPLE_DEFAULT);
+    const size_t depth = args[Y_MANDLE_DEPTH].as<size_t>(Y_MANDLEDEPTH_DEFAULT);
+    const size_t fourier = args[Y_FOURIER_SERIES].as<size_t>(Y_FOURIER_DEFAULT);
+
+    const double xMin = -2.5;
+    const double xMax = 1.0;
+    const double yMin = -1.1;
+    const double yMax = 1.1;
+
+    std::mt19937 gen(SEED-82+e);
+
+    std::uniform_real_distribution<double> xrand(xMin, xMax);
+    std::uniform_real_distribution<double> yrand(yMin, yMax);
 
     const bool makeQuad = args[Y_MANDLE_SAMPLE_QUAD_TREE].as<bool>(Y_MANDLE_SAMPLE_QUAD_TREE_DEFAULT);
     const size_t quadDepth = args[Y_MANDLE_SAMPLE_QUAD_DEPTH].as<size_t>(Y_MANDLE_SAMPLE_QUAD_DEPTH_DEFAULT);
@@ -162,31 +207,15 @@ void DataLoader::LoadMandlebrot() {
 
     const bool dump = args[Y_MANDLE_DUMP_RAW_DATASET].as<bool>(Y_MANDLE_DUMP_RAW_DATASET_DEFUALT);
     if (dump) {
-        std::ofstream f("./dataset.bin");
-        if (f.is_open()) {
-            f.write((char*)trainData.data.data(), trainData.data.size()*sizeof(float));
-            f.close();
-            exit(1);
+        std::vector<float> xy(2 * trainData.rows);
+        for (size_t i = 0; i < trainData.rows; i++) {
+            xy[2*i]     = trainData.data[i*trainData.cols];
+            xy[2*i + 1] = trainData.data[i*trainData.cols + 1];
         }
-    }
 
-    // build testing dataset
-    double scaleX = (std::abs(xMin-xMax)/((double)img_width-1.0));
-    double scaleY = (std::abs(yMin-yMax)/((double)img_height-1.0));
-
-    #pragma omp parallel for simd schedule(static)
-    for (size_t h = 0; h < img_height; h++) {
-        for (size_t w = 0; w < img_width; w++) {
-            const size_t i = h*img_width+w;
-
-            double x = xMin+(double)w*scaleX;
-            double y = yMin+(double)h*scaleY;
-
-            float m = InMandlebrot(x, y, depth);
-
-            testData.data[i*testData.cols] = x;
-            testData.data[i*testData.cols+1] = y;
-            testLabels.data[i] = m;
+        std::ofstream f("./dataset.bin", std::ios::binary);
+        if (f.is_open()) {
+            f.write(reinterpret_cast<const char*>(xy.data()), xy.size() * sizeof(float));
         }
     }
 
@@ -194,24 +223,6 @@ void DataLoader::LoadMandlebrot() {
     for (size_t i = 0; i < n; i++) {
         ComputeFourier(&trainData.data[i*trainData.cols], xMin, xMax, yMin, yMax, fourier);
     }
-
-    #pragma omp parallel for
-    for (size_t i = 0; i < test_elements; i++) {
-        ComputeFourier(&testData.data[i*testData.cols], xMin, xMax, yMin, yMax, fourier);
-    }
-
-    // normalize to range [-1-1]
-    // fourier elements are already normalized to this range
-    // they do not require any other modifications
-    MathUtils::NormalizeCol(&trainData.data[0], -1.0f, 1.0f, xMin, xMax, trainData.rows, trainData.cols, 0);
-    MathUtils::NormalizeCol(&trainData.data[0], -1.0f, 1.0f, yMin, yMax, trainData.rows, trainData.cols, 1);
-    MathUtils::NormalizeCol(&testData.data[0], -1.0f, 1.0f, xMin, xMax, testData.rows, testData.cols, 0);
-    MathUtils::NormalizeCol(&testData.data[0], -1.0f, 1.0f, yMin, yMax, testData.rows, testData.cols, 1);
-
-    std::string cmd = "ffmpeg -y -loglevel error -nostats -f rawvideo -vcodec rawvideo -s ";
-    cmd += std::to_string(test_dims[0]) + "x" + std::to_string(test_dims[1]);
-    cmd +=  " -pix_fmt rgb24 -r 30 -i pipe:0 -c:v libx264 -pix_fmt yuv420p output.mp4";
-    this->pipe = popen(cmd.c_str(), "w");
 }
 
 void DataLoader::LoadMNISTStyleDataset(std::ifstream& traind, std::ifstream& trainl, std::ifstream& testd, std::ifstream& testl) {
@@ -377,8 +388,7 @@ float DataLoader::InMandlebrot(double x, double y, size_t it) {
         for (size_t i = 0; i < it; i++) {
             z = z * z + c;
             if (std::abs(z) > 2.0) {
-                return (1.0 - (1.0 / ((double)i / 50.0) + 1.0));
-            }
+                return (float)((double)i / ((double)i + 50.0));            }
         }
         return 1.0f;
 }
