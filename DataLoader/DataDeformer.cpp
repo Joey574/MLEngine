@@ -105,3 +105,30 @@ size_t DataLoader::ApplyElasticDeform(Matrix& data, Matrix& labels, size_t origi
 
     return a_idx;
 }
+
+template <typename T>
+void DataLoader::ComputeFourier(T* x, T xmin, T xmax, T ymin, T ymax, size_t series) {
+    const T xv = -M_PI + (x[0]-xmin) / (xmax-xmin) * (2.0f*M_PI);
+    const T yv = -M_PI + (x[1]-ymin) / (ymax-ymin) * (2.0f*M_PI);
+    x[0] = xv;
+    x[1] = yv;
+
+    #pragma omp parallel for simd schedule(static)
+    for (size_t i = 0; i < series; i++) {
+        const float freq = i+1;
+
+        const float xp = xv * freq;
+        const float yp = yv * freq;
+
+        x[2+(i*4)] = std::sin(xp);
+        x[2+(i*4)+1] = std::cos(xp);
+
+        x[2+(i*4)+2] = std::sin(yp);
+        x[2+(i*4)+3] = std::cos(yp);
+    }
+}
+
+template <typename T>
+void DataLoader::ComputeHashGrid() {
+
+}

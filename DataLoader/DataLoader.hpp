@@ -71,7 +71,10 @@ private:
 
     // mandlebrot utils
     static float InMandlebrot(double x, double y, size_t it);
-    static void ComputeFourier(float* x, float xmin, float xmax, float ymin, float ymax, size_t series);
+
+    template <typename T> static void ComputeFourier(T* x, T xmin, T xmax, T ymin, T ymax, size_t series);
+    template <typename T> static void ComputeHashGrid();
+
     FILE* pipe;
 
     static std::string ExpandPath(const std::string& path);

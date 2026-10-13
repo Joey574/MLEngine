@@ -147,7 +147,7 @@ void Layer::InitializeWeights(float* data, WeightInitialization init) {
     if (init == WeightInitialization::he) {
 
         lowerRand = 0.0f;
-        upperRand = std::sqrt(2.0f/nodes);
+        upperRand = std::sqrt(2.0f/inodes);
 
         std::normal_distribution<float> dist(lowerRand, upperRand);
         for (size_t i = 0; i < wsize; i++) {
@@ -160,12 +160,12 @@ void Layer::InitializeWeights(float* data, WeightInitialization init) {
 
         std::uniform_real_distribution<float> dist(lowerRand, upperRand);
         for (size_t i = 0; i < wsize; i++) {
-            data[i] = dist(gen) * std::sqrt(1.0f/nodes);
+            data[i] = dist(gen) * std::sqrt(1.0f/inodes);
         }
     } else if (init == WeightInitialization::xavier) {
 
-        lowerRand = (-1.0f/std::sqrt(nodes));
-        upperRand = 1.0f/std::sqrt(nodes);
+        lowerRand = (-1.0f/std::sqrt(inodes));
+        upperRand = 1.0f/std::sqrt(inodes);
 
         std::uniform_real_distribution<float> dist(lowerRand, upperRand);
         for (size_t i = 0; i < wsize; i++) {

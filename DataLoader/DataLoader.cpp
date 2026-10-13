@@ -354,26 +354,6 @@ float DataLoader::InMandlebrot(double x, double y, size_t it) {
         }
         return 1.0f;
 }
-void DataLoader::ComputeFourier(float* x, float xmin, float xmax, float ymin, float ymax, size_t series) {
-    const float xv = -M_PI + (x[0]-xmin) / (xmax-xmin) * (2.0f*M_PI);
-    const float yv = -M_PI + (x[1]-ymin) / (ymax-ymin) * (2.0f*M_PI);
-    x[0] = xv;
-    x[1] = yv;
-
-    #pragma omp simd
-    for (size_t i = 0; i < series; i++) {
-        const float freq = i+1;
-
-        const float xp = xv * freq;
-        const float yp = yv * freq;
-
-        x[2+(i*4)] = std::sin(xp);
-        x[2+(i*4)+1] = std::cos(xp);
-
-        x[2+(i*4)+2] = std::sin(yp);
-        x[2+(i*4)+3] = std::cos(yp);
-    }
-}
 
 std::string DataLoader::ExpandPath(const std::string& path) {
     if (path.empty() || path[0] != '~') {

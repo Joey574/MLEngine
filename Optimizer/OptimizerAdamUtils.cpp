@@ -1,7 +1,7 @@
 #include "Optimizer.hpp"
 
 void Optimizer::AdamCompute(float* __restrict p, float* __restrict m, float* __restrict v, const float* __restrict d, size_t size, float lr, size_t n, float b1, float b2, float epsl, size_t t) {
-    const float factor = lr / (float)n;
+    const float factor = lr;
     const float b1Rate = 1.0f - b1;
     const float b2Rate = 1.0f - b2;
 
