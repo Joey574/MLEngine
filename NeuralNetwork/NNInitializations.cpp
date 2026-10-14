@@ -1,6 +1,20 @@
 #include "NeuralNetwork.hpp"
 
 void NeuralNetwork::Initialize(const std::string& path, const std::string& name, YAML::Node& config, bool setweights) {
+    if (m_network) free(m_network);
+    if (m_batch_data) free(m_batch_data);
+    if (m_test_data) free(m_test_data);
+
+    m_network = nullptr;
+    m_batch_data = nullptr;
+    m_test_data = nullptr;
+
+    m_network_bytes = 0;
+    m_batch_data_bytes = 0;
+    m_test_data_bytes = 0;
+
+    m_layers.clear();
+
     this->config = config;
     m_weightinit = ParseWeight(config[Y_WEIGHT].as<std::string>());
     m_path = path;
@@ -29,7 +43,7 @@ void NeuralNetwork::Initialize(const std::string& path, const std::string& name,
     }
 
     // initialize network memory
-    m_network = (float*)aligned_alloc(64, m_network_bytes*sizeof(float));
+    m_network = (float*)aligned_alloc(64, m_network_bytes);
 
     if (setweights) {
         InitializeWeights(ParseWeight(config[Y_WEIGHT].as<std::string>()));
@@ -37,39 +51,32 @@ void NeuralNetwork::Initialize(const std::string& path, const std::string& name,
 }
 
 void NeuralNetwork::InitializeWeights(Layer::WeightInitialization type) {
-    size_t dataidx = 0;
     memset(m_network, 0, m_network_bytes);
+    size_t offset = 0;
 
-    for (size_t i = 0; i < m_layers.size(); i++) {
-        m_layers[i].InitializeWeights(&m_network[dataidx], type);
-        dataidx += m_layers[i].params;
+    for (auto& layer : m_layers) {
+        layer.InitializeWeights(
+            reinterpret_cast<float*>(
+                reinterpret_cast<char*>(m_network) + offset
+            ), type
+        );
+
+        offset += layer.layer_bytes;
     }
 }
 void NeuralNetwork::InitializeLayerData(size_t bn, size_t tn) {
     m_batch_data_bytes = 0;
     m_test_data_bytes = 0;
 
-    std::cout << "bn: " << bn << "\n";
-    std::cout << "tn: " << tn << "\n";
-
     for (Layer& layer : m_layers) {
         layer.InitializeSizes(bn, tn);
-
-        std::cout << "layer batch bytes: " << layer.layer_batch_bytes << "\n";
-        std::cout << "layer test bytes: " << layer.layer_test_bytes << "\n";
 
         m_batch_data_bytes += layer.layer_batch_bytes;
         m_test_data_bytes += layer.layer_test_bytes;
     }
 
-    std::cout << "batch data bytes: " << m_batch_data_bytes << "\n";
-    std::cout << "test data bytes: " << m_test_data_bytes << "\n";
-
     m_batch_data = (float*)aligned_alloc(64, m_batch_data_bytes);
     m_test_data = (float*)aligned_alloc(64, m_test_data_bytes);
-
-    std::cout << "batch pointer: " << m_batch_data << "\n";
-    std::cout << "test pointer: " << m_test_data << "\n";
 
     memset(m_batch_data, 0, m_batch_data_bytes);
     memset(m_test_data, 0, m_test_data_bytes);

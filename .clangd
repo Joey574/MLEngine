@@ -4,3 +4,4 @@ CompileFlags:
     - -fdeps-target=*
     - -fmodule-mapper=*
     - -fmodules-ts
+    - -fipa-pta

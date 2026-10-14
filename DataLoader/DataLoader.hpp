@@ -101,7 +101,7 @@ private:
     std::pair<double, double> SampleBoundary(std::mt19937& gen, const std::vector<BoundaryCell>& cells);
 
     static void ComputeFourier(float* x, float xmin, float xmax, float ymin, float ymax, size_t series);
-    FILE* pipe;
+    FILE* pipe = nullptr;
 
     static std::string ExpandPath(const std::string& path);
 };

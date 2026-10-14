@@ -20,8 +20,8 @@ dataset_args:
   y_resolution: 4096
 
   fourier_series: 64
-  image_width: 3840
-  image_height: 2160
+  image_width: 1920
+  image_height: 1080
 
 weight: he
 

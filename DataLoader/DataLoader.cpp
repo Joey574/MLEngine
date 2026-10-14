@@ -88,6 +88,11 @@ void DataLoader::LoadFMNIST() {
     testl.close();
 }
 void DataLoader::LoadMandlebrot(const std::string& path) {
+    if (pipe != nullptr) {
+        pclose(pipe);
+        pipe = nullptr;
+    }
+
     name = "mandlebrot";
     type = Type::mandlebrot;
     hasTestData = true;
@@ -99,8 +104,6 @@ void DataLoader::LoadMandlebrot(const std::string& path) {
     const size_t img_width = args[Y_MANDLE_IMG_WIDTH].as<size_t>(Y_MANDLE_IMG_WIDTH_DEFAULT);
     const size_t img_height = args[Y_MANDLE_IMG_HEIGHT].as<size_t>(Y_MANDLE_IMG_HEIGHT_DEFAULT);
     test_dims = std::vector<size_t>(2); test_dims[0] = img_width; test_dims[1] = img_height;
-
-    std::cout << img_width << "x" << img_height << "\n";
 
     const size_t test_elements = img_width*img_height;
 

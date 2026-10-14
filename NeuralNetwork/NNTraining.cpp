@@ -13,14 +13,8 @@ nlohmann::json NeuralNetwork::Fit(DataLoader& dataset, nlohmann::json& storedhis
 	nlohmann::json history;
 	FitStart(history, epochs, batch_size, learning_rate);
 
-	std::cout << dataset.testData.rows << "x" << dataset.testData.cols << "\n";
-	std::cout << dataset.trainData.rows << "x" << dataset.trainData.cols << "\n";
-
 	InitializeLayerData(batch_size, dataset.testData.rows);
-	std::cout << "initA\n";
-
 	InitializeLayerPointers(batch_size, dataset.testData.rows);
-	std::cout << "initB\n";
 
 	LoadOptimizers();
 
@@ -46,9 +40,7 @@ nlohmann::json NeuralNetwork::Fit(DataLoader& dataset, nlohmann::json& storedhis
 
         std::string res = "";
         if ((e+1) % valid_freq == 0) {
-            std::cout << "testing netork...\n";
             res = TestNetwork(dataset, history, storedhistory, e);
-            std::cout << "done\n";
         }
 
         double epochns = (std::chrono::high_resolution_clock::now() - epochstart).count();
