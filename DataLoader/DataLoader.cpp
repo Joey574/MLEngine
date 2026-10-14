@@ -1,11 +1,12 @@
 #include "DataLoader.hpp"
 #include <cmath>
+#include <filesystem>
 #include <fstream>
 #include <random>
 #include <string>
 
 /// @brief Returns the passed dataset as constrained by args
-void DataLoader::LoadDataset(YAML::Node& config) {
+void DataLoader::LoadDataset(YAML::Node& config, const std::string& path) {
     std::string dataset = config[Y_DATASET].as<std::string>();
     args = config[Y_DATASETARGS];
 
@@ -16,7 +17,7 @@ void DataLoader::LoadDataset(YAML::Node& config) {
     } else if (dataset == "fmnist") {
         LoadFMNIST();
     } else if (dataset == "mandlebrot") {
-        LoadMandlebrot();
+        LoadMandlebrot(path);
     } else {
         std::cerr << "Failed to initialize dataset\n";
     }
@@ -86,7 +87,7 @@ void DataLoader::LoadFMNIST() {
     testd.close();
     testl.close();
 }
-void DataLoader::LoadMandlebrot() {
+void DataLoader::LoadMandlebrot(const std::string& path) {
     name = "mandlebrot";
     type = Type::mandlebrot;
     hasTestData = true;
@@ -98,6 +99,8 @@ void DataLoader::LoadMandlebrot() {
     const size_t img_width = args[Y_MANDLE_IMG_WIDTH].as<size_t>(Y_MANDLE_IMG_WIDTH_DEFAULT);
     const size_t img_height = args[Y_MANDLE_IMG_HEIGHT].as<size_t>(Y_MANDLE_IMG_HEIGHT_DEFAULT);
     test_dims = std::vector<size_t>(2); test_dims[0] = img_width; test_dims[1] = img_height;
+
+    std::cout << img_width << "x" << img_height << "\n";
 
     const size_t test_elements = img_width*img_height;
 
@@ -124,7 +127,7 @@ void DataLoader::LoadMandlebrot() {
     trainLabels.data = std::vector<float>(n);
     testLabels.data = std::vector<float>(test_elements);
 
-    LoadMandlebrotTrainData(-1);
+    LoadMandlebrotTrainData(-1, path);
 
     // build testing dataset
     double scaleX = (std::abs(xMin-xMax)/((double)img_width-1.0));
@@ -151,13 +154,26 @@ void DataLoader::LoadMandlebrot() {
         ComputeFourier(&testData.data[i*testData.cols], xMin, xMax, yMin, yMax, fourier);
     }
 
+    // ensure run gets a unique video file path
+    std::string mp4Path = path+"images/output";
+    std::string ext = ".mp4";
+    if (std::filesystem::exists(mp4Path+ext)) {
+        mp4Path = mp4Path.append(". ");
+        int xt = 0;
+
+        do {
+            xt++;
+            mp4Path[mp4Path.length()-1] = std::to_string(xt)[0];
+        } while (std::filesystem::exists(mp4Path+ext));
+    }
+
     std::string cmd = "ffmpeg -y -loglevel error -nostats -f rawvideo -vcodec rawvideo -s ";
     cmd += std::to_string(test_dims[0]) + "x" + std::to_string(test_dims[1]);
-    cmd +=  " -pix_fmt rgb24 -r 30 -i pipe:0 -c:v libx264 -pix_fmt yuv420p output.mp4";
+    cmd +=  " -pix_fmt rgb24 -r 30 -i pipe:0 -c:v libx264 -pix_fmt yuv420p " + mp4Path+ext;
     this->pipe = popen(cmd.c_str(), "w");
 }
 
-void DataLoader::LoadMandlebrotTrainData(size_t e) {
+void DataLoader::LoadMandlebrotTrainData(size_t e, const std::string& path) {
     const size_t n = args[Y_SAMPLES].as<size_t>(Y_SAMPLE_DEFAULT);
     const size_t depth = args[Y_MANDLE_DEPTH].as<size_t>(Y_MANDLEDEPTH_DEFAULT);
     const size_t fourier = args[Y_FOURIER_SERIES].as<size_t>(Y_FOURIER_DEFAULT);
@@ -179,11 +195,9 @@ void DataLoader::LoadMandlebrotTrainData(size_t e) {
     const size_t xRes = args[Y_MANDLE_SAMPLE_X_RES].as<size_t>(Y_MANDLE_SAMPLE_X_RES_DEFAULT);
     const size_t yRes = args[Y_MANDLE_SAMPLE_Y_RES].as<size_t>(Y_MANDLE_SAMPLE_Y_RES_DEFAULT);
 
-    std::vector<BoundaryCell> cells;
+    auto cells = GenerateBoundaryCells(xMin, xMax, yMin, yMax, xRes, yRes, depth);
     if (makeQuad) {
-        cells = GenerateBoundaryCellsQuadTree(xMin, xMax, yMin, yMax, xRes, yRes, depth, quadDepth, 0);
-    } else {
-        cells = GenerateBoundaryCells(xMin, xMax, yMin, yMax, xRes, yRes, depth);
+        cells = GenerateBoundaryCellsQuadTree(cells, xMin, xMax, yMin, yMax, depth, quadDepth);
     }
 
     std::uniform_real_distribution<double> prob(0.0, 1.0);
@@ -207,15 +221,22 @@ void DataLoader::LoadMandlebrotTrainData(size_t e) {
 
     const bool dump = args[Y_MANDLE_DUMP_RAW_DATASET].as<bool>(Y_MANDLE_DUMP_RAW_DATASET_DEFUALT);
     if (dump) {
+        const bool shouldExit = args[Y_MANDLE_EXIT_ON_DUMP].as<bool>(Y_MANDLE_EXIT_ON_DUMP_DEFAULT);
+
         std::vector<float> xy(2 * trainData.rows);
         for (size_t i = 0; i < trainData.rows; i++) {
             xy[2*i]     = trainData.data[i*trainData.cols];
             xy[2*i + 1] = trainData.data[i*trainData.cols + 1];
         }
 
-        std::ofstream f("./dataset.bin", std::ios::binary);
+        std::ofstream f(path+"dataset.bin", std::ios::binary);
         if (f.is_open()) {
             f.write(reinterpret_cast<const char*>(xy.data()), xy.size() * sizeof(float));
+            f.close();
+        }
+
+        if (shouldExit) {
+            exit(0);
         }
     }
 

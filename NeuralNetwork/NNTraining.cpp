@@ -10,12 +10,17 @@ nlohmann::json NeuralNetwork::Fit(DataLoader& dataset, nlohmann::json& storedhis
 	size_t valid_freq = config[Y_VALIDFREQ].as<size_t>(Y_VALID_DEFAULT);
 	float learning_rate = config[Y_OPT_OPTIMIZER][Y_OPT_LEARNINGRATE].as<float>(Y_LEARNRATE_DEFAULT);
 
-
 	nlohmann::json history;
 	FitStart(history, epochs, batch_size, learning_rate);
 
+	std::cout << dataset.testData.rows << "x" << dataset.testData.cols << "\n";
+	std::cout << dataset.trainData.rows << "x" << dataset.trainData.cols << "\n";
+
 	InitializeLayerData(batch_size, dataset.testData.rows);
+	std::cout << "initA\n";
+
 	InitializeLayerPointers(batch_size, dataset.testData.rows);
+	std::cout << "initB\n";
 
 	LoadOptimizers();
 
@@ -25,9 +30,9 @@ nlohmann::json NeuralNetwork::Fit(DataLoader& dataset, nlohmann::json& storedhis
 		auto epochstart = std::chrono::high_resolution_clock::now();
 
 		// apply dataset deformations and shuffle
-		dataset.Deform(e);
+		dataset.Deform(e, m_path);
 
-		for (size_t i = 0; i < iterations; i++) {
+		for (size_t i = 0; i < iterations && KEEPRUNNING; i++) {
 			float* __restrict x = &dataset.trainData.data[(i * batch_size) * dataset.trainData.cols];
 			float* __restrict y = &dataset.trainLabels.data[(i * batch_size) * dataset.trainLabels.cols];
 
@@ -41,7 +46,9 @@ nlohmann::json NeuralNetwork::Fit(DataLoader& dataset, nlohmann::json& storedhis
 
         std::string res = "";
         if ((e+1) % valid_freq == 0) {
+            std::cout << "testing netork...\n";
             res = TestNetwork(dataset, history, storedhistory, e);
+            std::cout << "done\n";
         }
 
         double epochns = (std::chrono::high_resolution_clock::now() - epochstart).count();
@@ -75,7 +82,7 @@ std::string NeuralNetwork::TestNetwork(DataLoader& dataset, nlohmann::json& hist
 
 	// TODO : this is not very good design
 	if (dataset.type == DataLoader::Type::mandlebrot) {
-		dataset.SaveMandleImage(m_path+"images/latest.png", predictions, dataset.test_dims[0], dataset.test_dims[1]);
+		dataset.SaveMandleImage(m_path+"images/", predictions, dataset.test_dims[0], dataset.test_dims[1]);
 	}
 
 	int size = snprintf(nullptr, 0, "%-25s %-30s %-30s", curs.data(), sesb.data(), eveb.data());

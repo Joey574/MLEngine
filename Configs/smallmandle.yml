@@ -3,17 +3,17 @@ dataset: mandlebrot
 
 dataset_args:
   samples: 100000
-  mandledepth: 1000
+  mandledepth: 250
 
   uniform_percent: 0.5
-  fourier_series: 16
-
-  image_width: 1920
-  image_height: 1080
+  fourier_series: 8
 
 optimizer:
   type: adam
   learning_rate: 0.01
+
+  image_width: 1920
+  image_height: 1080
 
 layers:
   - type: input

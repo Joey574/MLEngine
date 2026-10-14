@@ -1,3 +1,5 @@
+import sys
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -23,14 +25,14 @@ def parse_and_plot_points(filepath, n_points=None):
     y = points[:, 1]
 
     # 2. Optimized Plotting
-    fig, ax = plt.subplots(figsize=(8, 8), dpi=300)  # High DPI for crisp rendering
+    fig, ax = plt.subplots(figsize=(8, 8), dpi=1000)  # High DPI for crisp rendering
 
     # Use plt.scatter with tiny markers (s=0.1 or s=1) and no edge colors
     # to prevent overlapping artifacts and heavy rendering.
     ax.scatter(
         x,
         y,
-        s=0.5,  # Marker size (very small)
+        s=0.01,  # Marker size (very small)
         c="black",  # Color
         alpha=0.6,  # Transparency to see density hotspots
         linewidths=0,  # Remove edge outlines for speed and cleaner look
@@ -44,10 +46,10 @@ def parse_and_plot_points(filepath, n_points=None):
     ax.set_ylabel("Y")
 
     # Save to a high-resolution raster image (or vector if needed)
-    plt.savefig("points_grid.png", dpi=300, bbox_inches="tight")
-    print("Plot saved successfully as 'points_grid.png'.")
+    plt.savefig("points.png", dpi=1000, bbox_inches="tight")
+    print("Plot saved successfully as 'points.png'.")
 
 
 # Example usage:
 # parse_and_plot_points('your_data.bin', n_points=250000)
-parse_and_plot_points("dataset.bin")
+parse_and_plot_points(sys.argv[1])

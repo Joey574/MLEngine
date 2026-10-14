@@ -29,6 +29,7 @@
 #define Y_MANDLE_IMG_WIDTH "image_width"
 #define Y_MANDLE_IMG_HEIGHT "image_height"
 #define Y_MANDLE_DUMP_RAW_DATASET "dump_raw_dataset"
+#define Y_MANDLE_EXIT_ON_DUMP "exit_on_dump"
 #define Y_MANDLE_UNIFORM_PERCENT "uniform_percent"
 #define Y_MANDLE_SAMPLE_QUAD_TREE "quad_tree"
 #define Y_MANDLE_SAMPLE_QUAD_DEPTH "quad_depth"

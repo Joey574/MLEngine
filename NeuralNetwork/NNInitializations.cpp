@@ -49,15 +49,27 @@ void NeuralNetwork::InitializeLayerData(size_t bn, size_t tn) {
     m_batch_data_bytes = 0;
     m_test_data_bytes = 0;
 
+    std::cout << "bn: " << bn << "\n";
+    std::cout << "tn: " << tn << "\n";
+
     for (Layer& layer : m_layers) {
         layer.InitializeSizes(bn, tn);
+
+        std::cout << "layer batch bytes: " << layer.layer_batch_bytes << "\n";
+        std::cout << "layer test bytes: " << layer.layer_test_bytes << "\n";
 
         m_batch_data_bytes += layer.layer_batch_bytes;
         m_test_data_bytes += layer.layer_test_bytes;
     }
 
+    std::cout << "batch data bytes: " << m_batch_data_bytes << "\n";
+    std::cout << "test data bytes: " << m_test_data_bytes << "\n";
+
     m_batch_data = (float*)aligned_alloc(64, m_batch_data_bytes);
     m_test_data = (float*)aligned_alloc(64, m_test_data_bytes);
+
+    std::cout << "batch pointer: " << m_batch_data << "\n";
+    std::cout << "test pointer: " << m_test_data << "\n";
 
     memset(m_batch_data, 0, m_batch_data_bytes);
     memset(m_test_data, 0, m_test_data_bytes);

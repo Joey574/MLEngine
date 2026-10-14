@@ -10,9 +10,10 @@ void DataLoader::VisualizeTerminalMNISTLike(const float* image, size_t width, si
     }
 }
 
-void DataLoader::SaveMandleImage(const std::string& path, const float* __restrict points, size_t width, size_t height) {
+void DataLoader::SaveMandleImage(const std::string& dir, const float* __restrict points, size_t width, size_t height) {
     std::vector<u_char> image(width*height*3);
-    std::string dir = path.substr(0, path.find_last_of("/"));
+
+    std::cout << width << "x" << height << "\n";
 
     for (size_t y = 0; y < height; y++) {
         for (size_t x = 0; x < width; x++) {
@@ -28,6 +29,7 @@ void DataLoader::SaveMandleImage(const std::string& path, const float* __restric
 	if (!std::filesystem::exists(dir)) {
         std::filesystem::create_directories(dir);
     }
+	const std::string path = dir+"latest.png";
 
 	if (this->pipe != nullptr) {
 	    fwrite(image.data(), 1, image.size(), this->pipe);

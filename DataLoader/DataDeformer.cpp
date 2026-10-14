@@ -1,6 +1,6 @@
 #include "DataLoader.hpp"
 
-void DataLoader::Deform(size_t e) {
+void DataLoader::Deform(size_t e, const std::string& path) {
 
     // apply data augments
     if (augment != nullptr && e % refresh_every == 0) {
@@ -8,8 +8,8 @@ void DataLoader::Deform(size_t e) {
     }
 
     // special case for mandlebrot
-    if (type == Type::mandlebrot && e % refresh_every == 0) {
-        LoadMandlebrotTrainData(e);
+    if (type == Type::mandlebrot && e % refresh_every == 0 && e != 0) {
+        LoadMandlebrotTrainData(e, path);
     }
 
     // shuffle new traindata

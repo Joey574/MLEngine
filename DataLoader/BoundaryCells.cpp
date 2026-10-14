@@ -4,158 +4,243 @@
 #include <vector>
 #include <omp.h>
 
-// std::vector<BoundaryCell> DataLoader::GenerateBoundaryCellsQuadTree(
-//     double xmin,
-//     double xmax,
-//     double ymin,
-//     double ymax,
-//     size_t xRes,
-//     size_t yRes,
-//     size_t mandleDepth,
-//     size_t maxQuadDepth,
-//     size_t quadDepth
-// ) {
-//     std::vector<BoundaryCell> cells;
-
-//     const double dx = (xmax - xmin) / (double)xRes;
-//     const double dy = (ymax - ymin) / (double)yRes;
-//     const size_t stride = xRes+1;
-
-//     std::vector<uint8_t> inside((xRes+1)*(yRes+1));
-
-//     #pragma omp parallel for schedule(dynamic)
-//     for (size_t h = 0; h <= yRes; h++) {
-//         for (size_t w = 0; w <= xRes; w++) {
-//             const double x = xmin + w * dx;
-//             const double y = ymin + h * dy;
-//             const float m = DataLoader::InMandlebrot(x, y, mandleDepth);
-
-//             inside[h*stride + w] = (m >= 1.0f);
-//         }
-//     }
-
-//     for (size_t h = 0; h < yRes; h++) {
-//         for (size_t w = 0; w < xRes; w++) {
-//             const bool a = inside[h*stride + w];
-//             const bool b = inside[h*stride +w+1];
-//             const bool c = inside[(h+1)*stride + w];
-//             const bool d = inside[(h+1)*stride + w+1];
-
-//             // all corners agree
-//             if (a == b && a == c && a == d) {
-//                 continue;
-//             }
-
-//             // recurse up to some depth
-//             if (quadDepth < maxQuadDepth) {
-//                 const double dh = h;
-//                 const double dw = w;
-
-//                 auto newCells = GenerateBoundaryCellsQuadTree(
-//                     xmin + dw*dx,
-//                     xmin + dw*dx + dx,
-//                     ymin + dh*dy,
-//                     ymin + dh*dy + dy,
-//                     xRes,
-//                     yRes,
-//                     mandleDepth,
-//                     maxQuadDepth,
-//                     quadDepth+1
-//                 );
-
-//                 cells.insert(cells.end(), newCells.begin(), newCells.end());
-//             } else {
-//                 cells.emplace_back(
-//                     xmin + w*dx,
-//                     ymin + h*dy,
-//                     dx, dy
-//                 );
-//             }
-//         }
-//     }
-
-//     return cells;
-// }
-
 std::vector<BoundaryCell> DataLoader::GenerateBoundaryCellsQuadTree(
+    std::vector<BoundaryCell>& cells,
     double xmin,
     double xmax,
     double ymin,
     double ymax,
-    size_t xRes,
-    size_t yRes,
     size_t mandleDepth,
-    size_t maxQuadDepth,
-    size_t quadDepth
+    size_t maxQuadDepth
 ) {
-    const size_t stride = xRes + 1;
+    if (cells.empty()) {
+        return {};
+    }
 
-    // Grid-samples one cell at xRes x yRes and appends its boundary subcells to `out`.
-    auto subdivide = [&](const BoundaryCell& cell, std::vector<uint8_t>& inside, std::vector<BoundaryCell>& out, bool parallelInner) {
-        const double dx = cell.width  / (double)xRes;
-        const double dy = cell.height / (double)yRes;
+    // The input cells already define the search region.
+    (void)xmin;
+    (void)xmax;
+    (void)ymin;
+    (void)ymax;
 
-        #pragma omp parallel for schedule(dynamic) if(parallelInner)
-        for (size_t h = 0; h <= yRes; h++) {
-            for (size_t w = 0; w <= xRes; w++) {
-                const double x = cell.x + w * dx;
-                const double y = cell.y + h * dy;
-                inside[h*stride + w] = (DataLoader::InMandlebrot(x, y, mandleDepth) >= 1.0f);
+    // Corner bit layout:
+    //
+    // TL ---- TR
+    // |        |
+    // |        |
+    // BL ---- BR
+    //
+    constexpr uint8_t BL = 1 << 0;
+    constexpr uint8_t BR = 1 << 1;
+    constexpr uint8_t TL = 1 << 2;
+    constexpr uint8_t TR = 1 << 3;
+
+    constexpr uint8_t ALL = BL | BR | TL | TR;
+
+    struct QuadNode {
+        BoundaryCell cell;
+        uint8_t corners;
+        size_t depth;
+    };
+
+    const auto sample = [&](double x, double y) -> bool {
+        return DataLoader::InMandlebrot(
+            x, y, mandleDepth
+        ) >= 1.0f;
+    };
+
+    const auto getCorners = [&](const BoundaryCell& cell) -> uint8_t {
+        const double x0 = cell.x;
+        const double x1 = cell.x + cell.width;
+        const double y0 = cell.y;
+        const double y1 = cell.y + cell.height;
+
+        return
+            (sample(x0, y0) ? BL : 0) |
+            (sample(x1, y0) ? BR : 0) |
+            (sample(x0, y1) ? TL : 0) |
+            (sample(x1, y1) ? TR : 0);
+    };
+
+    const int threadCount = omp_get_max_threads();
+
+    std::vector<std::vector<BoundaryCell>> outputs(threadCount);
+
+    #pragma omp parallel
+    {
+        const int tid = omp_get_thread_num();
+
+        auto& output = outputs[tid];
+
+        std::vector<QuadNode> stack;
+        stack.reserve(64);
+
+        #pragma omp for schedule(dynamic, 16)
+        for (size_t i = 0; i < cells.size(); i++) {
+            BoundaryCell cell = cells[i];
+
+            // Only process cells in the upper half-plane.
+            // Cells below the x-axis are reconstructed by mirroring.
+            const double top = cell.y + cell.height;
+
+            if (top <= 0.0) {
+                continue;
             }
-        }
 
-        for (size_t h = 0; h < yRes; h++) {
-            for (size_t w = 0; w < xRes; w++) {
-                const bool a = inside[h*stride + w];
-                const bool b = inside[h*stride + w + 1];
-                const bool c = inside[(h+1)*stride + w];
-                const bool d = inside[(h+1)*stride + w + 1];
+            // Clip cells that cross the x-axis.
+            if (cell.y < 0.0) {
+                cell.height = top;
+                cell.y = 0.0;
+            }
 
-                // all corners agree
-                if (a == b && a == c && a == d) {
+            if (cell.width <= 0.0 || cell.height <= 0.0) {
+                continue;
+            }
+
+            stack.clear();
+
+            stack.push_back({
+                cell,
+                getCorners(cell),
+                0
+            });
+
+            while (!stack.empty()) {
+                const QuadNode node = stack.back();
+                stack.pop_back();
+
+                const BoundaryCell& c = node.cell;
+
+                // Reached the target depth.
+                if (node.depth >= maxQuadDepth) {
+                    output.push_back(c);
                     continue;
                 }
 
-                out.emplace_back(
-                    cell.x + w * dx,
-                    cell.y + h * dy,
-                    dx, dy
-                );
+                const double hw = c.width * 0.5;
+                const double hh = c.height * 0.5;
+
+                const double x0 = c.x;
+                const double xm = x0 + hw;
+                const double x1 = x0 + c.width;
+
+                const double y0 = c.y;
+                const double ym = y0 + hh;
+                const double y1 = y0 + c.height;
+
+                // Reuse the four parent corner classifications.
+                const bool bl = node.corners & BL;
+                const bool br = node.corners & BR;
+                const bool tl = node.corners & TL;
+                const bool tr = node.corners & TR;
+
+                // Only five new evaluations are necessary:
+                //
+                // TL ---- TM ---- TR
+                // |       |       |
+                // LM ---- CM ---- RM
+                // |       |       |
+                // BL ---- BM ---- BR
+
+                const bool bm = sample(xm, y0);
+                const bool lm = sample(x0, ym);
+                const bool cm = sample(xm, ym);
+                const bool rm = sample(x1, ym);
+                const bool tm = sample(xm, y1);
+
+                // Generate the four child corner masks.
+                const uint8_t masks[4] = {
+                    // Bottom-left
+                    static_cast<uint8_t>(
+                        (bl ? BL : 0) |
+                        (bm ? BR : 0) |
+                        (lm ? TL : 0) |
+                        (cm ? TR : 0)
+                    ),
+
+                    // Bottom-right
+                    static_cast<uint8_t>(
+                        (bm ? BL : 0) |
+                        (br ? BR : 0) |
+                        (cm ? TL : 0) |
+                        (rm ? TR : 0)
+                    ),
+
+                    // Top-left
+                    static_cast<uint8_t>(
+                        (lm ? BL : 0) |
+                        (cm ? BR : 0) |
+                        (tl ? TL : 0) |
+                        (tm ? TR : 0)
+                    ),
+
+                    // Top-right
+                    static_cast<uint8_t>(
+                        (cm ? BL : 0) |
+                        (rm ? BR : 0) |
+                        (tm ? TL : 0) |
+                        (tr ? TR : 0)
+                    )
+                };
+
+                const BoundaryCell children[4] = {
+                    {x0, y0, hw, hh},
+                    {xm, y0, hw, hh},
+                    {x0, ym, hw, hh},
+                    {xm, ym, hw, hh}
+                };
+
+                for (size_t j = 0; j < 4; j++) {
+                    const uint8_t mask = masks[j];
+
+                    // All four corners agree: no detected boundary.
+                    if (mask == 0 || mask == ALL) {
+                        continue;
+                    }
+
+                    stack.push_back({
+                        children[j],
+                        mask,
+                        node.depth + 1
+                    });
+                }
             }
         }
-    };
-
-    std::vector<BoundaryCell> frontier{BoundaryCell{ xmin, ymin, xmax - xmin, ymax - ymin }};
-
-    for (size_t depth = quadDepth; depth <= maxQuadDepth && !frontier.empty(); depth++) {
-        std::vector<std::vector<BoundaryCell>> results(frontier.size());
-        const bool parallelInner = frontier.size() < (size_t)omp_get_max_threads();
-
-        #pragma omp parallel if(!parallelInner)
-        {
-            std::vector<uint8_t> inside((xRes + 1) * (yRes + 1));
-
-            #pragma omp for schedule(dynamic, 1)
-            for (size_t i = 0; i < frontier.size(); i++) {
-                subdivide(frontier[i], inside, results[i], parallelInner);
-            }
-        }
-
-        size_t total = 0;
-        for (const auto& r : results) {
-            total += r.size();
-        }
-
-        std::vector<BoundaryCell> next;
-        next.reserve(total);
-        for (auto& r : results) {
-            next.insert(next.end(), r.begin(), r.end());
-        }
-
-        frontier = std::move(next);
     }
 
-    return frontier;
+    // Merge thread-local results.
+    size_t total = 0;
+
+    for (const auto& output : outputs) {
+        total += output.size();
+    }
+
+    std::vector<BoundaryCell> result;
+    result.reserve(total * 2);
+
+    for (const auto& output : outputs) {
+        result.insert(
+            result.end(),
+            output.begin(),
+            output.end()
+        );
+    }
+
+    // Mirror across the x-axis.
+    const size_t upperCount = result.size();
+
+    for (size_t i = 0; i < upperCount; i++) {
+        const BoundaryCell& c = result[i];
+
+        result.emplace_back(
+            c.x,
+            -c.y - c.height,
+            c.width,
+            c.height
+        );
+    }
+
+    return result;
 }
 
 std::vector<BoundaryCell> DataLoader::GenerateBoundaryCells(
@@ -168,6 +253,9 @@ std::vector<BoundaryCell> DataLoader::GenerateBoundaryCells(
     size_t depth
 ) {
     std::vector<BoundaryCell> cells;
+
+    // mandlebrot is mirrored across the x axis
+    ymin = 0.0f;
 
     const double dx = (xmax - xmin) / (double)xRes;
     const double dy = (ymax - ymin) / (double)yRes;
@@ -204,6 +292,14 @@ std::vector<BoundaryCell> DataLoader::GenerateBoundaryCells(
                 dx, dy
             );
         }
+    }
+
+    // duplicate cells and negate y value of copies
+    size_t n = cells.size();
+    cells.resize(n*2);
+    for (size_t i = 0; i < n; i++) {
+        cells[n+i] = cells[i];
+        cells[n+i].y = -cells[n+i].y;
     }
 
     return cells;
