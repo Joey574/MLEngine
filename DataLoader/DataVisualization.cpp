@@ -13,8 +13,6 @@ void DataLoader::VisualizeTerminalMNISTLike(const float* image, size_t width, si
 void DataLoader::SaveMandleImage(const std::string& dir, const float* __restrict points, size_t width, size_t height) {
     std::vector<u_char> image(width*height*3);
 
-    std::cout << width << "x" << height << "\n";
-
     for (size_t y = 0; y < height; y++) {
         for (size_t x = 0; x < width; x++) {
             const size_t i = (y*width+x) * 3;
