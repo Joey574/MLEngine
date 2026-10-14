@@ -5,7 +5,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # cpp standard
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # default to release
@@ -73,9 +73,19 @@ set(
 )
 target_link_libraries(MLEngine PRIVATE pthread m dl)
 
+include(FetchContent)
+
 # packages
 find_package(yaml-cpp REQUIRED)
 find_package(OpenMP REQUIRED)
+
+FetchContent_Declare(
+  glaze
+  GIT_REPOSITORY https://github.com/stephenberry/glaze.git
+  GIT_TAG v9.0.0
+  GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(glaze)
 
 find_library(OPENBLAS_LIB NAMES openblas REQUIRED)
 find_path(OPENBLAS_INCLUDE_DIR NAMES cblas.h
@@ -90,4 +100,5 @@ target_link_libraries(
   OpenMP::OpenMP_CXX
   yaml-cpp
   ${OPENBLAS_LIB}
+  glaze::glaze
 )

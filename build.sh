@@ -1,5 +1,7 @@
 start_time=$(date +%s.%N)
 
+set -e
+
 # values
 build_type="Release"
 
@@ -23,7 +25,6 @@ export OMP_PROC_BIND=close
 cmake .. -DCMAKE_BUILD_TYPE="$build_type" -G Ninja
 
 # build program
-echo "-- Building program ($build_type)"
 cmake --build . -j
 
 # output
