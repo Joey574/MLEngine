@@ -1,10 +1,11 @@
-CMakeBuild
 bin
 build
-*.data
-.cache
-__cmake_systeminformation
 results
-*.png
+__cmake_systeminformation
+.cache
 *.mp4
+*.gif
+*.png
 *.bin
+*.local
+*.env
