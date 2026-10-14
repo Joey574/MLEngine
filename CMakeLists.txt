@@ -50,7 +50,6 @@ endif()
 include(FetchContent)
 include(OpenBLASFetch)
 include(YamlCppFetch)
-include(ParrotFetch)
 
 # -----------------------
 # Add executable

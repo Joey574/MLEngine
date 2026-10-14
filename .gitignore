@@ -2,3 +2,9 @@ CMakeBuild
 bin
 build
 *.data
+.cache
+__cmake_systeminformation
+results
+*.png
+*.mp4
+*.bin
