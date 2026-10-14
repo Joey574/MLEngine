@@ -23,7 +23,9 @@ void NeuralNetwork::FitEnd(nlohmann::json& history, std::chrono::system_clock::t
     history[J_FINISH] = std::format("{:%F %T}", local);
 
     // average out sum of train time
-    history[J_AVGEPOCH] = CleanTime(std::chrono::nanoseconds(static_cast<long long>(traintime.count()/(float)history[J_EPOCHS])));
+    size_t e = (size_t)history[J_EPOCHS];
+    e = fmin(e, 1);
+    history[J_AVGEPOCH] = CleanTime(std::chrono::nanoseconds(static_cast<long long>(traintime.count()/(float)e)));
 
     // clean format of fastest and slowest epoch
     history[J_SLOWESTEPOCH] = CleanTime(std::chrono::nanoseconds(static_cast<long long>(history[J_SLOWESTEPOCH])));

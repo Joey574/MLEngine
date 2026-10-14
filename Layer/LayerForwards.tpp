@@ -27,7 +27,7 @@ void Layer::BasicForward(float* __restrict input, size_t n) {
         z = m_z;
         a = m_a;
     } else {
-        z = m_tz;
+        z = m_ta;
         a = m_ta;
     }
 
@@ -67,7 +67,7 @@ void Layer::Convolutional2DForward(float* __restrict input, size_t n) {
         z = m_z;
         a = m_a;
     } else {
-        z = m_tz;
+        z = m_ta;
         a = m_ta;
     }
 

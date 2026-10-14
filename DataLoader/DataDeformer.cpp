@@ -1,10 +1,15 @@
 #include "DataLoader.hpp"
 
-void DataLoader::Deform(size_t e) {
+void DataLoader::Deform(size_t e, const std::string& path) {
 
     // apply data augments
     if (augment != nullptr && e % refresh_every == 0) {
         (this->*augment)(e);
+    }
+
+    // special case for mandlebrot
+    if (type == Type::mandlebrot && e % refresh_every == 0 && e != 0) {
+        LoadMandlebrotTrainData(e, path);
     }
 
     // shuffle new traindata
@@ -104,4 +109,29 @@ size_t DataLoader::ApplyElasticDeform(Matrix& data, Matrix& labels, size_t origi
     }
 
     return a_idx;
+}
+
+// Writes a normalized [-1, 1] sampling of fourier series to x
+void DataLoader::ComputeFourier(float* x, float xmin, float xmax, float ymin, float ymax, size_t series) {
+    const float xv = -M_PI + (x[0]-xmin) / (xmax-xmin) * (2.0f*M_PI);
+    const float yv = -M_PI + (x[1]-ymin) / (ymax-ymin) * (2.0f*M_PI);
+    x[0] = xv;
+    x[1] = yv;
+
+    #pragma omp parallel for simd schedule(static)
+    for (size_t i = 0; i < series; i++) {
+        const float freq = i+1;
+
+        const float xp = xv * freq;
+        const float yp = yv * freq;
+
+        x[2+(i*4)] = std::sin(xp);
+        x[2+(i*4)+1] = std::cos(xp);
+
+        x[2+(i*4)+2] = std::sin(yp);
+        x[2+(i*4)+3] = std::cos(yp);
+    }
+
+    x[0] = xv / M_PI;
+    x[1] = yv / M_PI;
 }

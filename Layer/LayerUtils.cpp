@@ -108,10 +108,6 @@ std::string Layer::VisualizeBatch() {
 std::string Layer::VisualizeTest() {
     std::string res = "";
 
-    if (m_tz) {
-        res += "\n\t\tm_tz: "+StartEndTotal((size_t)m_test, (size_t)m_tz, (size_t)m_tz+m_tz_bytes);
-    }
-
     if (m_ta) {
         res += "\n\t\tm_ta: "+StartEndTotal((size_t)m_test, (size_t)m_ta, (size_t)m_ta+m_ta_bytes);
     }

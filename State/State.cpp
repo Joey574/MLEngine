@@ -58,31 +58,40 @@ void State::Load() {
     }
 }
 void State::Build(bool setweights) {
+    std::string path = p_models+"/"+modelname+"/";
+
     if (dataset.type == DataLoader::Type::none) {
-        dataset.LoadDataset(config);
+        dataset.LoadDataset(config, path);
         config[Y_LAYERS][0][Y_NODES] = dataset.trainData.cols;
     }
 
     // initialize model with provided options
-    model->Initialize(p_models+"/"+modelname+"/", modelname, config, setweights);
+    model->Initialize(path, modelname, config, setweights);
 }
 void State::Start() {
+    const std::string historyPath = p_models+"/"+modelname+"/history.meta";
 
     // parse existing history data, if any
-    std::ifstream ifile(p_models+"/"+modelname+"/history.meta");
     nlohmann::json storedhistory;
+    std::ifstream ifile(historyPath);
+    if (ifile.is_open()) {
+        // try to parse out existing history data
+        try {
+            storedhistory = nlohmann::json::parse(ifile);
+        } catch (nlohmann::json::parse_error& e) {}
+        ifile.close();
+    } else {
+        std::cerr << "failed to open " << historyPath << "\n";
+    }
 
-    // try to parse out existing history data
-    try {
-        storedhistory = nlohmann::json::parse(ifile);
-    } catch (nlohmann::json::parse_error& e) {}
-    ifile.close();
-
-    // train model and get new history
     nlohmann::json history = model->Fit(dataset, storedhistory);
 
     // store new history data in file
-    std::ofstream ofileh(p_models+"/"+modelname+"/history.meta", std::ios::trunc);
-    ofileh << history.dump(4) << "\n";
-    ofileh.close();
+    std::ofstream ofileh(historyPath, std::ios::trunc);
+    if (ofileh.is_open()) {
+        ofileh << history.dump(4) << "\n";
+        ofileh.close();
+    } else {
+        std::cerr << "failed to open " << historyPath << "\n";
+    }
 }

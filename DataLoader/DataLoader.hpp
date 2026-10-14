@@ -1,6 +1,13 @@
 #pragma once
 #include "../MathUtils/MathUtils.hpp"
 
+struct BoundaryCell {
+    double x;
+    double y;
+    double width;
+    double height;
+};
+
 /* @brief
 The DataLoader struct is responsible for loading, storing, and augmenting datasets to be used in training
 */
@@ -36,13 +43,13 @@ public:
     Matrix originalData;
     Matrix originalLabels;
 
-    void Deform(size_t e);
+    void Deform(size_t e, const std::string& path);
 
 
-    void LoadDataset(YAML::Node& config);
+    void LoadDataset(YAML::Node& config, const std::string& path);
     void LoadMNIST();
     void LoadFMNIST();
-    void LoadMandlebrot();
+    void LoadMandlebrot(const std::string& path);
 
     void SaveMandleImage(const std::string& path, const float* points, size_t width, size_t height);
     static void VisualizeTerminalMNISTLike(const float* image, size_t width, size_t height);
@@ -70,9 +77,31 @@ private:
     void LoadMNISTStyleDataset(std::ifstream& traind, std::ifstream& trainl, std::ifstream& testd, std::ifstream& testl);
 
     // mandlebrot utils
+    void LoadMandlebrotTrainData(size_t e, const std::string& path);
     static float InMandlebrot(double x, double y, size_t it);
+    std::vector<BoundaryCell> GenerateBoundaryCells(
+        double xmin,
+        double xmax,
+        double ymin,
+        double ymax,
+        size_t width,
+        size_t height,
+        size_t depth
+    );
+
+    std::vector<BoundaryCell> GenerateBoundaryCellsQuadTree(
+        std::vector<BoundaryCell>& cells,
+        double xmin,
+        double xmax,
+        double ymin,
+        double ymax,
+        size_t mandleDepth,
+        size_t maxQuadDepth
+    );
+    std::pair<double, double> SampleBoundary(std::mt19937& gen, const std::vector<BoundaryCell>& cells);
+
     static void ComputeFourier(float* x, float xmin, float xmax, float ymin, float ymax, size_t series);
-    FILE* pipe;
+    FILE* pipe = nullptr;
 
     static std::string ExpandPath(const std::string& path);
 };

@@ -52,13 +52,13 @@ private:
 
     std::vector<Layer> m_layers;
 
-    float* m_network;
+    float* m_network = nullptr;
     size_t m_network_bytes;
 
-    float* m_batch_data;
+    float* m_batch_data = nullptr;
     size_t m_batch_data_bytes;
 
-    float* m_test_data;
+    float* m_test_data = nullptr;
     size_t m_test_data_bytes;
 
     size_t m_epoch_since_improvement;

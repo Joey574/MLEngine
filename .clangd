@@ -1,0 +1,7 @@
+CompileFlags:
+  Remove:
+    - -fdeps-format=*
+    - -fdeps-target=*
+    - -fmodule-mapper=*
+    - -fmodules-ts
+    - -fipa-pta

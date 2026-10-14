@@ -1,8 +1,12 @@
 #include "DataLoader.hpp"
+#include <cmath>
+#include <filesystem>
+#include <fstream>
+#include <random>
 #include <string>
 
 /// @brief Returns the passed dataset as constrained by args
-void DataLoader::LoadDataset(YAML::Node& config) {
+void DataLoader::LoadDataset(YAML::Node& config, const std::string& path) {
     std::string dataset = config[Y_DATASET].as<std::string>();
     args = config[Y_DATASETARGS];
 
@@ -13,7 +17,7 @@ void DataLoader::LoadDataset(YAML::Node& config) {
     } else if (dataset == "fmnist") {
         LoadFMNIST();
     } else if (dataset == "mandlebrot") {
-        LoadMandlebrot();
+        LoadMandlebrot(path);
     } else {
         std::cerr << "Failed to initialize dataset\n";
     }
@@ -83,7 +87,12 @@ void DataLoader::LoadFMNIST() {
     testd.close();
     testl.close();
 }
-void DataLoader::LoadMandlebrot() {
+void DataLoader::LoadMandlebrot(const std::string& path) {
+    if (pipe != nullptr) {
+        pclose(pipe);
+        pipe = nullptr;
+    }
+
     name = "mandlebrot";
     type = Type::mandlebrot;
     hasTestData = true;
@@ -105,9 +114,6 @@ void DataLoader::LoadMandlebrot() {
 
     std::mt19937 gen(SEED-82);
 
-    std::uniform_real_distribution<double> xrand(xMin, xMax);
-    std::uniform_real_distribution<double> yrand(yMin, yMax);
-
     trainData.rows = n;
     trainData.cols = 2 + (fourier*4);
     testData.rows = test_elements;
@@ -124,17 +130,7 @@ void DataLoader::LoadMandlebrot() {
     trainLabels.data = std::vector<float>(n);
     testLabels.data = std::vector<float>(test_elements);
 
-    // build training dataset
-    for (size_t i = 0; i < n; i++) {
-        double x = xrand(gen);
-        double y = yrand(gen);
-
-        float m = InMandlebrot(x, y, depth);
-
-        trainData.data[i*trainData.cols] = x;
-        trainData.data[i*trainData.cols+1] = y;
-        trainLabels.data[i] = m;
-    }
+    LoadMandlebrotTrainData(-1, path);
 
     // build testing dataset
     double scaleX = (std::abs(xMin-xMax)/((double)img_width-1.0));
@@ -156,33 +152,101 @@ void DataLoader::LoadMandlebrot() {
         }
     }
 
-    float xmin, xmax, ymin, ymax;
-    std::tie(xmin, xmax) = MathUtils::ColMinMax(&trainData.data[0], trainData.rows, trainData.cols, 0);
-    std::tie(ymin, ymax) = MathUtils::ColMinMax(&trainData.data[0], trainData.rows, trainData.cols, 1);
-
-    #pragma omp parallel for
-    for (size_t i = 0; i < n; i++) {
-        ComputeFourier(&trainData.data[i*trainData.cols], xmin, xmax, ymin, ymax, fourier);
-    }
-
     #pragma omp parallel for
     for (size_t i = 0; i < test_elements; i++) {
-        ComputeFourier(&testData.data[i*testData.cols], xmin, xmax, ymin, ymax, fourier);
+        ComputeFourier(&testData.data[i*testData.cols], xMin, xMax, yMin, yMax, fourier);
     }
 
-    // normalize to range [0-1]
-    for (size_t i = 0; i < trainData.cols; i++) {
-        float min, max;
+    // ensure run gets a unique video file path
+    std::string mp4Path = path+"images/output";
+    std::string ext = ".mp4";
+    if (std::filesystem::exists(mp4Path+ext)) {
+        mp4Path = mp4Path.append(". ");
+        int xt = 0;
 
-        std::tie(min, max) = MathUtils::ColMinMax(&trainData.data[0], trainData.rows, trainData.cols, i);
-        MathUtils::NormalizeCol(&trainData.data[0], 0.0f, 1.0f, min, max, trainData.rows, trainData.cols, i);
-        MathUtils::NormalizeCol(&testData.data[0], 0.0f, 1.0f, min, max, testData.rows, testData.cols, i);
+        do {
+            xt++;
+            mp4Path[mp4Path.length()-1] = std::to_string(xt)[0];
+        } while (std::filesystem::exists(mp4Path+ext));
     }
 
     std::string cmd = "ffmpeg -y -loglevel error -nostats -f rawvideo -vcodec rawvideo -s ";
     cmd += std::to_string(test_dims[0]) + "x" + std::to_string(test_dims[1]);
-    cmd +=  " -pix_fmt rgb24 -r 30 -i pipe:0 -c:v libx264 -pix_fmt yuv420p output.mp4";
+    cmd +=  " -pix_fmt rgb24 -r 30 -i pipe:0 -c:v libx264 -pix_fmt yuv420p " + mp4Path+ext;
     this->pipe = popen(cmd.c_str(), "w");
+}
+
+void DataLoader::LoadMandlebrotTrainData(size_t e, const std::string& path) {
+    const size_t n = args[Y_SAMPLES].as<size_t>(Y_SAMPLE_DEFAULT);
+    const size_t depth = args[Y_MANDLE_DEPTH].as<size_t>(Y_MANDLEDEPTH_DEFAULT);
+    const size_t fourier = args[Y_FOURIER_SERIES].as<size_t>(Y_FOURIER_DEFAULT);
+
+    const double xMin = -2.5;
+    const double xMax = 1.0;
+    const double yMin = -1.1;
+    const double yMax = 1.1;
+
+    std::mt19937 gen(SEED-82+e);
+
+    std::uniform_real_distribution<double> xrand(xMin, xMax);
+    std::uniform_real_distribution<double> yrand(yMin, yMax);
+
+    const bool makeQuad = args[Y_MANDLE_SAMPLE_QUAD_TREE].as<bool>(Y_MANDLE_SAMPLE_QUAD_TREE_DEFAULT);
+    const size_t quadDepth = args[Y_MANDLE_SAMPLE_QUAD_DEPTH].as<size_t>(Y_MANDLE_SAMPLE_QUAD_DEPTH_DEFAULT);
+
+    const double uniformPercent = args[Y_MANDLE_UNIFORM_PERCENT].as<float>(Y_MANDLE_UNIFORM_PERCENT_DEFAULT);
+    const size_t xRes = args[Y_MANDLE_SAMPLE_X_RES].as<size_t>(Y_MANDLE_SAMPLE_X_RES_DEFAULT);
+    const size_t yRes = args[Y_MANDLE_SAMPLE_Y_RES].as<size_t>(Y_MANDLE_SAMPLE_Y_RES_DEFAULT);
+
+    auto cells = GenerateBoundaryCells(xMin, xMax, yMin, yMax, xRes, yRes, depth);
+    if (makeQuad) {
+        cells = GenerateBoundaryCellsQuadTree(cells, xMin, xMax, yMin, yMax, depth, quadDepth);
+    }
+
+    std::uniform_real_distribution<double> prob(0.0, 1.0);
+
+    // build training dataset
+    for (size_t i = 0; i < n; i++) {
+        double x;
+        double y;
+
+        if (cells.empty() || prob(gen) < uniformPercent) {
+            x = xrand(gen);
+            y = yrand(gen);
+        } else {
+            std::tie(x, y) = SampleBoundary(gen, cells);
+        }
+
+        trainData.data[i*trainData.cols] = x;
+        trainData.data[i*trainData.cols+1] = y;
+        trainLabels.data[i] = InMandlebrot(x, y, depth);
+    }
+
+    const bool dump = args[Y_MANDLE_DUMP_RAW_DATASET].as<bool>(Y_MANDLE_DUMP_RAW_DATASET_DEFUALT);
+    if (dump) {
+        const bool shouldExit = args[Y_MANDLE_EXIT_ON_DUMP].as<bool>(Y_MANDLE_EXIT_ON_DUMP_DEFAULT);
+
+        std::vector<float> xy(2 * trainData.rows);
+        for (size_t i = 0; i < trainData.rows; i++) {
+            xy[2*i]     = trainData.data[i*trainData.cols];
+            xy[2*i + 1] = trainData.data[i*trainData.cols + 1];
+        }
+
+        std::ofstream f(path+"dataset.bin", std::ios::binary);
+        if (f.is_open()) {
+            f.write(reinterpret_cast<const char*>(xy.data()), xy.size() * sizeof(float));
+            f.close();
+        }
+
+        if (shouldExit) {
+            exit(0);
+        }
+    }
+
+    #pragma omp parallel for
+    for (size_t i = 0; i < n; i++) {
+        ComputeFourier(&trainData.data[i*trainData.cols], xMin, xMax, yMin, yMax, fourier);
+    }
 }
 
 void DataLoader::LoadMNISTStyleDataset(std::ifstream& traind, std::ifstream& trainl, std::ifstream& testd, std::ifstream& testl) {
@@ -341,7 +405,6 @@ int DataLoader::ReadBigInt(std::ifstream* f) {
     return lint;
 }
 
-
 float DataLoader::InMandlebrot(double x, double y, size_t it) {
     std::complex<double> c(x, y);
         std::complex<double> z = 0;
@@ -349,30 +412,9 @@ float DataLoader::InMandlebrot(double x, double y, size_t it) {
         for (size_t i = 0; i < it; i++) {
             z = z * z + c;
             if (std::abs(z) > 2.0) {
-                return (1.0 - (1.0 / (((double)i / 50.0) + 1.0)));
-            }
+                return (float)((double)i / ((double)i + 50.0));            }
         }
         return 1.0f;
-}
-void DataLoader::ComputeFourier(float* x, float xmin, float xmax, float ymin, float ymax, size_t series) {
-    const float xv = -M_PI + (x[0]-xmin) / (xmax-xmin) * (2.0f*M_PI);
-    const float yv = -M_PI + (x[1]-ymin) / (ymax-ymin) * (2.0f*M_PI);
-    x[0] = xv;
-    x[1] = yv;
-
-    #pragma omp simd
-    for (size_t i = 0; i < series; i++) {
-        const float freq = i+1;
-
-        const float xp = xv * freq;
-        const float yp = yv * freq;
-
-        x[2+(i*4)] = std::sin(xp);
-        x[2+(i*4)+1] = std::cos(xp);
-
-        x[2+(i*4)+2] = std::sin(yp);
-        x[2+(i*4)+3] = std::cos(yp);
-    }
 }
 
 std::string DataLoader::ExpandPath(const std::string& path) {
