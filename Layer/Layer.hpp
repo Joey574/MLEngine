@@ -160,9 +160,7 @@ private:
 
     // test data
     char* m_test = nullptr;
-    float* m_tz = nullptr;
     float* m_ta = nullptr;
-    size_t m_tz_bytes = 0;
     size_t m_ta_bytes = 0;
 
     // weight and bias size

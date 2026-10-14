@@ -77,7 +77,6 @@ void Layer::InitializePointers(char* data, char* batchdata, char* testdata, size
     m_dw = nullptr;
     m_db = nullptr;
     m_d_dpmask = nullptr;
-    m_tz = nullptr;
     m_ta = nullptr;
 
     m_net = data;
@@ -117,9 +116,6 @@ void Layer::InitializePointers(char* data, char* batchdata, char* testdata, size
             break;
         case LayerType::hidden: case LayerType::output:
             size_t output_size = nodes*tn*sizeof(float);
-
-            m_tz = (float*)(testdata+offset);
-            offset += MathUtils::RoundTo(64, output_size);
 
             m_ta = (float*)(testdata+offset);
             offset += MathUtils::RoundTo(64, output_size);

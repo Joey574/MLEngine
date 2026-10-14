@@ -59,7 +59,6 @@ void Layer::SetBasicBatchTestBytes(size_t bn, size_t tn) {
     m_z_bytes = MathUtils::RoundTo(64, nodes*bn*sizeof(float));
     m_a_bytes = MathUtils::RoundTo(64, nodes*bn*sizeof(float));
 
-    m_tz_bytes = MathUtils::RoundTo(64, nodes*tn*sizeof(float));
     m_ta_bytes = MathUtils::RoundTo(64, nodes*tn*sizeof(float));
 
     m_dt_bytes = MathUtils::RoundTo(64, nodes*bn*sizeof(float));
@@ -79,7 +78,7 @@ void Layer::SetBasicBatchTestBytes(size_t bn, size_t tn) {
         m_d_dpmask_bytes + m_o_bytes;
 
     // size for total and activation
-    layer_test_bytes = m_tz_bytes + m_ta_bytes;
+    layer_test_bytes = m_ta_bytes;
 
     // ensure total bytes are all aligned to 64
     assert(layer_batch_bytes%64==0);
