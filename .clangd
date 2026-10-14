@@ -5,3 +5,5 @@ CompileFlags:
     - -fmodule-mapper=*
     - -fmodules-ts
     - -fipa-pta
+    - -fira-loop-pressure
+    - -fsched-pressure
