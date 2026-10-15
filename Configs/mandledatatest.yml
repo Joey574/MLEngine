@@ -14,7 +14,7 @@ dataset_args:
   leaf_dim: 8
   min_quad_depth: 16
 
-  x_resolution: 32678
+  x_resolution: 65356
   y_resolution: 16384
 
   image_width: 1
