@@ -1,14 +1,22 @@
-#include "network/state.hpp"
-#include <glaze/core/opts.hpp>
-#include <glaze/glaze.hpp>
-#include <string>
-#include <iostream>
+#include "planner/planner.hpp"
 
 int main() {
-    NetworkState state;
+    Planner planner;
+    Plan plan("", 32);
 
-    std::string buf{};
-    auto ec = glz::write<glz::opts{.prettify=true}>(state, buf);
+    Request req("first", 125);
 
-    std::cout << buf << "\n";
+    plan.AppendRequest(req);
+
+    auto policy = planner.Actualize(plan);
+
+    for (const auto& m : policy.mapping) {
+        std::string k;
+        void* v;
+
+        std::tie(k, v) = m;
+        printf("%s=%p\n", k.c_str(), v);
+    }
+
+    printf("allocation: bytes=%ld\n", policy.Allocated());
 }

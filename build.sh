@@ -29,7 +29,7 @@ cmake --build . -j
 
 # output
 cd ../
-file_size=$(stat -c %s "./bin/MLEngine")
+file_size=$(stat -c %s "./bin/mlengine")
 size_human=$(numfmt --to=iec --suffix=B "$file_size")
 end_time=$(date +%s.%N)
 elapsed=$(echo "$end_time - $start_time" | bc)

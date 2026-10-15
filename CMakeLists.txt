@@ -1,104 +1,20 @@
-cmake_minimum_required(VERSION 3.18)
-project(MLEngine LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.28)
+project(mld LANGUAGES CXX)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-# cpp standard
-set(CMAKE_CXX_STANDARD 26)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-# default to release
-if(NOT CMAKE_BUILD_TYPE)
-  set(
-    CMAKE_BUILD_TYPE
-    "Release" CACHE STRING
-    "Choose the build type (Release or Debug)" FORCE
-  )
-endif()
-
-set(RELEASE_FLAGS
-  -Ofast
-  -march=native
-  -flto=auto
-  -fopenmp
-  -DNDEBUG
-  -fvect-cost-model=unlimited
-  -falign-functions=32
-  -falign-loops=32
-  -funroll-loops
-  -fipa-pta
-  -fmodulo-sched
-  -fmodulo-sched-allow-regmoves
-  -fira-loop-pressure
-  -fsched-pressure
-  -frename-registers
-  -fschedule-insns
-  -Wno-unused-result
-)
-
-set(DEBUG_FLAGS
-  -march=native
-  -O0 -g -DDEBUG -rdynamic
-  -fno-lto -fopenmp
-)
-
-# use ccache if available
-find_program(CCACHE_PROGRAM ccache)
-if(CCACHE_PROGRAM)
-  set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
-endif()
-
-# collect all cpp files
-file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS
-  "src/*.cpp"
-  "src/*.hpp"
-)
-
-
-# executable
-add_executable(MLEngine ${SOURCE_FILES})
-
-# set flags
-if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-  target_compile_options(MLEngine PRIVATE ${DEBUG_FLAGS})
-else()
-  target_compile_options(MLEngine PRIVATE ${RELEASE_FLAGS})
-endif()
-
-# static linking
-set(
-  CMAKE_EXE_LINKER_FLAGS
-  "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++"
-)
-target_link_libraries(MLEngine PRIVATE pthread m dl)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 
 include(FetchContent)
-
-# packages
-find_package(yaml-cpp REQUIRED)
-find_package(OpenMP REQUIRED)
-
 FetchContent_Declare(
-  glaze
-  GIT_REPOSITORY https://github.com/stephenberry/glaze.git
-  GIT_TAG v9.0.0
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG v1.15.2
   GIT_SHALLOW TRUE
 )
-FetchContent_MakeAvailable(glaze)
+FetchContent_MakeAvailable(googletest)
+enable_testing()
 
-find_library(OPENBLAS_LIB NAMES openblas REQUIRED)
-find_path(OPENBLAS_INCLUDE_DIR NAMES cblas.h
-          PATH_SUFFIXES include/openblas include REQUIRED)
-message(STATUS "OpenBLAS lib: ${OPENBLAS_LIB}")
-message(STATUS "OpenBLAS include: ${OPENBLAS_INCLUDE_DIR}")
-
-target_include_directories(MLEngine PRIVATE ${OPENBLAS_INCLUDE_DIR})
-
-target_link_libraries(
-  MLEngine PRIVATE
-  OpenMP::OpenMP_CXX
-  yaml-cpp
-  ${OPENBLAS_LIB}
-  glaze::glaze
-)
+add_subdirectory(src)
+add_subdirectory(tests)
