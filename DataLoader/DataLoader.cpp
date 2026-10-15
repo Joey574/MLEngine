@@ -202,7 +202,8 @@ void DataLoader::LoadMandlebrotTrainData(size_t e, const std::string& path) {
     std::uniform_real_distribution<double> yrand(yMin, yMax);
 
     const bool makeQuad = args[Y_MANDLE_SAMPLE_QUAD_TREE].as<bool>(Y_MANDLE_SAMPLE_QUAD_TREE_DEFAULT);
-    const size_t quadDepth = args[Y_MANDLE_SAMPLE_QUAD_DEPTH].as<size_t>(Y_MANDLE_SAMPLE_QUAD_DEPTH_DEFAULT);
+    const size_t leafDim = args[Y_MANDLE_QUAD_LEAF_DIM].as<size_t>(Y_MANDLE_QUAD_LEAF_DIM_DEFAULT);
+    const size_t minQuadDepth = args[Y_MANDLE_MIN_QUAD_DEPTH].as<size_t>(Y_MANDLE_MIN_QUAD_DEPTH_DEFAULT);
 
     const double uniformPercent = args[Y_MANDLE_UNIFORM_PERCENT].as<float>(Y_MANDLE_UNIFORM_PERCENT_DEFAULT);
     const size_t xRes = args[Y_MANDLE_SAMPLE_X_RES].as<size_t>(Y_MANDLE_SAMPLE_X_RES_DEFAULT);
@@ -210,10 +211,12 @@ void DataLoader::LoadMandlebrotTrainData(size_t e, const std::string& path) {
 
     const float kJumpEps = args[Y_MANDLE_SAMPLE_JUMP_EQS].as<float>(Y_MANDLE_SAMPLE_JUMP_EQS_DEFAULT);
 
+
     if (!boundaryBuilt) {
-        boundaryCells = GenerateBoundaryCells(xMin, xMax, yMax, xRes, yRes, depth, kJumpEps);
         if (makeQuad) {
-            boundaryCells = GenerateBoundaryCellsQuadTree(boundaryCells, depth, quadDepth, kJumpEps, false);
+            boundaryCells = GenerateBoundaryCellsAdaptive(xMin, xMax, yMax, xRes, yRes, depth, kJumpEps, leafDim, 16, false);
+        } else {
+            boundaryCells = GenerateBoundaryCells(xMin, xMax, yMax, xRes, yRes, depth, kJumpEps);
         }
 
         boundaryBuilt = true;

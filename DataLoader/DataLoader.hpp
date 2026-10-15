@@ -1,5 +1,6 @@
 #pragma once
 #include "../MathUtils/MathUtils.hpp"
+#include <vector>
 
 struct BoundaryCell {
     double x;
@@ -101,13 +102,19 @@ private:
         float jumpEps
     );
 
-    std::vector<BoundaryCell> GenerateBoundaryCellsQuadTree(
-        std::vector<BoundaryCell>& roots,
-        size_t mandleDepth,
-        size_t maxQuadDepth,
+    std::vector<BoundaryCell> GenerateBoundaryCellsAdaptive(
+        double xmin,
+        double xmax,
+        double ymax,
+        size_t xRes,
+        size_t yRes,
+        size_t depth,
         float jumpEps,
+        size_t leafDim,
+        size_t minDepth,
         bool deSafe
     );
+
     std::pair<double, double> SampleBoundary(std::mt19937& gen, const std::vector<BoundaryCell>& cells);
 
     static void ComputeFourier(float* x, float xmin, float xmax, float ymin, float ymax, size_t series);

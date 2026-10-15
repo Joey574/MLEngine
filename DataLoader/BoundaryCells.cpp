@@ -4,102 +4,157 @@
 #include <vector>
 #include <omp.h>
 
-std::vector<BoundaryCell> DataLoader::GenerateBoundaryCellsQuadTree(
-    std::vector<BoundaryCell>& roots,
-    size_t mandleDepth,
-    size_t maxQuadDepth,
+std::vector<BoundaryCell> DataLoader::GenerateBoundaryCellsAdaptive(
+    double xmin,
+    double xmax,
+    double ymax,
+    size_t xRes,
+    size_t yRes,
+    size_t depth,
     float jumpEps,
+    size_t leafDim,
+    size_t minDepth,
     bool deSafe
 ) {
-    if (roots.empty() || maxQuadDepth == 0) {
-        return roots;
-    }
+    const double dx = (xmax - xmin) / (double)xRes;
+    const double dy = ymax / (double)yRes;
+    leafDim = std::max<size_t>(leafDim, 1);
 
-    struct Node { double x, y, w, h; float v[4]; uint32_t depth; };
+    // Lattice space: (x0,y0) is the corner index, (w,h) the size in final cells.
+    // v = corner samples: {(x0,y0), (x1,y0), (x0,y1), (x1,y1)}
+    struct Node { size_t x0, y0, w, h; float v[4]; uint32_t depth; };
 
-    const auto sample = [&](double x, double y) -> float {
-        return InMandlebrot(x, y, mandleDepth);
+    const auto sample = [&](size_t ix, size_t iy) -> float {
+        return InMandlebrot(xmin + (double)ix * dx, (double)iy * dy, depth);
     };
 
-    std::vector<BoundaryCell> result;
+    const auto straddles = [&](const float* v) {
+        const float lo = std::min(std::min(v[0], v[1]), std::min(v[2], v[3]));
+        const float hi = std::max(std::max(v[0], v[1]), std::max(v[2], v[3]));
+        return (hi >= 1.0f && lo < 1.0f) || hi - lo > jumpEps;
+    };
+
+    const auto keepNode = [&](const Node& n) {
+        if (n.depth <= minDepth) return true;
+        if (straddles(n.v)) return true;
+        if (!deSafe) return false;
+        const double cx = xmin + ((double)n.x0 + 0.5 * (double)n.w) * dx;
+        const double cy = ((double)n.y0 + 0.5 * (double)n.h) * dy;
+        const double lb = DataLoader::MandleDistanceLowerBound(cx, cy, depth);
+        return lb >= 0.0 && lb <= 0.5 * std::hypot((double)n.w * dx, (double)n.h * dy);
+    };
+
+    // ---- Phase 1: quadtree prune (level-synchronous so every level is parallel) ----
+    std::vector<Node> frontier;
+    frontier.push_back({
+        0, 0, xRes, yRes,
+        { sample(0, 0), sample(xRes, 0), sample(0, yRes), sample(xRes, yRes) },
+        0
+    });
+    std::vector<Node> leaves;
+
+    while (!frontier.empty()) {
+        std::vector<Node> next;
+
+        #pragma omp parallel
+        {
+            std::vector<Node> localNext, localLeaves;
+
+            #pragma omp for schedule(dynamic, 8) nowait
+            for (size_t i = 0; i < frontier.size(); i++) {
+                const Node& n = frontier[i];
+
+                const bool splitX = n.w > leafDim;
+                const bool splitY = n.h > leafDim;
+                if (!splitX && !splitY) {
+                    localLeaves.push_back(n);
+                    continue;
+                }
+
+                const size_t nx = splitX ? 2 : 1;
+                const size_t ny = splitY ? 2 : 1;
+                const size_t xe[3] = { n.x0, splitX ? n.x0 + n.w / 2 : n.x0 + n.w, n.x0 + n.w };
+                const size_t ye[3] = { n.y0, splitY ? n.y0 + n.h / 2 : n.y0 + n.h, n.y0 + n.h };
+
+                // Corner samples are inherited; only new edge midpoints/center get sampled.
+                float val[3][3];
+                for (size_t j = 0; j <= ny; j++) {
+                    for (size_t k = 0; k <= nx; k++) {
+                        const bool cornerX = (k == 0 || k == nx);
+                        const bool cornerY = (j == 0 || j == ny);
+                        val[j][k] = (cornerX && cornerY)
+                            ? n.v[(j == ny ? 2 : 0) + (k == nx ? 1 : 0)]
+                            : sample(xe[k], ye[j]);
+                    }
+                }
+
+                for (size_t j = 0; j < ny; j++) {
+                    for (size_t k = 0; k < nx; k++) {
+                        const Node c{
+                            xe[k], ye[j], xe[k+1] - xe[k], ye[j+1] - ye[j],
+                            { val[j][k], val[j][k+1], val[j+1][k], val[j+1][k+1] },
+                            n.depth+1
+                        };
+                        if (keepNode(c)) localNext.push_back(c);
+                    }
+                }
+            }
+
+            #pragma omp critical
+            {
+                next.insert(next.end(), localNext.begin(), localNext.end());
+                leaves.insert(leaves.end(), localLeaves.begin(), localLeaves.end());
+            }
+        }
+
+        frontier.swap(next);
+    }
+
+    // ---- Phase 2: uniform boundary-cell generation inside each surviving leaf ----
+    std::vector<BoundaryCell> cells;
 
     #pragma omp parallel
     {
         std::vector<BoundaryCell> local;
-        std::vector<Node> stack;
-        stack.reserve(3*maxQuadDepth + 8);
+        std::vector<float> lab;
 
         #pragma omp for schedule(dynamic, 4) nowait
-        for (size_t i = 0; i < roots.size(); i++) {
-            const BoundaryCell& r = roots[i];
-            const double rx1 = r.x + r.width;
-            const double ry1 = r.y + r.height;
+        for (size_t i = 0; i < leaves.size(); i++) {
+            const Node& L = leaves[i];
+            const size_t stride = L.w + 1;
+            lab.resize(stride * (L.h + 1));
 
-            stack.push_back({
-                r.x, r.y, r.width, r.height,
-                {
-                    sample(r.x, r.y),
-                    sample(rx1, r.y),
-                    sample(r.x, ry1),
-                    sample(rx1, ry1)
-                }, 0
-                });
-
-            while (!stack.empty()) {
-                const Node n = stack.back();
-                stack.pop_back();
-
-                if (n.depth >= maxQuadDepth) {
-                    local.emplace_back(n.x, n.y, n.w, n.h);
-                    continue;
+            for (size_t h = 0; h <= L.h; h++) {
+                for (size_t w = 0; w <= L.w; w++) {
+                    lab[h * stride + w] = sample(L.x0 + w, L.y0 + h);
                 }
+            }
 
-                const double hw = n.w * 0.5, hh = n.h * 0.5;
-                const double xm = n.x + hw, x1 = n.x + n.w;
-                const double ym = n.y + hh, y1 = n.y + n.h;
-
-                const float bl = n.v[0], br = n.v[1], tl = n.v[2], tr = n.v[3];
-
-                const float bm = sample(xm, n.y);
-                const float lm = sample(n.x, ym);
-                const float cm = sample(xm, ym);
-                const float rm = sample(x1, ym);
-                const float tm = sample(xm, y1);
-
-                const uint32_t d = n.depth+1;
-                const Node kids[4] = {
-                    {n.x, n.y, hw, hh, {bl, bm, lm, cm}, d},
-                    {xm, n.y, hw, hh, {bm, br, cm, rm}, d},
-                    {n.x, ym, hw, hh, {lm, cm, tl, tm}, d},
-                    {xm, ym, hw, hh, {cm, rm, tm, tr}, d},
-                };
-
-                for (const Node& k : kids) {
-                    const float lo = std::min(std::min(k.v[0], k.v[1]), std::min(k.v[2], k.v[3]));
-                    const float hi = std::max(std::max(k.v[0], k.v[1]), std::max(k.v[2], k.v[3]));
-                    bool keep = (hi >= 1.0f && lo < 1.0f) || hi - lo > jumpEps;
-
-                    if (!keep && deSafe) {
-                        const double lb = DataLoader::MandleDistanceLowerBound(k.x + 0.5 * k.w, k.y + 0.5 * k.h, mandleDepth);
-                        keep = lb >= 0.0 && lb <= 0.5 * std::hypot(k.w, k.h);
-                    }
-
-                    if (keep) {
-                        stack.push_back(k);
+            for (size_t h = 0; h < L.h; h++) {
+                for (size_t w = 0; w < L.w; w++) {
+                    const float v[4] = {
+                        lab[h * stride + w],       lab[h * stride + w + 1],
+                        lab[(h+1) * stride + w],   lab[(h+1) * stride + w + 1]
+                    };
+                    if (straddles(v)) {
+                        local.emplace_back(
+                            xmin + (double)(L.x0 + w) * dx,
+                            (double)(L.y0 + h) * dy,
+                            dx, dy);
                     }
                 }
             }
         }
 
         #pragma omp critical
-        result.insert(result.end(), local.begin(), local.end());
+        cells.insert(cells.end(), local.begin(), local.end());
     }
 
-    std::sort(result.begin(), result.end(), [](const BoundaryCell& a, const BoundaryCell& b) {
+    std::sort(cells.begin(), cells.end(), [](const BoundaryCell& a, const BoundaryCell& b) {
         return a.y != b.y ? a.y < b.y : a.x < b.x;
     });
 
-    return result;
+    return cells;
 }
 
 std::vector<BoundaryCell> DataLoader::GenerateBoundaryCells(

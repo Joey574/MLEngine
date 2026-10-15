@@ -2,19 +2,20 @@ name: mandledatatest
 dataset: mandlebrot
 
 dataset_args:
-  samples: 1250000
-  mandledepth: 5000
+  samples: 1000000
+  mandledepth: 10000
   dump_raw_dataset: true
   exit_on_dump: true
   uniform_percent: 0.0
 
   jump_eqs: 0.0
 
-  quad_tree: false
-  quad_depth: 1
+  quad_tree: true
+  leaf_dim: 8
+  min_quad_depth: 16
 
-  x_resolution: 32768
-  y_resolution: 8192
+  x_resolution: 32678
+  y_resolution: 16384
 
   image_width: 1
   image_height: 1
