@@ -33,6 +33,7 @@
 #define Y_MANDLE_UNIFORM_PERCENT "uniform_percent"
 #define Y_MANDLE_SAMPLE_QUAD_TREE "quad_tree"
 #define Y_MANDLE_SAMPLE_QUAD_DEPTH "quad_depth"
+#define Y_MANDLE_SAMPLE_JUMP_EQS "jump_eqs"
 #define Y_MANDLE_SAMPLE_X_RES "x_resolution"
 #define Y_MANDLE_SAMPLE_Y_RES "y_resolution"
 

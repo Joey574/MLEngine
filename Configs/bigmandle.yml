@@ -10,18 +10,20 @@ dataset_args:
   dump_raw_dataset: true
 
   samples: 1500000
-  mandledepth: 1000
-  uniform_percent: 0.2
+  mandledepth: 10000
+  uniform_percent: 0.1
 
   quad_tree: true
   quad_depth: 6
 
-  x_resolution: 8192
+  jump_eqs: 0.0
+
+  x_resolution: 16384
   y_resolution: 4096
 
   fourier_series: 64
-  image_width: 1920
-  image_height: 1080
+  image_width: 2560
+  image_height: 1440
 
 weight: he
 

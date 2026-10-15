@@ -78,30 +78,46 @@ private:
 
     // mandlebrot utils
     void LoadMandlebrotTrainData(size_t e, const std::string& path);
+    void FillMandlebrotTest(
+        size_t img_width,
+        size_t img_height,
+        size_t depth,
+        size_t fourier,
+        double xMin,
+        double xMax,
+        double yMin,
+        double yMax
+    );
+
     static float InMandlebrot(double x, double y, size_t it);
+    static double MandleDistanceLowerBound(double cx, double cy, size_t it);
     std::vector<BoundaryCell> GenerateBoundaryCells(
         double xmin,
         double xmax,
-        double ymin,
         double ymax,
-        size_t width,
-        size_t height,
-        size_t depth
+        size_t xRes,
+        size_t yRes,
+        size_t depth,
+        float jumpEps
     );
 
     std::vector<BoundaryCell> GenerateBoundaryCellsQuadTree(
-        std::vector<BoundaryCell>& cells,
-        double xmin,
-        double xmax,
-        double ymin,
-        double ymax,
+        std::vector<BoundaryCell>& roots,
         size_t mandleDepth,
-        size_t maxQuadDepth
+        size_t maxQuadDepth,
+        float jumpEps,
+        bool deSafe
     );
     std::pair<double, double> SampleBoundary(std::mt19937& gen, const std::vector<BoundaryCell>& cells);
 
     static void ComputeFourier(float* x, float xmin, float xmax, float ymin, float ymax, size_t series);
+
+    // mandledata
     FILE* pipe = nullptr;
+    std::vector<BoundaryCell> boundaryCells;
+    bool boundaryBuilt = false;
 
     static std::string ExpandPath(const std::string& path);
+    static std::string UniqueMp4Path(const std::string& base);
+
 };

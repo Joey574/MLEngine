@@ -113,25 +113,30 @@ size_t DataLoader::ApplyElasticDeform(Matrix& data, Matrix& labels, size_t origi
 
 // Writes a normalized [-1, 1] sampling of fourier series to x
 void DataLoader::ComputeFourier(float* x, float xmin, float xmax, float ymin, float ymax, size_t series) {
-    const float xv = -M_PI + (x[0]-xmin) / (xmax-xmin) * (2.0f*M_PI);
-    const float yv = -M_PI + (x[1]-ymin) / (ymax-ymin) * (2.0f*M_PI);
-    x[0] = xv;
-    x[1] = yv;
+    const double xv = -M_PI + ((double)x[0] - xmin) / ((double)xmax - xmin) * (2.0*M_PI);
+    const double yv = -M_PI + ((double)x[1] - ymin) / ((double)ymax - ymin) * (2.0*M_PI);
 
-    #pragma omp parallel for simd schedule(static)
-    for (size_t i = 0; i < series; i++) {
-        const float freq = i+1;
+    const double sx = std::sin(xv), cx = std::cos(xv);
+    const double sy = std::sin(yv), cy = std::cos(yv);
+    double skx = sx, ckx = cx, sky = sy, cky = cy;
 
-        const float xp = xv * freq;
-        const float yp = yv * freq;
+    float* o = x + 2;
 
-        x[2+(i*4)] = std::sin(xp);
-        x[2+(i*4)+1] = std::cos(xp);
+    for (size_t i = 0; i < series; i++, o += 4) {
+        o[0] = (float)skx;
+        o[1] = (float)ckx;
+        o[2] = (float)sky;
+        o[3] = (float)cky;
 
-        x[2+(i*4)+2] = std::sin(yp);
-        x[2+(i*4)+3] = std::cos(yp);
+        const double nsx = skx * cx + ckx * sx;
+        ckx = ckx * cx - skx * sx;
+        skx = nsx;
+
+        const double nsy = sky * cy + cky * sy;
+        cky = cky * cy - sky * sy;
+        sky = nsy;
     }
 
-    x[0] = xv / M_PI;
-    x[1] = yv / M_PI;
+    x[0] = (float)(xv / M_PI);
+    x[1] = (float)(yv / M_PI);
 }

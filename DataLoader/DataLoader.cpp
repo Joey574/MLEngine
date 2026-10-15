@@ -107,10 +107,10 @@ void DataLoader::LoadMandlebrot(const std::string& path) {
 
     const size_t test_elements = img_width*img_height;
 
-    const double xMin = -2.5;
-    const double xMax = 1.0;
-    const double yMin = -1.1;
-    const double yMax = 1.1;
+    constexpr double xMin = -2.5;
+    constexpr double xMax = 1.0;
+    constexpr double yMin = -1.3;
+    constexpr double yMax = 1.3;
 
     std::mt19937 gen(SEED-82);
 
@@ -131,60 +131,70 @@ void DataLoader::LoadMandlebrot(const std::string& path) {
     testLabels.data = std::vector<float>(test_elements);
 
     LoadMandlebrotTrainData(-1, path);
-
-    // build testing dataset
-    double scaleX = (std::abs(xMin-xMax)/((double)img_width-1.0));
-    double scaleY = (std::abs(yMin-yMax)/((double)img_height-1.0));
-
-    #pragma omp parallel for simd schedule(static)
-    for (size_t h = 0; h < img_height; h++) {
-        for (size_t w = 0; w < img_width; w++) {
-            const size_t i = h*img_width+w;
-
-            double x = xMin+(double)w*scaleX;
-            double y = yMin+(double)h*scaleY;
-
-            float m = InMandlebrot(x, y, depth);
-
-            testData.data[i*testData.cols] = x;
-            testData.data[i*testData.cols+1] = y;
-            testLabels.data[i] = m;
-        }
-    }
-
-    #pragma omp parallel for
-    for (size_t i = 0; i < test_elements; i++) {
-        ComputeFourier(&testData.data[i*testData.cols], xMin, xMax, yMin, yMax, fourier);
-    }
+    FillMandlebrotTest(img_width, img_height, depth, fourier, xMin, xMax, yMin, yMax);
 
     // ensure run gets a unique video file path
-    std::string mp4Path = path+"images/output";
-    std::string ext = ".mp4";
-    if (std::filesystem::exists(mp4Path+ext)) {
-        mp4Path = mp4Path.append(". ");
-        int xt = 0;
-
-        do {
-            xt++;
-            mp4Path[mp4Path.length()-1] = std::to_string(xt)[0];
-        } while (std::filesystem::exists(mp4Path+ext));
-    }
+    std::string base = path+"images/output";
+    std::string unique = DataLoader::UniqueMp4Path(base);
 
     std::string cmd = "ffmpeg -y -loglevel error -nostats -f rawvideo -vcodec rawvideo -s ";
     cmd += std::to_string(test_dims[0]) + "x" + std::to_string(test_dims[1]);
-    cmd +=  " -pix_fmt rgb24 -r 30 -i pipe:0 -c:v libx264 -pix_fmt yuv420p " + mp4Path+ext;
+    cmd +=  " -pix_fmt rgb24 -r 30 -i pipe:0 -c:v libx264 -pix_fmt yuv420p " + unique;
     this->pipe = popen(cmd.c_str(), "w");
 }
 
+void DataLoader::FillMandlebrotTest(
+    size_t img_width,
+    size_t img_height,
+    size_t depth,
+    size_t fourier,
+    double xMin,
+    double xMax,
+    double yMin,
+    double yMax
+) {
+    const double scaleX = (xMax - xMin) / ((double)img_width - 1.0);
+    const double scaleY = (yMax - yMin) / ((double)img_height - 1.0);
+    const size_t cols = testData.cols;
+    const size_t half = (img_height + 1) / 2;       // requires yMin == -yMax
+
+    #pragma omp parallel for schedule(dynamic, 1)
+    for (size_t h = 0; h < half; h++) {
+        const double y = yMin + (double)h * scaleY;
+        const size_t hm = img_height - 1 - h;
+
+        for (size_t w = 0; w < img_width; w++) {
+            const double x = xMin + (double)w * scaleX;
+            const float m = InMandlebrot(x, y, depth);
+
+            const size_t i = h * img_width + w;
+            testData.data[i * cols] = x;
+            testData.data[i * cols + 1] = y;
+            testLabels.data[i] = m;
+
+            if (hm != h) {
+                const size_t j = hm * img_width + w;
+                testData.data[j * cols] = x;
+                testData.data[j * cols + 1] = -y;
+                testLabels.data[j] = m;
+            }
+        }
+    }
+
+    #pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < testData.rows; i++) {
+        ComputeFourier(&testData.data[i * cols], xMin, xMax, yMin, yMax, fourier);
+    }
+}
 void DataLoader::LoadMandlebrotTrainData(size_t e, const std::string& path) {
     const size_t n = args[Y_SAMPLES].as<size_t>(Y_SAMPLE_DEFAULT);
     const size_t depth = args[Y_MANDLE_DEPTH].as<size_t>(Y_MANDLEDEPTH_DEFAULT);
     const size_t fourier = args[Y_FOURIER_SERIES].as<size_t>(Y_FOURIER_DEFAULT);
 
-    const double xMin = -2.5;
-    const double xMax = 1.0;
-    const double yMin = -1.1;
-    const double yMax = 1.1;
+    constexpr double xMin = -2.5;
+    constexpr double xMax = 1.0;
+    constexpr double yMin = -1.3;
+    constexpr double yMax = 1.3;
 
     std::mt19937 gen(SEED-82+e);
 
@@ -198,54 +208,83 @@ void DataLoader::LoadMandlebrotTrainData(size_t e, const std::string& path) {
     const size_t xRes = args[Y_MANDLE_SAMPLE_X_RES].as<size_t>(Y_MANDLE_SAMPLE_X_RES_DEFAULT);
     const size_t yRes = args[Y_MANDLE_SAMPLE_Y_RES].as<size_t>(Y_MANDLE_SAMPLE_Y_RES_DEFAULT);
 
-    auto cells = GenerateBoundaryCells(xMin, xMax, yMin, yMax, xRes, yRes, depth);
-    if (makeQuad) {
-        cells = GenerateBoundaryCellsQuadTree(cells, xMin, xMax, yMin, yMax, depth, quadDepth);
+    const float kJumpEps = args[Y_MANDLE_SAMPLE_JUMP_EQS].as<float>(Y_MANDLE_SAMPLE_JUMP_EQS_DEFAULT);
+
+    if (!boundaryBuilt) {
+        boundaryCells = GenerateBoundaryCells(xMin, xMax, yMax, xRes, yRes, depth, kJumpEps);
+        if (makeQuad) {
+            boundaryCells = GenerateBoundaryCellsQuadTree(boundaryCells, depth, quadDepth, kJumpEps, false);
+        }
+
+        boundaryBuilt = true;
+    }
+
+    const size_t nCells = boundaryCells.size();
+    std::vector<uint32_t> perm(nCells);
+    std::iota(perm.begin(), perm.end(), 0u);
+    const size_t need = std::min(n, nCells);
+    for (size_t k = 0; k < need; k++) {
+        std::uniform_int_distribution<size_t> pick(k, nCells - 1);
+        std::swap(perm[k], perm[pick(gen)]);
     }
 
     std::uniform_real_distribution<double> prob(0.0, 1.0);
+    const double r0 = prob(gen), r1 = prob(gen);
+    const auto frac = [](double v) {
+        return v - std::floor(v);
+    };
 
-    // build training dataset
+    constexpr double A1 = 0.7548776662466927;
+    constexpr double A2 = 0.5698402909980532;
+
+    size_t kb = 0, ku = 0;
     for (size_t i = 0; i < n; i++) {
-        double x;
-        double y;
+        double x, y;
 
-        if (cells.empty() || prob(gen) < uniformPercent) {
-            x = xrand(gen);
-            y = yrand(gen);
+        if (nCells == 0 || prob(gen) < uniformPercent) {
+            const double k = (double)(++ku);
+            x = xMin + frac(r0 + k*A1) * (xMax-xMin);
+            y = yMin + frac(r1 + k*A2) * (yMax-yMin);
         } else {
-            std::tie(x, y) = SampleBoundary(gen, cells);
+            const BoundaryCell c = boundaryCells[perm[kb++ % need]];
+            x = c.x + prob(gen) * c.width;
+            y = c.y + prob(gen) * c.height;
+            if (gen() & 1u) y = -y;
         }
 
-        trainData.data[i*trainData.cols] = x;
-        trainData.data[i*trainData.cols+1] = y;
-        trainLabels.data[i] = InMandlebrot(x, y, depth);
+        trainData.data[i * trainData.cols] = x;
+        trainData.data[i * trainData.cols+1] = y;
     }
 
     const bool dump = args[Y_MANDLE_DUMP_RAW_DATASET].as<bool>(Y_MANDLE_DUMP_RAW_DATASET_DEFUALT);
     if (dump) {
+        std::filesystem::create_directories(path);
+
         const bool shouldExit = args[Y_MANDLE_EXIT_ON_DUMP].as<bool>(Y_MANDLE_EXIT_ON_DUMP_DEFAULT);
 
         std::vector<float> xy(2 * trainData.rows);
         for (size_t i = 0; i < trainData.rows; i++) {
-            xy[2*i]     = trainData.data[i*trainData.cols];
+            xy[2*i] = trainData.data[i*trainData.cols];
             xy[2*i + 1] = trainData.data[i*trainData.cols + 1];
         }
 
-        std::ofstream f(path+"dataset.bin", std::ios::binary);
+        const std::string datasetDump = path+"dataset.bin";
+        std::ofstream f(datasetDump, std::ios::binary);
         if (f.is_open()) {
             f.write(reinterpret_cast<const char*>(xy.data()), xy.size() * sizeof(float));
             f.close();
+        } else {
+            std::cerr << "failed to open file at " << datasetDump << "\n";
         }
 
-        if (shouldExit) {
-            exit(0);
-        }
+        if (shouldExit) exit(0);
     }
 
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(dynamic, 256)
     for (size_t i = 0; i < n; i++) {
-        ComputeFourier(&trainData.data[i*trainData.cols], xMin, xMax, yMin, yMax, fourier);
+        float* r = &trainData.data[i * trainData.cols];
+        trainLabels.data[i] = InMandlebrot(r[0], r[1], depth);
+        ComputeFourier(r, xMin, xMax, yMin, yMax, fourier);
     }
 }
 
@@ -406,15 +445,67 @@ int DataLoader::ReadBigInt(std::ifstream* f) {
 }
 
 float DataLoader::InMandlebrot(double x, double y, size_t it) {
-    std::complex<double> c(x, y);
-        std::complex<double> z = 0;
+    const double y2 = y*y;
 
-        for (size_t i = 0; i < it; i++) {
-            z = z * z + c;
-            if (std::abs(z) > 2.0) {
-                return (float)((double)i / ((double)i + 50.0));            }
-        }
+    const double xq = x - 0.25;
+    const double q = xq*xq + y2;
+    if (q * (q+xq) <= 0.25 * y2) {
         return 1.0f;
+    }
+
+    const double xp = x + 1.0;
+    if (xp*xp + y2 < 0.0625) {
+        return 1.0f;
+    }
+
+    double zr = 0.0, zi = 0.0, zr2 = 0.0, zi2 = 0.0;
+    double sr = 0.0, si = 0.0;
+    size_t period = 1, steps = 0;
+
+    for (size_t i = 0; i < it; i++) {
+        zi = 2.0 * zr * zi + y;
+        zr = zr2 - zi2 + x;
+        zr2 = zr * zr;
+        zi2 = zi * zi;
+
+        if (zr2 + zi2 > 4.0) {
+            return (float)((double)i / ((double)i + 50.0));
+        }
+
+        if (zr == sr && zi == si) {
+            return 1.0f;
+        }
+
+        if (++steps == period) {
+            sr = zr;
+            si = zi;
+            period *= 2;
+            steps = 0;
+        }
+    }
+
+    return 1.0f;
+}
+
+double DataLoader::MandleDistanceLowerBound(double cx, double cy, size_t it) {
+    double zr = 0.0, zi = 0.0, dr = 0.0, di = 0.0;
+    for (size_t i = 0; i < it; i++) {
+        const double ndr = 2.0 * (zr * dr - zi * di) + 1.0;
+        di = 2.0 * (zr * di + zi * dr);
+        dr = ndr;
+
+        const double nzi = 2.0 * zr * zi + cy;
+        zr = zr * zr - zi * zi + cx;
+        zi = nzi;
+
+        const double m2 = zr * zr + zi * zi;
+        if (m2 > 1.0e10) {
+            const double m = std::sqrt(m2);
+            return 0.5 * m * std::log(m) / std::sqrt(dr * dr + di * di);
+        }
+    }
+
+    return -1.0;
 }
 
 std::string DataLoader::ExpandPath(const std::string& path) {
@@ -424,4 +515,13 @@ std::string DataLoader::ExpandPath(const std::string& path) {
 
     const char* home = getenv("HOME");
     return home + path.substr(1);
+}
+
+std::string DataLoader::UniqueMp4Path(const std::string& base) {
+    namespace fs = std::filesystem;
+    if (!fs::exists(base + ".mp4")) return base + ".mp4";
+    for (int xt = 1;; xt++) {
+        std::string p = base + "." + std::to_string(xt) + ".mp4";
+        if (!fs::exists(p)) return p;
+    }
 }
