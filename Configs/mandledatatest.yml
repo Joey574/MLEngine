@@ -8,13 +8,13 @@ dataset_args:
   exit_on_dump: true
   uniform_percent: 0.0
 
-  jump_eqs: 0.00
+  jump_eqs: 0.0
 
-  quad_tree: true
-  quad_depth: 6
+  quad_tree: false
+  quad_depth: 1
 
-  x_resolution: 4096
-  y_resolution: 2048
+  x_resolution: 32768
+  y_resolution: 8192
 
   image_width: 1
   image_height: 1

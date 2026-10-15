@@ -13,13 +13,13 @@ dataset_args:
   mandledepth: 10000
   uniform_percent: 0.1
 
-  quad_tree: true
+  quad_tree: false
   quad_depth: 6
 
   jump_eqs: 0.0
 
-  x_resolution: 16384
-  y_resolution: 4096
+  x_resolution: 32768
+  y_resolution: 8192
 
   fourier_series: 64
   image_width: 2560

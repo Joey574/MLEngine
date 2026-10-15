@@ -21,12 +21,6 @@ std::vector<BoundaryCell> DataLoader::GenerateBoundaryCellsQuadTree(
         return InMandlebrot(x, y, mandleDepth);
     };
 
-    const auto varies = [&](const float* v) -> bool {
-        const float lo = std::min(std::min(v[0], v[1]), std::min(v[2], v[3]));
-        const float hi = std::max(std::max(v[0], v[1]), std::max(v[2], v[3]));
-        return (hi >= 1.0f && lo < 1.0f) || hi - lo > jumpEps;
-    };
-
     std::vector<BoundaryCell> result;
 
     #pragma omp parallel
@@ -81,7 +75,10 @@ std::vector<BoundaryCell> DataLoader::GenerateBoundaryCellsQuadTree(
                 };
 
                 for (const Node& k : kids) {
-                    bool keep = varies(k.v);
+                    const float lo = std::min(std::min(k.v[0], k.v[1]), std::min(k.v[2], k.v[3]));
+                    const float hi = std::max(std::max(k.v[0], k.v[1]), std::max(k.v[2], k.v[3]));
+                    bool keep = (hi >= 1.0f && lo < 1.0f) || hi - lo > jumpEps;
+
                     if (!keep && deSafe) {
                         const double lb = DataLoader::MandleDistanceLowerBound(k.x + 0.5 * k.w, k.y + 0.5 * k.h, mandleDepth);
                         keep = lb >= 0.0 && lb <= 0.5 * std::hypot(k.w, k.h);
@@ -141,7 +138,7 @@ std::vector<BoundaryCell> DataLoader::GenerateBoundaryCells(
             const float lo = std::min(std::min(a, b), std::min(c, d));
             const float hi = std::max(std::max(a, b), std::max(c, d));
             if ((hi >= 1.0f && lo < 1.0f) || hi - lo > jumpEps) {
-                cells.push_back({xmin + (double)w*dx, double(h)*dy, dx, dy});
+                cells.emplace_back(xmin + (double)w*dx, double(h)*dy, dx, dy);
             }
         }
     }

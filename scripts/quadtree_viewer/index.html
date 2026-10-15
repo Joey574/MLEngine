@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Quadtree Cell Viewer · WebGL2</title>
+        <style>
+            :root {
+                font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+                color: #e2e8f0;
+                background: #080d18;
+            }
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+            }
+            header {
+                height: 54px;
+                display: flex;
+                align-items: center;
+                gap: 18px;
+                padding: 0 18px;
+                background: #111827;
+                border-bottom: 1px solid #273345;
+            }
+            h1 {
+                font-size: 15px;
+                margin: 0;
+                font-weight: 650;
+            }
+            button {
+                background: #213248;
+                color: #e2e8f0;
+                border: 1px solid #3e5571;
+                border-radius: 6px;
+                padding: 7px 12px;
+                cursor: pointer;
+            }
+            button:hover {
+                background: #334963;
+            }
+            label {
+                font-size: 12px;
+                white-space: nowrap;
+            }
+            input {
+                accent-color: #6ebeff;
+            }
+            main {
+                position: relative;
+                height: calc(100vh - 91px);
+                min-height: 240px;
+            }
+            canvas {
+                display: block;
+                width: 100%;
+                height: 100%;
+                cursor: grab;
+                touch-action: none;
+            }
+            canvas.dragging {
+                cursor: grabbing;
+            }
+            #hud {
+                position: absolute;
+                left: 13px;
+                top: 13px;
+                pointer-events: none;
+                background: #0c1522d9;
+                padding: 12px;
+                border: 1px solid #334255;
+                border-radius: 6px;
+                font-size: 12px;
+                line-height: 1.65;
+                max-width: calc(100% - 25px);
+                white-space: pre-wrap;
+            }
+            #status {
+                color: #86c7ff;
+            }
+            footer {
+                height: 37px;
+                display: flex;
+                align-items: center;
+                padding: 0 15px;
+                color: #a7b5cb;
+                font-size: 11px;
+                background: #111827;
+                border-top: 1px solid #273345;
+            }
+            #error {
+                color: #ffa7a7;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>QUADTREE / WebGL2</h1>
+            <button id="fit">Fit all</button><button id="reload">Refresh</button
+            ><label
+                ><input type="checkbox" id="dark" checked /> Dark
+                background</label
+            ><label
+                >Max visible cells
+                <select id="cap">
+                    <option>50000</option>
+                    <option selected>250000</option>
+                    <option>1000000</option>
+                    <option>10000000</option>
+                </select></label
+            >
+        </header>
+        <main>
+            <canvas id="canvas"></canvas>
+            <div id="hud">
+                <span id="status">Initializing...</span>
+                <div id="stats"></div>
+                <div id="error"></div>
+            </div>
+        </main>
+        <footer>
+            Scroll: zoom at pointer · Drag: pan · Double-click: zoom in · Shift
+            + double-click: zoom out · F: fit · R: reload · Coordinates remain
+            float64 until GPU projection
+        </footer>
+        <script>
+            "use strict";
+            const canvas = document.querySelector("#canvas"),
+                statusEl = document.querySelector("#status"),
+                statsEl = document.querySelector("#stats"),
+                errorEl = document.querySelector("#error");
+            const gl = canvas.getContext("webgl2", {
+                antialias: false,
+                preserveDrawingBuffer: false,
+            });
+            if (!gl) {
+                statusEl.textContent = "WebGL2 unavailable";
+                throw Error("Requires WebGL2");
+            }
+            const vs = `#version 300 es
+layout(location=0) in vec4 rect;
+uniform vec4 camera; // world-to-NDC already performed on CPU
+void main(){
+  int corner = gl_VertexID;
+  vec2 p;
+  if(corner==0 || corner==3 || corner==7) p=rect.xy;
+  else if(corner==1 || corner==4 || corner==5) p=vec2(rect.z,rect.y);
+  else if(corner==2 || corner==6) p=rect.zw;
+  gl_Position=vec4(p,0.0,1.0);
+}`;
+            // Segments: bottom (0,1), right (4,2), top (6,3), left (7,5)?
+            // Use explicit 8-entry endpoint lookup below instead.
+            const vertexSource = `#version 300 es
+layout(location=0) in vec4 r;
+void main(){
+  vec2 p;
+  int v=gl_VertexID;
+  if(v==0) p=r.xy;
+  else if(v==1) p=vec2(r.z,r.y);
+  else if(v==2) p=vec2(r.z,r.y);
+  else if(v==3) p=r.zw;
+  else if(v==4) p=r.zw;
+  else if(v==5) p=vec2(r.x,r.w);
+  else if(v==6) p=vec2(r.x,r.w);
+  else p=r.xy;
+  gl_Position=vec4(p,0,1);
+}`;
+            const fragmentSource = `#version 300 es
+precision mediump float;
+uniform vec4 color;
+out vec4 outColor;
+void main(){outColor=color;}`;
+            function shader(type, source) {
+                const s = gl.createShader(type);
+                gl.shaderSource(s, source);
+                gl.compileShader(s);
+                if (!gl.getShaderParameter(s, gl.COMPILE_STATUS))
+                    throw Error(gl.getShaderInfoLog(s));
+                return s;
+            }
+            const program = gl.createProgram();
+            gl.attachShader(program, shader(gl.VERTEX_SHADER, vertexSource));
+            gl.attachShader(
+                program,
+                shader(gl.FRAGMENT_SHADER, fragmentSource),
+            );
+            gl.linkProgram(program);
+            if (!gl.getProgramParameter(program, gl.LINK_STATUS))
+                throw Error(gl.getProgramInfoLog(program));
+            const colorLoc = gl.getUniformLocation(program, "color");
+            const vao = gl.createVertexArray(),
+                buffer = gl.createBuffer();
+            gl.bindVertexArray(vao);
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+            gl.enableVertexAttribArray(0);
+            gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 16, 0);
+            gl.vertexAttribDivisor(0, 1);
+            gl.bindVertexArray(null);
+            let meta,
+                centerX = 0,
+                centerY = 0,
+                spanY = 1,
+                displayed = 0,
+                rawCells = [],
+                fetching = false,
+                clipped = false;
+            let controller = null,
+                timer = null,
+                animationPending = false,
+                loadingGeneration = 0;
+            function aspect() {
+                return canvas.width / canvas.height;
+            }
+            function box() {
+                let hx = spanY * aspect() * 0.5,
+                    hy = spanY * 0.5;
+                return {
+                    xmin: centerX - hx,
+                    xmax: centerX + hx,
+                    ymin: centerY - hy,
+                    ymax: centerY + hy,
+                };
+            }
+            function resize() {
+                const dpr = Math.min(devicePixelRatio || 1, 2);
+                const w = Math.max(1, Math.round(canvas.clientWidth * dpr)),
+                    h = Math.max(1, Math.round(canvas.clientHeight * dpr));
+                if (canvas.width !== w || canvas.height !== h) {
+                    canvas.width = w;
+                    canvas.height = h;
+                    gl.viewport(0, 0, w, h);
+                    requestDraw();
+                    scheduleFetch();
+                }
+            }
+            new ResizeObserver(resize).observe(canvas);
+            function fit() {
+                const [x0, y0, x1, y1] = meta.bounds;
+                centerX = (x0 + x1) * 0.5;
+                centerY = (y0 + y1) * 0.5;
+                spanY = Math.max(
+                    (y1 - y0) * 1.08,
+                    ((x1 - x0) * 1.08) / aspect(),
+                    Number.MIN_VALUE,
+                );
+                scheduleFetch();
+                requestDraw();
+            }
+            function fmt(n) {
+                return Number(n).toPrecision(13);
+            }
+            function requestDraw() {
+                if (!animationPending) {
+                    animationPending = true;
+                    requestAnimationFrame(draw);
+                }
+            }
+            function draw() {
+                animationPending = false;
+                if (!meta) return;
+                const bg = document.querySelector("#dark").checked;
+                gl.clearColor(...(bg ? [0.025, 0.045, 0.08, 1] : [1, 1, 1, 1]));
+                gl.clear(gl.COLOR_BUFFER_BIT);
+                gl.useProgram(program);
+                gl.uniform4f(
+                    colorLoc,
+                    ...(bg ? [0.47, 0.81, 1, 1] : [0.03, 0.13, 0.23, 1]),
+                );
+                const b = box(),
+                    sx = 2 / (b.xmax - b.xmin),
+                    sy = 2 / (b.ymax - b.ymin);
+                // Convert float64 world coordinates to float32 ONLY AFTER subtracting camera
+                // origin; this is crucial for inspecting small cells near large coordinates.
+                const projected = new Float32Array(displayed * 4);
+                let at = 0;
+                for (const cells of rawCells) {
+                    for (let i = 0; i < cells.length; i += 4) {
+                        const x = cells[i],
+                            y = cells[i + 1],
+                            w = cells[i + 2],
+                            h = cells[i + 3];
+                        projected[at++] = (x - centerX) * sx;
+                        projected[at++] = (y - centerY) * sy;
+                        projected[at++] = (x + w - centerX) * sx;
+                        projected[at++] = (y + h - centerY) * sy;
+                    }
+                }
+                gl.bindVertexArray(vao);
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+                gl.bufferData(gl.ARRAY_BUFFER, projected, gl.DYNAMIC_DRAW);
+                gl.drawArraysInstanced(gl.LINES, 0, 8, displayed);
+                gl.bindVertexArray(null);
+                const p = box();
+                statsEl.textContent = `Showing ${displayed.toLocaleString()} / ${meta.count.toLocaleString()} cells${clipped ? " (display cap reached)" : ""}\nX: ${fmt(p.xmin)} → ${fmt(p.xmax)}\nY: ${fmt(p.ymin)} → ${fmt(p.ymax)}\nVisible width: ${fmt(p.xmax - p.xmin)}`;
+            }
+            function scheduleFetch() {
+                if (!meta) return;
+                clearTimeout(timer);
+                if (controller) controller.abort();
+                timer = setTimeout(fetchVisible, 120);
+            }
+            async function fetchVisible() {
+                const generation = ++loadingGeneration;
+                const ctrl = new AbortController();
+                controller = ctrl;
+                rawCells = [];
+                displayed = 0;
+                clipped = false;
+                requestDraw();
+                statusEl.textContent = "Loading visible cells...";
+                errorEl.textContent = "";
+                const b = box(),
+                    limit = 100000,
+                    cap = Number(document.querySelector("#cap").value);
+                let cursor = 0,
+                    more = true;
+                try {
+                    while (more && displayed < cap) {
+                        const qs = new URLSearchParams({
+                            ...Object.fromEntries(
+                                Object.entries(b).map(([k, v]) => [
+                                    k,
+                                    String(v),
+                                ]),
+                            ),
+                            cursor: String(cursor),
+                            limit: String(Math.min(limit, cap - displayed)),
+                        });
+                        const res = await fetch("/cells?" + qs, {
+                            signal: ctrl.signal,
+                        });
+                        if (!res.ok) throw Error(await res.text());
+                        const packet = await res.arrayBuffer();
+                        if (packet.byteLength < 16)
+                            throw Error("Incomplete server response");
+                        const d = new DataView(packet),
+                            next = Number(d.getBigUint64(0, true)),
+                            n = d.getUint32(8, true);
+                        more = d.getUint32(12, true) !== 0;
+                        if (packet.byteLength !== 16 + n * 32)
+                            throw Error("Unexpected response length");
+                        const arr = new Float64Array(n * 4);
+                        for (let i = 0; i < n * 4; i++)
+                            arr[i] = d.getFloat64(16 + i * 8, true);
+                        rawCells.push(arr);
+                        displayed += n;
+                        cursor = next;
+                        requestDraw();
+                        statusEl.textContent = `Streaming: ${displayed.toLocaleString()} visible cells`;
+                        if (!n && !more) break;
+                    }
+                    clipped = more && displayed >= cap;
+                    statusEl.textContent = clipped
+                        ? "Limit reached — zoom in to see more"
+                        : "Ready";
+                    requestDraw();
+                } catch (e) {
+                    if (e.name !== "AbortError") {
+                        errorEl.textContent = String(e);
+                        statusEl.textContent = "Query failed";
+                    }
+                }
+            }
+            function pixelToWorld(px, py) {
+                const b = box();
+                return [
+                    b.xmin + (px / canvas.clientWidth) * (b.xmax - b.xmin),
+                    b.ymax - (py / canvas.clientHeight) * (b.ymax - b.ymin),
+                ];
+            }
+            function zoom(px, py, factor) {
+                const before = pixelToWorld(px, py);
+                spanY = Math.max(
+                    Number.MIN_VALUE,
+                    Math.min(1e50, spanY * factor),
+                );
+                const after = pixelToWorld(px, py);
+                centerX += before[0] - after[0];
+                centerY += before[1] - after[1];
+                scheduleFetch();
+                requestDraw();
+            }
+            canvas.addEventListener(
+                "wheel",
+                (e) => {
+                    e.preventDefault();
+                    const r = canvas.getBoundingClientRect();
+                    zoom(
+                        e.clientX - r.left,
+                        e.clientY - r.top,
+                        Math.exp(Math.max(-5, Math.min(5, e.deltaY)) * 0.0014),
+                    );
+                },
+                { passive: false },
+            );
+            let last = null;
+            canvas.addEventListener("pointerdown", (e) => {
+                canvas.setPointerCapture(e.pointerId);
+                last = [e.clientX, e.clientY];
+                canvas.classList.add("dragging");
+            });
+            canvas.addEventListener("pointermove", (e) => {
+                if (!last) return;
+                const dx = e.clientX - last[0],
+                    dy = e.clientY - last[1];
+                centerX -= (dx / canvas.clientWidth) * spanY * aspect();
+                centerY += (dy / canvas.clientHeight) * spanY;
+                last = [e.clientX, e.clientY];
+                scheduleFetch();
+                requestDraw();
+            });
+            function stop() {
+                last = null;
+                canvas.classList.remove("dragging");
+            }
+            canvas.addEventListener("pointerup", stop);
+            canvas.addEventListener("pointercancel", stop);
+            canvas.addEventListener("dblclick", (e) => {
+                const r = canvas.getBoundingClientRect();
+                zoom(
+                    e.clientX - r.left,
+                    e.clientY - r.top,
+                    e.shiftKey ? 2 : 0.5,
+                );
+            });
+            document.querySelector("#fit").onclick = () => fit();
+            document.querySelector("#reload").onclick = () => scheduleFetch();
+            document.querySelector("#dark").onchange = requestDraw;
+            document.querySelector("#cap").onchange = scheduleFetch;
+            window.addEventListener("keydown", (e) => {
+                if (e.key.toLowerCase() === "f") fit();
+                if (e.key.toLowerCase() === "r") scheduleFetch();
+            });
+            (async () => {
+                try {
+                    const r = await fetch("/meta");
+                    if (!r.ok) throw Error(await r.text());
+                    meta = await r.json();
+                    resize();
+                    fit();
+                } catch (e) {
+                    errorEl.textContent = String(e);
+                    statusEl.textContent = "Failed to initialize";
+                }
+            })();
+        </script>
+    </body>
+</html>

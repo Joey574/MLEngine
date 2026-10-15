@@ -107,7 +107,7 @@ void DataLoader::LoadMandlebrot(const std::string& path) {
 
     const size_t test_elements = img_width*img_height;
 
-    constexpr double xMin = -2.5;
+    constexpr double xMin = -2.1;
     constexpr double xMax = 1.0;
     constexpr double yMin = -1.3;
     constexpr double yMax = 1.3;
@@ -191,7 +191,7 @@ void DataLoader::LoadMandlebrotTrainData(size_t e, const std::string& path) {
     const size_t depth = args[Y_MANDLE_DEPTH].as<size_t>(Y_MANDLEDEPTH_DEFAULT);
     const size_t fourier = args[Y_FOURIER_SERIES].as<size_t>(Y_FOURIER_DEFAULT);
 
-    constexpr double xMin = -2.5;
+    constexpr double xMin = -2.1;
     constexpr double xMax = 1.0;
     constexpr double yMin = -1.3;
     constexpr double yMax = 1.3;
@@ -222,6 +222,7 @@ void DataLoader::LoadMandlebrotTrainData(size_t e, const std::string& path) {
     const size_t nCells = boundaryCells.size();
     std::vector<uint32_t> perm(nCells);
     std::iota(perm.begin(), perm.end(), 0u);
+
     const size_t need = std::min(n, nCells);
     for (size_t k = 0; k < need; k++) {
         std::uniform_int_distribution<size_t> pick(k, nCells - 1);
@@ -269,12 +270,22 @@ void DataLoader::LoadMandlebrotTrainData(size_t e, const std::string& path) {
         }
 
         const std::string datasetDump = path+"dataset.bin";
-        std::ofstream f(datasetDump, std::ios::binary);
-        if (f.is_open()) {
-            f.write(reinterpret_cast<const char*>(xy.data()), xy.size() * sizeof(float));
-            f.close();
+        const std::string boundaryDump = path+"boundaries.bin";
+
+        std::ofstream pointsF(datasetDump, std::ios::binary);
+        if (pointsF.is_open()) {
+            pointsF.write(reinterpret_cast<const char*>(xy.data()), xy.size() * sizeof(float));
+            pointsF.close();
         } else {
             std::cerr << "failed to open file at " << datasetDump << "\n";
+        }
+
+        std::ofstream cellF(boundaryDump, std::ios::binary);
+        if (cellF.is_open()) {
+            cellF.write(reinterpret_cast<const char*>(boundaryCells.data()), boundaryCells.size()*sizeof(BoundaryCell));
+            cellF.close();
+        } else {
+            std::cerr << "failed to open file at " << boundaryDump << "\n";
         }
 
         if (shouldExit) exit(0);
