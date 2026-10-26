@@ -3,8 +3,3 @@ build
 results
 __cmake_systeminformation
 .cache
-*.mp4
-*.gif
-*.png
-*.bin
-*.svg

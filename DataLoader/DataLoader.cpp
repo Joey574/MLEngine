@@ -191,10 +191,10 @@ void DataLoader::LoadMandlebrotTrainData(size_t e, const std::string& path) {
     const size_t depth = args[Y_MANDLE_DEPTH].as<size_t>(Y_MANDLEDEPTH_DEFAULT);
     const size_t fourier = args[Y_FOURIER_SERIES].as<size_t>(Y_FOURIER_DEFAULT);
 
-    constexpr double xMin = -2.1;
-    constexpr double xMax = 1.0;
-    constexpr double yMin = -1.3;
-    constexpr double yMax = 1.3;
+    constexpr double xMin = -2.0;
+    constexpr double xMax = 2.0;
+    constexpr double yMin = -2.0;
+    constexpr double yMax = 2.0;
 
     std::mt19937 gen(SEED-82+e);
 
